@@ -1,0 +1,112 @@
+/* ─── Stat Cards ─── */
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .stat-cards { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .stat-cards { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition), background var(--transition-theme), border-color var(--transition-theme);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-border);
+  transition: background var(--transition-theme);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border-strong);
+}
+
+.stat-card.good::before   { background: var(--color-success); }
+.stat-card.average::before { background: var(--color-warning); }
+.stat-card.below-average::before { background: var(--color-error); }
+.stat-card.auto::before   { background: #ec4899; }
+
+.stat-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-theme);
+}
+
+.stat-icon svg { width: 26px; height: 26px; }
+
+.total-icon {
+  background: var(--color-secondary-light);
+  color: var(--color-secondary);
+}
+
+.good-icon {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.average-icon {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.below-icon {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.auto-icon {
+  background: rgba(236, 72, 153, 0.12);
+  color: #ec4899;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1.1;
+  letter-spacing: -1px;
+  transition: color var(--transition-theme);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  transition: color var(--transition-theme);
+}

@@ -1,0 +1,201 @@
+/* ─── Problem List Page ─── */
+.problem-list-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: background var(--transition-theme), color var(--transition-theme);
+}
+
+.header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-theme), border-color var(--transition-theme);
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.4px;
+  transition: color var(--transition-theme);
+}
+
+.header-logo svg { color: var(--color-accent); flex-shrink: 0; }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-name-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: color var(--transition-theme);
+}
+
+.btn-logout {
+  padding: 6px 14px;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+
+.btn-logout:hover {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* ─── Content ─── */
+.problem-list-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  animation: fadeIn 0.4s ease;
+}
+
+.pl-heading {
+  margin-bottom: 28px;
+}
+
+.pl-heading h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+  margin-bottom: 4px;
+  transition: color var(--transition-theme);
+}
+
+.pl-subtitle {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  transition: color var(--transition-theme);
+}
+
+/* ─── Problem Grid ─── */
+.problems-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.problem-card {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-xs);
+  outline: none;
+}
+
+.problem-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.problem-card:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-accent-light), var(--shadow-sm);
+}
+
+.problem-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.problem-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  line-height: 1.4;
+  transition: color var(--transition-theme);
+}
+
+.language-badge {
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.language-badge.python {
+  background: rgba(55, 118, 171, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(55, 118, 171, 0.25);
+}
+
+.language-badge.sql {
+  background: rgba(227, 140, 0, 0.12);
+  color: #d97706;
+  border: 1px solid rgba(227, 140, 0, 0.25);
+}
+
+.problem-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+  transition: border-color var(--transition-theme);
+}
+
+.difficulty {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.problem-arrow {
+  color: var(--color-text-subtle);
+  font-size: 16px;
+  transition: color var(--transition);
+}
+
+.problem-card:hover .problem-arrow {
+  color: var(--color-accent);
+  transform: translateX(2px);
+}
+
+@media (max-width: 640px) {
+  .header { padding: 0 16px; }
+  .problem-list-container { padding: 24px 16px; }
+  .problems-grid { grid-template-columns: 1fr; }
+}

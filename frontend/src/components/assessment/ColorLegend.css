@@ -1,0 +1,101 @@
+/* ─── Color Legend ─── */
+.color-legend {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  padding: 18px 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-theme), border-color var(--transition-theme);
+}
+
+.legend-title {
+  margin: 0 0 14px 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: color var(--transition-theme);
+}
+
+.legend-title::before {
+  content: '🎨';
+  font-size: 16px;
+}
+
+.legend-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+}
+
+.legend-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  transition: color var(--transition-theme);
+}
+
+.legend-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.legend-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  transition: color var(--transition-theme);
+}
+
+/* Score Chips */
+.legend-chip {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.chip-5 { background: #22c55e; }
+.chip-4 { background: #3b82f6; }
+.chip-3 { background: #f59e0b; }
+.chip-2 { background: #f97316; }
+.chip-1 { background: #ef4444; }
+
+/* Column Bars */
+.legend-bar {
+  width: 34px;
+  height: 18px;
+  border-radius: var(--radius-xs);
+  display: inline-block;
+  border: 1.5px solid;
+}
+
+.bar-python  { background: var(--color-secondary-light); border-color: var(--color-secondary); }
+.bar-sql     { background: var(--color-warning-bg);      border-color: var(--color-warning); }
+.bar-total   { background: rgba(124, 58, 237, 0.12);     border-color: #7c3aed; }
+.bar-easy    { background: var(--color-easy-bg);         border-color: var(--color-easy); }
+.bar-medium  { background: var(--color-medium-bg);       border-color: var(--color-medium); }
+.bar-hard    { background: var(--color-hard-bg);         border-color: var(--color-hard); }

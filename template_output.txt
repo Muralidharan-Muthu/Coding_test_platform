@@ -1,0 +1,139 @@
+{
+  "title": "",
+  "language": "sql",
+  "difficulty": "Easy",
+  "marks": 10,
+  "time_limit": 10,
+  "problem_statement": "",
+  "description": "",
+  "input_format": {
+    "tables": [
+      {
+        "table_name": "employees",
+        "columns": [
+          "id",
+          "name",
+          "department",
+          "salary"
+        ],
+        "rows": [
+          [
+            "1",
+            "Alice",
+            "Engineering",
+            "72000"
+          ],
+          [
+            "2",
+            "Bob",
+            "Marketing",
+            "45000"
+          ],
+          [
+            "3",
+            "Charlie",
+            "Engineering",
+            "85000"
+          ],
+          [
+            "4",
+            "Diana",
+            "HR",
+            "51000"
+          ]
+        ]
+      }
+    ]
+  },
+  "expected_output": {
+    "columns": [
+      "column1",
+      "column2"
+    ],
+    "rows": [
+      [
+        "value1",
+        "value2"
+      ],
+      [
+        "value3",
+        "value4"
+      ]
+    ]
+  },
+  "starter_code": "SELECT * FROM table_name;",
+  "schema_sql": "CREATE TABLE employees (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL,\n  department TEXT NOT NULL,\n  salary INTEGER NOT NULL\n);",
+  "seed_sql": "INSERT INTO employees VALUES\n(1, 'Alice', 'Engineering', 72000),\n(2, 'Bob', 'Marketing', 45000),\n(3, 'Charlie', 'Engineering', 85000),\n(4, 'Diana', 'HR', 51000);",
+  "test_cases": [
+    {
+      "expected_output": {
+        "columns": [
+          "column1",
+          "column2"
+        ],
+        "rows": [
+          [
+            "value1",
+            "value2"
+          ]
+        ]
+      }
+    },
+    {
+      "expected_output": {
+        "columns": [
+          "column1",
+          "column2"
+        ],
+        "rows": [
+          [
+            "value3",
+            "value4"
+          ]
+        ]
+      }
+    },
+    {
+      "expected_output": {
+        "columns": [
+          "column1",
+          "column2"
+        ],
+        "rows": [
+          [
+            "value5",
+            "value6"
+          ]
+        ]
+      }
+    },
+    {
+      "expected_output": {
+        "columns": [
+          "column1",
+          "column2"
+        ],
+        "rows": [
+          [
+            "value7",
+            "value8"
+          ]
+        ]
+      }
+    },
+    {
+      "expected_output": {
+        "columns": [
+          "column1",
+          "column2"
+        ],
+        "rows": [
+          [
+            "value9",
+            "value10"
+          ]
+        ]
+      }
+    }
+  ]
+}

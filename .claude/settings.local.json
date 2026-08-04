@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(\"c:/Users/Local user/Desktop/New folder \\(13\\)/backend/venv/Scripts/uvicorn.exe\" main:app --host 127.0.0.1 --port 8001 --app-dir \"c:/Users/Local user/Desktop/New folder \\(13\\)/backend\")",
+      "Bash(curl:*)"
+    ]
+  }
+}

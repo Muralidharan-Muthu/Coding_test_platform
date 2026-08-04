@@ -1,0 +1,47 @@
+.send-mail-content {
+  display: grid;
+  gap: 20px;
+}
+
+.send-mail-header-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.send-mail-header-card h3 {
+  margin: 0 0 8px;
+  color: var(--color-secondary);
+}
+
+.send-mail-header-card p {
+  margin: 0 0 10px;
+  color: var(--color-text-muted);
+}
+
+.send-mail-dedupe-note {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.send-mail-all-btn {
+  margin-top: 4px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.send-mail-all-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.send-mail-all-btn:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+}
