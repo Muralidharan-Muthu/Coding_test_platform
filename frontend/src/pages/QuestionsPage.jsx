@@ -140,7 +140,7 @@ Candidates write code in a browser editor. Code is executed server-side against
 test cases by comparing stdout. Every field must be production-ready.
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-FIXED VALUES â€” DO NOT CHANGE
+FIXED VALUES — DO NOT CHANGE
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 language   : "python"
 difficulty : "${difficulty}"
@@ -152,7 +152,7 @@ FIELD-BY-FIELD RULES
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 [ description ]
-  - 3â€“5 sentences. State the problem clearly.
+  - 3–5 sentences. State the problem clearly.
   - Mention the goal, what the input represents, and what output is expected.
   - Include constraints inline: e.g. "1 â‰¤ N â‰¤ 10^5, 1 â‰¤ arr[i] â‰¤ 10^9"
   - No bullet points. Write in paragraph form like HackerRank problem statements.
@@ -164,7 +164,7 @@ FIELD-BY-FIELD RULES
 
 [ output_format ]
   - Describe exactly what to print. Specify if it's a single integer, a line, multiple lines, etc.
-  - Example: "Print a single integer â€” the maximum sum of the subarray."
+  - Example: "Print a single integer — the maximum sum of the subarray."
 
 [ sample_input ]
   - A real example matching input_format exactly (plain text, no labels).
@@ -174,14 +174,14 @@ FIELD-BY-FIELD RULES
   - The exact output for sample_input. Must match expected_output of test_case[0].
 
 [ starter_code ]
-  CRITICAL â€” must follow this EXACT structure (HackerRank/HackerEarth style):
+  CRITICAL — must follow this EXACT structure (HackerRank/HackerEarth style):
 
   import sys
   input = sys.stdin.readline
 
   def solve():
       # Read inputs using: input().strip() or int(input()) or list(map(int, input().split()))
-      # â”€â”€ candidate writes logic here â”€â”€
+      # ── candidate writes logic here ──
       pass
 
   solve()
@@ -192,26 +192,26 @@ FIELD-BY-FIELD RULES
   - Read inputs inside solve() using the overridden input()
   - Include reading code that matches input_format exactly
   - Leave a clear comment where the candidate adds their logic
-  - Do NOT include the solution â€” only the skeleton with reading code
+  - Do NOT include the solution — only the skeleton with reading code
 
-[ test_cases ] â€” exactly 5 cases in this order:
+[ test_cases ] — exactly 5 cases in this order:
   Case 1: Matches sample_input / sample_output exactly
-  Case 2: Edge case â€” minimum N (e.g. N=1, single element, empty-adjacent scenario)
-  Case 3: Edge case â€” all values identical / all zeros / sorted input
-  Case 4: Medium-sized input â€” N between 10 and 100, mixed values
-  Case 5: Larger or boundary input â€” N near upper limit or stress test
+  Case 2: Edge case — minimum N (e.g. N=1, single element, empty-adjacent scenario)
+  Case 3: Edge case — all values identical / all zeros / sorted input
+  Case 4: Medium-sized input — N between 10 and 100, mixed values
+  Case 5: Larger or boundary input — N near upper limit or stress test
 
   Each test case:
   - "input"           : exact multi-line string the program reads from stdin (\\n between lines)
   - "expected_output" : exact string that print() produces (\\n at end of each printed line if multiple)
-  - input must EXACTLY match what starter_code reads â€” if starter_code reads 2 lines, input has 2 lines
+  - input must EXACTLY match what starter_code reads — if starter_code reads 2 lines, input has 2 lines
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 OUTPUT FORMAT
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 - Return ONLY a single valid JSON object
 - No markdown, no code fences, no explanation before or after
-- No "id" field â€” the system auto-assigns it
+- No "id" field — the system auto-assigns it
 - All string values use escaped newlines (\\n), never literal newlines inside JSON strings
 - Double-check: input of test_case[0] must equal sample_input
 `
@@ -230,7 +230,7 @@ You are a senior problem setter for a HackerRank-style coding platform.
 Convert the question above into a production-ready JSON problem definition.
 ${PYTHON_RULES}
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-JSON TEMPLATE â€” fill every field
+JSON TEMPLATE — fill every field
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${template}`
   }
@@ -247,7 +247,7 @@ Topic ideas for ${difficulty} level: ${
   }
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-JSON TEMPLATE â€” fill every field
+JSON TEMPLATE — fill every field
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${template}`
 }
@@ -266,7 +266,7 @@ column-by-column and row-by-row against expected_columns and expected_rows.
 Every field must be production-ready.
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-FIXED VALUES â€” DO NOT CHANGE
+FIXED VALUES — DO NOT CHANGE
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 language   : "sql"
 difficulty : "${difficulty}"
@@ -278,7 +278,7 @@ FIELD-BY-FIELD RULES
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 [ description ]
-  - 3â€“5 sentences. Explain the business scenario clearly.
+  - 3–5 sentences. Explain the business scenario clearly.
   - State exactly what data to retrieve, any filters, grouping, or ordering required.
   - Mention the table name(s) so candidates know the schema.
   - No bullet points. Paragraph form like HackerRank SQL problems.
@@ -294,18 +294,18 @@ FIELD-BY-FIELD RULES
   - Candidates MUST match column names exactly as listed here.
 
 [ sample_input ]
-  - Write "N/A (schema and seed data are provided above)" â€” input is the DB itself, not stdin.
+  - Write "N/A (schema and seed data are provided above)" — input is the DB itself, not stdin.
 
 [ sample_output ]
-  - Show a small subset (2â€“3 rows) of the expected result in a readable table format.
+  - Show a small subset (2–3 rows) of the expected result in a readable table format.
   - Example: "name | salary\\nAlice | 91000\\nFiona | 85000"
 
 [ starter_code ]
   - A simple SELECT hint. Example: "SELECT name, salary FROM employees ORDER BY salary DESC;"
-  - Do NOT give away the full solution â€” just enough to show the table and basic structure.
+  - Do NOT give away the full solution — just enough to show the table and basic structure.
 
 [ schema_sql ]
-  CRITICAL â€” production quality:
+  CRITICAL — production quality:
   - Use CREATE TABLE IF NOT EXISTS
   - Proper SQLite types: INTEGER, TEXT, REAL, NUMERIC
   - Add PRIMARY KEY, NOT NULL constraints where appropriate
@@ -314,23 +314,23 @@ FIELD-BY-FIELD RULES
   - The schema must support the problem's required query (JOINs, subqueries, aggregates, etc.)
 
 [ seed_sql ]
-  CRITICAL â€” richness matters:
-  - Minimum 12â€“15 rows total (across all tables)
+  CRITICAL — richness matters:
+  - Minimum 12–15 rows total (across all tables)
   - Data must be diverse: multiple groups/categories, varied numeric values (not round numbers), mixed dates
   - Include edge cases in data: ties (same salary), employees in the same department, NULLable-adjacent scenarios
   - Data must be specifically designed so the correct SQL query produces interesting, non-trivial results
   - If 2 tables: seed both with enough rows for meaningful JOINs
   - All INSERT statements must match the schema exactly (column count and types)
 
-[ test_cases ] â€” exactly 5 cases
+[ test_cases ] — exactly 5 cases
   All 5 test cases test the SAME SQL query but verify correctness:
   Case 1: Full expected result (all rows the query should return)
-  Case 2: A filtered subset â€” same query, verify a specific row is present
+  Case 2: A filtered subset — same query, verify a specific row is present
   Case 3: Verify COUNT or aggregate value is correct
-  Case 4: Verify ordering â€” first row must match the top result
+  Case 4: Verify ordering — first row must match the top result
   Case 5: Verify the last/bottom row or a boundary condition
 
-  WAIT â€” for this platform, all 5 test_cases must have:
+  WAIT — for this platform, all 5 test_cases must have:
   - "expected_columns": exact list of column name strings in query output order
     Example: ["name", "department", "salary"]
   - "expected_rows"  : exact list of rows, each row is an array of values in same column order
@@ -341,19 +341,19 @@ FIELD-BY-FIELD RULES
   - Row values must be the correct SQLite output types (INTEGER not "91000", TEXT as string)
   - Rows must be in the ORDER BY sequence the problem requires
   - All 5 cases use the SAME expected_columns (same query shape)
-  - Cases 2â€“5 can be subsets or single rows for spot-checking
+  - Cases 2–5 can be subsets or single rows for spot-checking
 
 [ SQL difficulty guidance ]
-  Easy   â†’ Single table SELECT with WHERE, simple ORDER BY, basic aggregates (COUNT, SUM, AVG)
-  Medium â†’ JOINs between 2 tables, GROUP BY with HAVING, subqueries, date filtering
-  Hard   â†’ Multi-level subqueries, window functions (RANK, ROW_NUMBER), self-joins, CTEs, complex aggregation
+  Easy   → Single table SELECT with WHERE, simple ORDER BY, basic aggregates (COUNT, SUM, AVG)
+  Medium → JOINs between 2 tables, GROUP BY with HAVING, subqueries, date filtering
+  Hard   → Multi-level subqueries, window functions (RANK, ROW_NUMBER), self-joins, CTEs, complex aggregation
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 OUTPUT FORMAT
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 - Return ONLY a single valid JSON object
 - No markdown, no code fences, no explanation before or after
-- No "id" field â€” the system auto-assigns it
+- No "id" field — the system auto-assigns it
 - All multi-line strings use \\n, never literal newlines inside JSON strings
 `
 
@@ -371,7 +371,7 @@ You are a senior SQL problem setter for a HackerRank-style coding platform.
 Convert the question above into a production-ready JSON problem definition.
 ${SQL_RULES}
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-JSON TEMPLATE â€” fill every field
+JSON TEMPLATE — fill every field
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${template}`
   }
@@ -389,13 +389,13 @@ ${
   }
 
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-JSON TEMPLATE â€” fill every field
+JSON TEMPLATE — fill every field
 â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 ${template}`
 }
 
 function formatIST(isoString) {
-  if (!isoString) return 'â€”'
+  if (!isoString) return '—'
   try {
     const date = new Date(isoString)
     return date.toLocaleString('en-IN', {
@@ -408,7 +408,7 @@ function formatIST(isoString) {
       hour12: true
     })
   } catch {
-    return 'â€”'
+    return '—'
   }
 }
 
@@ -631,7 +631,7 @@ function QuestionsPage() {
   return (
     <HRSidebarLayout
       className="questions-page"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       sidebarExtraAfterHref="/hr/questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
@@ -673,7 +673,7 @@ function QuestionsPage() {
           </div>
         </div>
 
-        {/* â”€â”€ AI Prompt Builder â”€â”€ */}
+        {/* ── AI Prompt Builder ── */}
         {showAdd && (
           <div className="add-section">
             <div className="add-header">
@@ -681,11 +681,11 @@ function QuestionsPage() {
               <button onClick={() => { setShowAdd(false); setGeneratedPrompt('') }} className="btn-cancel">Cancel</button>
             </div>
 
-            {/* Step 1 â€“ Prompt Builder */}
+            {/* Step 1 – Prompt Builder */}
             <div className="prompt-builder">
               <div className="pb-step-label">
                 <span className="pb-step-badge">Step 1</span>
-                Build an AI Prompt â€” paste it into ChatGPT, Claude, or Gemini
+                Build an AI Prompt — paste it into ChatGPT, Claude, or Gemini
               </div>
 
               {/* Difficulty Selector */}
@@ -700,7 +700,7 @@ function QuestionsPage() {
                     >
                       {d}
                       <span className="diff-meta">
-                        {DIFFICULTY_CONFIG[d].marks} marks Â· {DIFFICULTY_CONFIG[d].time_limit} min
+                        {DIFFICULTY_CONFIG[d].marks} marks · {DIFFICULTY_CONFIG[d].time_limit} min
                       </span>
                     </button>
                   ))}
@@ -716,7 +716,7 @@ function QuestionsPage() {
                     onChange={e => { setHasQuestion(e.target.checked); setGeneratedPrompt('') }}
                     className="pb-checkbox"
                   />
-                  <span>I already have a question â€” convert it to JSON</span>
+                  <span>I already have a question — convert it to JSON</span>
                 </label>
               </div>
 
@@ -737,14 +737,14 @@ function QuestionsPage() {
               {/* Buttons */}
               <div className="pb-actions">
                 <button className="btn-generate-prompt" onClick={handleGeneratePrompt}>
-                  âš¡ Generate AI Prompt
+                  ⚡ Generate AI Prompt
                 </button>
                 {generatedPrompt && (
                   <button
                     className={`btn-copy-prompt ${promptCopied ? 'copied' : ''}`}
                     onClick={handleCopyPrompt}
                   >
-                    {promptCopied ? 'âœ“ Copied!' : 'ðŸ“‹ Copy Prompt'}
+                    {promptCopied ? '✓ Copied!' : '📋 Copy Prompt'}
                   </button>
                 )}
               </div>
@@ -753,10 +753,10 @@ function QuestionsPage() {
               {generatedPrompt && (
                 <div className="pb-prompt-output">
                   {hasQuestion && questionText.trim() && (
-                    <div className="pb-question-badge">âœ“ Your pasted question is included at the top of this prompt</div>
+                    <div className="pb-question-badge">✓ Your pasted question is included at the top of this prompt</div>
                   )}
                   <div className="pb-prompt-header">
-                    <span>Generated Prompt â€” Copy and paste into any AI</span>
+                    <span>Generated Prompt — Copy and paste into any AI</span>
                     <div className="pb-prompt-tags">
                       <span className="ai-tag">ChatGPT</span>
                       <span className="ai-tag">Claude</span>
@@ -768,23 +768,23 @@ function QuestionsPage() {
               )}
             </div>
 
-            {/* Step 2 â€“ JSON Template reference */}
+            {/* Step 2 – JSON Template reference */}
             <div className="prompt-builder prompt-builder-template" style={{ marginTop: '16px' }}>
               <div className="pb-step-label">
                 <span className="pb-step-badge step2">Step 2</span>
                 <span className="pb-step-title">JSON Template</span>
-                JSON Template (for reference â€” AI fills this for you)
+                JSON Template (for reference — AI fills this for you)
                 <button
                   className={`btn-copy-json ${jsonCopied ? 'copied' : ''}`}
                   onClick={handleCopyJson}
                 >
-                  {jsonCopied ? 'âœ“ Copied!' : 'Copy Template'}
+                  {jsonCopied ? '✓ Copied!' : 'Copy Template'}
                 </button>
               </div>
               <pre className="template-code">{currentTemplate}</pre>
             </div>
 
-            {/* Step 3 â€“ Paste AI response */}
+            {/* Step 3 – Paste AI response */}
             <div className="prompt-builder" style={{ marginTop: '16px' }}>
               <div className="pb-step-label">
                 <span className="pb-step-badge step3">Step 3</span>
@@ -799,7 +799,7 @@ function QuestionsPage() {
                   className="json-input"
                 />
                 {error && <div className="error-msg">{error}</div>}
-                <button onClick={handleAdd} className="btn-submit">âœ“ Add Question</button>
+                <button onClick={handleAdd} className="btn-submit">✓ Add Question</button>
               </div>
             </div>
 

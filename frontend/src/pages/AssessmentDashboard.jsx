@@ -241,7 +241,7 @@ function AssessmentDashboard() {
     const loggedIn = localStorage.getItem('hr_logged_in')
     const name = localStorage.getItem('hr_name')
     if (!loggedIn) { navigate('/hr'); return }
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadResults()
   }, [navigate])
 
@@ -340,7 +340,7 @@ function AssessmentDashboard() {
   return (
     <HRSidebarLayout
       className="asd-page"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

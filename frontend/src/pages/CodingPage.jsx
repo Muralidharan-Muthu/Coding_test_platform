@@ -753,7 +753,7 @@ function CodingPage() {
       const sessionId = localStorage.getItem('session_id')
 
       // Guest bypass — inject mock problem data based on problemId
-      if (sessionId === 'guest-session') {
+      if (sessionId === 'guest-session' && !isHrPreviewMode) {
         const MOCK_PROBLEMS = {
           'py-1': {
             id: 'py-1',

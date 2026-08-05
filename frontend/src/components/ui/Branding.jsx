@@ -1,34 +1,33 @@
-// Decision Minds Branding Component
-// Reusable logo component for Decision Minds
+// Meptrasoft AI Technologies Branding Component
+// Reusable logo component for Meptrasoft AI Technologies
 
 import { useTheme } from '../../context/ThemeContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faBuilding } from '@fortawesome/free-solid-svg-icons'
 
-// Decision Minds Logo Only - No text, just the logo with white background
-export const DecisionMindsLogoOnly = ({ className = '', size = 'large' }) => {
-  const height = size === 'large' ? '80px' : '60px';
+// Large logo — used on landing / auth pages
+export const PlatformLogoOnly = ({ className = '', size = 'large' }) => {
+  const height = size === 'large' ? '80px' : '60px'
   return (
-    <div className={`dm-logo-only ${className}`} style={{ 
-      display: 'flex', 
-      alignItems: 'center', 
+    <div className={`dm-logo-only ${className}`} style={{
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#ffffff',
       borderRadius: '12px',
-      padding: '20px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-      width: 'fit-content'
+      padding: '12px 20px',
+      width: 'fit-content',
     }}>
-      <img 
-        src="/assets/decisionminds-logo-1.png" 
-        alt="Decision Minds" 
-        style={{ height: height, width: 'auto' }} 
+      <img
+        src="/assets/meptrasoft-logo.png"
+        alt="Meptrasoft AI Technologies"
+        style={{ height: height, width: 'auto' }}
       />
     </div>
   )
 }
 
-export const DecisionMindsLogo = ({ className = '', onClick }) => {
+// Standard header logo
+export const PlatformLogo = ({ className = '', onClick }) => {
   const { theme } = useTheme()
   return (
     <div
@@ -38,22 +37,23 @@ export const DecisionMindsLogo = ({ className = '', onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
+        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.92)' : 'transparent',
         borderRadius: theme === 'dark' ? '8px' : '0',
         padding: theme === 'dark' ? '4px 10px' : '0',
         transition: 'background-color 0.3s ease',
       }}
     >
       <img
-        src="/assets/decisionminds-logo-1.png"
-        alt="Decision Minds"
-        style={{ height: '30px', width: 'auto' }}
+        src="/assets/meptrasoft-logo.png"
+        alt="Meptrasoft AI Technologies"
+        style={{ height: '32px', width: 'auto' }}
       />
     </div>
   )
 }
 
-export const DecisionMindsLogoSmall = ({ className = '', onClick }) => {
+// Small header logo (used in exam pages)
+export const PlatformLogoSmall = ({ className = '', onClick }) => {
   const { theme } = useTheme()
   return (
     <div
@@ -63,20 +63,21 @@ export const DecisionMindsLogoSmall = ({ className = '', onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
+        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.92)' : 'transparent',
         borderRadius: theme === 'dark' ? '6px' : '0',
         padding: theme === 'dark' ? '3px 8px' : '0',
         transition: 'background-color 0.3s ease',
       }}
     >
       <img
-        src="/assets/decisionminds-logo-1.png"
-        alt="Decision Minds"
-        style={{ height: '24px', width: 'auto' }}
+        src="/assets/meptrasoft-logo.png"
+        alt="Meptrasoft AI Technologies"
+        style={{ height: '26px', width: 'auto' }}
       />
     </div>
   )
 }
+
 
 // Python Icon - Uses different image based on theme
 export const PythonIcon = ({ size = 16 }) => {
@@ -136,4 +137,4 @@ export const TimerIcon = ({ size = 16 }) => (
   </svg>
 )
 
-export default { DecisionMindsLogo, DecisionMindsLogoSmall, PythonIcon, DatabaseIcon, ClockIcon, ChecklistIcon, HouseIcon, BuildingIcon, TimerIcon }
+export default { PlatformLogo, PlatformLogoSmall, PythonIcon, DatabaseIcon, ClockIcon, ChecklistIcon, HouseIcon, BuildingIcon, TimerIcon }

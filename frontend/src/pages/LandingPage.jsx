@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { DecisionMindsLogoOnly } from '../components/ui/Branding'
+import { PlatformLogoOnly } from '../components/ui/Branding'
 import './LandingPage.css'
 
 function LandingPage() {
@@ -18,7 +18,7 @@ function LandingPage() {
 
   const handleHR = () => {
     localStorage.setItem('hr_logged_in', 'true')
-    localStorage.setItem('hr_name', 'HR User')
+    localStorage.setItem('hr_name', 'Admin User')
     navigate('/dashboard/assessment')
   }
 
@@ -40,7 +40,7 @@ function LandingPage() {
         {/* Header / Logo */}
         <header className="landing-header">
           <div className="landing-logo-wrap">
-            <DecisionMindsLogoOnly size="medium" />
+            <PlatformLogoOnly size="medium" />
           </div>
           <div className="landing-badge">Assessment Platform</div>
         </header>
@@ -143,7 +143,7 @@ function LandingPage() {
 
         {/* Footer */}
         <footer className="landing-footer">
-          <p>© 2025 Decision Minds India Pvt. Ltd. All rights reserved.</p>
+          <p>© 2025 Coding Platform India Pvt. Ltd. All rights reserved.</p>
         </footer>
       </div>
     </div>

@@ -48,7 +48,7 @@ function CandidateOTP() {
       navigate('/hr')
       return
     }
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadCandidates()
   }, [navigate])
 
@@ -321,7 +321,7 @@ function CandidateOTP() {
   return (
     <HRSidebarLayout
       className="otp-dashboard"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

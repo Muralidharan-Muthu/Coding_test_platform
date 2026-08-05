@@ -40,7 +40,7 @@ function SendMailPage() {
       navigate('/hr')
       return
     }
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadCandidates()
   }, [navigate])
 
@@ -153,7 +153,7 @@ function SendMailPage() {
   return (
     <HRSidebarLayout
       className="send-mail-page"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

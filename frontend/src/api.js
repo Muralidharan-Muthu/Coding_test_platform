@@ -19,6 +19,17 @@ export const login = async (name, email, otp, testLocation) => {
   return response.data
 }
 
+export const candidateLogin = async (email, password) => {
+  const response = await api.post('/auth/candidate-login', { email, password })
+  return response.data
+}
+
+export const adminLogin = async (email, password) => {
+  const response = await api.post('/auth/admin-login', { email, password })
+  return response.data
+}
+
+
 export const getProblem = async (problemId) => {
   const response = await api.get(`/problems/${problemId}`)
   return response.data

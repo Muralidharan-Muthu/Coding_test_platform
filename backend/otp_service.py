@@ -221,7 +221,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coding Assessment Invitation – Decision Minds</title>
+  <title>Coding Assessment Invitation – Coding Platform</title>
   <style>
     /* ── Responsive Email Styles ── */
     @media only screen and (max-width: 640px) {{
@@ -262,7 +262,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
             <table class="email-header-inner" width="100%" cellpadding="0" cellspacing="0" border="0" style="padding:16px 24px;">
               <tr>
                 <td style="vertical-align:middle;background:#ffffff;">
-                  <img class="email-logo-img" src="{logo}" alt="Decision Minds" width="190"
+                  <img class="email-logo-img" src="{logo}" alt="Coding Platform" width="190"
                     style="display:block;height:auto;max-height:58px;object-fit:contain;background:#ffffff;" />
                 </td>
                 <td style="text-align:right;vertical-align:middle;white-space:nowrap;padding-left:8px;">
@@ -286,7 +286,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
 
             <p style="margin:0 0 6px 0;color:#1a202c;font-size:17px;font-weight:700;">Dear {username},</p>
             <p style="margin:0 0 20px 0;color:#4a5568;font-size:15px;line-height:1.8;">
-              Greetings from <strong style="color:#0a1628;">Decision Minds India Pvt. Ltd.</strong><br>
+              Greetings from <strong style="color:#0a1628;">Coding Platform India Pvt. Ltd.</strong><br>
               We are pleased to inform you that you have been shortlisted for our recruitment process.
               As the next step, you are invited to complete an <strong>online coding assessment</strong>.
             </p>
@@ -395,7 +395,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
                   <table cellpadding="0" cellspacing="0" border="0">
                     <tr>
                       <td style="background:#ffffff;border-radius:6px;padding:6px 12px;vertical-align:middle;">
-                        <img class="email-footer-logo" src="{logo}" alt="Decision Minds" width="140" style="display:block;height:auto;max-height:40px;object-fit:contain;" />
+                        <img class="email-footer-logo" src="{logo}" alt="Coding Platform" width="140" style="display:block;height:auto;max-height:40px;object-fit:contain;" />
                       </td>
                       <td style="padding-left:12px;vertical-align:middle;">
                         <div style="color:#64748b;font-size:11px;">Talent Acquisition Team</div>
@@ -411,7 +411,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
                       <td>
                         <p style="margin:0 0 4px 0;color:#64748b;font-size:12px;">Talent Acquisition Team</p>
                         <p style="margin:0;color:#64748b;font-size:12px;">
-                          <a href="https://www.decisionminds.com" style="color:#EC6225;text-decoration:none;font-weight:600;">www.decisionminds.com</a>
+                          <a href="https://www.codingplatform.com" style="color:#EC6225;text-decoration:none;font-weight:600;">www.codingplatform.com</a>
                         </p>
                       </td>
                       <td style="text-align:right;">
@@ -429,7 +429,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
         <tr>
           <td class="email-disclaimer" style="padding:16px 36px;background:#f8fafc;border-top:3px solid #EC6225;">
             <p style="margin:0;color:#94a3b8;font-size:11px;text-align:center;line-height:1.6;">
-              This is an automated, confidential email sent by Decision Minds India Pvt. Ltd. Talent Acquisition System.<br>
+              This is an automated, confidential email sent by Coding Platform India Pvt. Ltd. Talent Acquisition System.<br>
               Please do not reply to this email. For queries contact your HR representative.
             </p>
           </td>
@@ -463,9 +463,6 @@ def send_email_otp(email: str, otp_code: str, username: str = "Candidate", test_
     if not smtp_username or not smtp_password:
         print(f"\n{'='*50}")
         print("⚠️  WARNING: SMTP credentials not configured!")
-        print(f"--- EMAIL TO: {email} ---")
-        print(f"OTP: {otp_code}")
-        print(f"Login Link: {app_link}")
         print(f"{'='*50}\n")
         return {
             "success": False,
@@ -474,9 +471,9 @@ def send_email_otp(email: str, otp_code: str, username: str = "Candidate", test_
 
     # Use "related" as outer type so CID inline images work
     msg = MIMEMultipart("related")
-    msg['From']    = f"Decision Minds Recruitment <{smtp_username}>"
+    msg['From']    = f"Coding Platform Recruitment <{smtp_username}>"
     msg['To']      = email
-    msg['Subject'] = "Your Coding Assessment Invitation \u2013 Decision Minds | Action Required"
+    msg['Subject'] = "Your Coding Assessment Invitation \u2013 Coding Platform | Action Required"
     msg['Date']    = datetime.now().strftime("%a, %d %b %Y %H:%M:%S +0000")
 
     # Text + HTML alternatives inside a sub-part
@@ -484,7 +481,7 @@ def send_email_otp(email: str, otp_code: str, username: str = "Candidate", test_
 
     text_content = f"""Hi {username},
 
-You have been invited to take the coding assessment for the recruitment process at Decision Minds India Pvt Ltd.
+You have been invited to take the coding assessment for the recruitment process at Coding Platform India Pvt Ltd.
 
 Assessment Type: {test_type_label}
 OTP Code: {otp_code}
@@ -496,8 +493,8 @@ Good luck with your test.
 
 Regards,
 Talent Acquisition Team
-Decision Minds India Pvt Ltd
-www.decisionminds.com
+Coding Platform India Pvt Ltd
+www.codingplatform.com
 """
 
     html_content = build_email_html(

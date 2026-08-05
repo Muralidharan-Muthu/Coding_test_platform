@@ -10,7 +10,7 @@ import CandidateOTP from './pages/CandidateOTP'
 import ChooseTestTypePage from './pages/ChooseTestTypePage'
 import CodingPage from './pages/CodingPage'
 import HRDashboard from './pages/HRDashboard'
-import LandingPage from './pages/LandingPage'
+import HRLogin from './pages/HRLogin'
 import MCQProblems from './pages/MCQProblems'
 import MCQQuestionsPage from './pages/MCQQuestionsPage'
 import ProblemList from './pages/ProblemList'
@@ -26,12 +26,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Landing — replaces both login pages */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* Legacy login routes → redirect to landing */}
+        {/* Candidate login — default entry point */}
+        <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/hr" element={<Navigate to="/dashboard/assessment" replace />} />
+
+        {/* Admin login */}
+        <Route path="/admin" element={<HRLogin />} />
+
+        {/* Legacy HR route → admin */}
+        <Route path="/hr" element={<Navigate to="/admin" replace />} />
 
         {/* Candidate flow */}
         <Route path="/dashboard" element={<CandidateDashboard />} />
@@ -44,7 +47,7 @@ function App() {
         <Route path="/coding/:problemId" element={<CodingPage />} />
         <Route path="/submission-complete" element={<SubmissionComplete />} />
 
-        {/* HR flow */}
+        {/* Admin / HR flow */}
         <Route path="/hr/dashboard" element={<HRDashboard />} />
         <Route path="/hr/otp" element={<CandidateOTP />} />
         <Route path="/hr/test-type" element={<ChooseTestTypePage />} />
@@ -64,3 +67,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </ThemeProvider>
   </React.StrictMode>
 )
+

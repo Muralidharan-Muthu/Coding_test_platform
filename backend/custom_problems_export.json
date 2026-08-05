@@ -1,2005 +1,5 @@
 [
   {
-    "id": "P30_1774263663529",
-    "title": "Search in Rotated Sorted Array",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given a rotated sorted array of distinct integers and a target value, your task is to search for the target in the array. The array was originally sorted in ascending order but was rotated at some unknown pivot. You must determine the index of the target if it exists in the array, otherwise return -1. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i], target â‰¤ 10^9.",
-    "description": "Given a rotated sorted array of distinct integers and a target value, your task is to search for the target in the array. The array was originally sorted in ascending order but was rotated at some unknown pivot. You must determine the index of the target if it exists in the array, otherwise return -1. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i], target â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.\nThe third line contains the target integer.",
-    "output_format": "Print a single integer â€” the index of the target element if found, otherwise -1.",
-    "sample_input": "7\n4 5 6 7 0 1 2\n0",
-    "sample_output": "4",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "7\n4 5 6 7 0 1 2\n0",
-        "expected_output": "4"
-      },
-      {
-        "input": "1\n1\n0",
-        "expected_output": "-1"
-      },
-      {
-        "input": "5\n1 2 3 4 5\n3",
-        "expected_output": "2"
-      },
-      {
-        "input": "6\n6 7 1 2 3 4\n6",
-        "expected_output": "0"
-      },
-      {
-        "input": "8\n9 10 1 2 3 4 5 6\n7",
-        "expected_output": "-1"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-18T18:21:08.570390"
-  },
-  {
-    "id": "P34_1774257809910",
-    "title": "Sum of Even Numbers from 1 to N",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to calculate the sum of all even numbers from 1 to N (inclusive). An even number is any integer divisible by 2. The input represents a single integer N, and you must compute the total sum of all even numbers within this range. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "description": "Given an integer N, your task is to calculate the sum of all even numbers from 1 to N (inclusive). An even number is any integer divisible by 2. The input represents a single integer N, and you must compute the total sum of all even numbers within this range. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print a single integer â€” the sum of all even numbers from 1 to N.",
-    "sample_input": "10",
-    "sample_output": "30",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "10",
-        "expected_output": "30"
-      },
-      {
-        "input": "1",
-        "expected_output": "0"
-      },
-      {
-        "input": "2",
-        "expected_output": "2"
-      },
-      {
-        "input": "50",
-        "expected_output": "650"
-      },
-      {
-        "input": "100000",
-        "expected_output": "2500050000"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T14:53:29.918058"
-  },
-  {
-    "id": "P35_1774258026864",
-    "title": "Find All Divisors of a Number",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to find and print all the divisors of N. A divisor of a number is any integer that divides it exactly without leaving a remainder. The input represents a single integer N, and you must output all its divisors in ascending order. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "description": "Given an integer N, your task is to find and print all the divisors of N. A divisor of a number is any integer that divides it exactly without leaving a remainder. The input represents a single integer N, and you must output all its divisors in ascending order. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print all divisors of N in ascending order, separated by spaces.",
-    "sample_input": "6",
-    "sample_output": "1 2 3 6",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "6",
-        "expected_output": "1 2 3 6"
-      },
-      {
-        "input": "1",
-        "expected_output": "1"
-      },
-      {
-        "input": "10",
-        "expected_output": "1 2 5 10"
-      },
-      {
-        "input": "36",
-        "expected_output": "1 2 3 4 6 9 12 18 36"
-      },
-      {
-        "input": "100000",
-        "expected_output": "1 2 4 5 8 10 16 20 25 40 50 80 100 125 200 250 400 500 625 1000 1250 2000 2500 5000 10000 20000 25000 50000 100000"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T14:57:06.867814"
-  },
-  {
-    "id": "P36_1774258052870",
-    "title": "Find HCF and LCM of Two Numbers",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given two integers A and B, your task is to calculate their Highest Common Factor (HCF) and Least Common Multiple (LCM). The HCF is the greatest number that divides both numbers exactly, while the LCM is the smallest number that is a multiple of both. The input consists of two integers, and you must output their HCF and LCM. Constraints: 1 â‰¤ A, B â‰¤ 10^5.",
-    "description": "Given two integers A and B, your task is to calculate their Highest Common Factor (HCF) and Least Common Multiple (LCM). The HCF is the greatest number that divides both numbers exactly, while the LCM is the smallest number that is a multiple of both. The input consists of two integers, and you must output their HCF and LCM. Constraints: 1 â‰¤ A, B â‰¤ 10^5.",
-    "input_format": "The first line contains two space-separated integers A and B.",
-    "output_format": "Print two integers â€” the HCF and LCM of the given numbers, separated by a space.",
-    "sample_input": "12 18",
-    "sample_output": "6 36",
-    "starter_code": "a, b = map(int, input().split())",
-    "test_cases": [
-      {
-        "input": "12 18",
-        "expected_output": "6 36"
-      },
-      {
-        "input": "1 1",
-        "expected_output": "1 1"
-      },
-      {
-        "input": "5 10",
-        "expected_output": "5 10"
-      },
-      {
-        "input": "21 14",
-        "expected_output": "7 42"
-      },
-      {
-        "input": "100000 50000",
-        "expected_output": "50000 100000"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T14:57:32.875245"
-  },
-  {
-    "id": "P37_1774259409294",
-    "title": "Find Factorial of a Number",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to compute its factorial. The factorial of a number is the product of all positive integers less than or equal to N. For example, factorial of 5 is 5 Ã— 4 Ã— 3 Ã— 2 Ã— 1 = 120. The input consists of a single integer N, and you must output its factorial. Constraints: 0 â‰¤ N â‰¤ 20.",
-    "description": "Given an integer N, your task is to compute its factorial. The factorial of a number is the product of all positive integers less than or equal to N. For example, factorial of 5 is 5 Ã— 4 Ã— 3 Ã— 2 Ã— 1 = 120. The input consists of a single integer N, and you must output its factorial. Constraints: 0 â‰¤ N â‰¤ 20.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print a single integer â€” the factorial of N.",
-    "sample_input": "5",
-    "sample_output": "120",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "120"
-      },
-      {
-        "input": "0",
-        "expected_output": "1"
-      },
-      {
-        "input": "1",
-        "expected_output": "1"
-      },
-      {
-        "input": "7",
-        "expected_output": "5040"
-      },
-      {
-        "input": "10",
-        "expected_output": "3628800"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:20:09.307118"
-  },
-  {
-    "id": "P38_1774259450205",
-    "title": "Check Palindrome Number",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to check whether it is a palindrome. A number is said to be a palindrome if it reads the same forward and backward. The input consists of a single integer N, and you must determine if it is a palindrome or not. Constraints: 0 â‰¤ N â‰¤ 10^9.",
-    "description": "Given an integer N, your task is to check whether it is a palindrome. A number is said to be a palindrome if it reads the same forward and backward. The input consists of a single integer N, and you must determine if it is a palindrome or not. Constraints: 0 â‰¤ N â‰¤ 10^9.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print \"Yes\" if the number is a palindrome, otherwise print \"No\".",
-    "sample_input": "121",
-    "sample_output": "Yes",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "121",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "0",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "123",
-        "expected_output": "No"
-      },
-      {
-        "input": "1221",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "123456",
-        "expected_output": "No"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:20:50.208786"
-  },
-  {
-    "id": "P39_1774259575074",
-    "title": "Find Sum of First N Prime Numbers",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to calculate the sum of the first N prime numbers. A prime number is a number greater than 1 that has no divisors other than 1 and itself. The input consists of a single integer N, and you must compute the total sum of the first N prime numbers. Constraints: 1 â‰¤ N â‰¤ 10^4.",
-    "description": "Given an integer N, your task is to calculate the sum of the first N prime numbers. A prime number is a number greater than 1 that has no divisors other than 1 and itself. The input consists of a single integer N, and you must compute the total sum of the first N prime numbers. Constraints: 1 â‰¤ N â‰¤ 10^4.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print a single integer â€” the sum of the first N prime numbers.",
-    "sample_input": "5",
-    "sample_output": "28",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "28"
-      },
-      {
-        "input": "1",
-        "expected_output": "2"
-      },
-      {
-        "input": "3",
-        "expected_output": "10"
-      },
-      {
-        "input": "10",
-        "expected_output": "129"
-      },
-      {
-        "input": "15",
-        "expected_output": "328"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:22:55.079444"
-  },
-  {
-    "id": "P40_1774259611131",
-    "title": "Print Alternate Prime Numbers",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to print every second prime number among the first N prime numbers. A prime number is a number greater than 1 that has no divisors other than 1 and itself. Starting from the first prime number, print every alternate prime (i.e., 1st, 3rd, 5th, etc.). Constraints: 1 â‰¤ N â‰¤ 10^4.",
-    "description": "Given an integer N, your task is to print every second prime number among the first N prime numbers. A prime number is a number greater than 1 that has no divisors other than 1 and itself. Starting from the first prime number, print every alternate prime (i.e., 1st, 3rd, 5th, etc.). Constraints: 1 â‰¤ N â‰¤ 10^4.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print the alternate prime numbers (1st, 3rd, 5th, ...) among the first N primes, separated by spaces.",
-    "sample_input": "6",
-    "sample_output": "2 5 11",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "6",
-        "expected_output": "2 5 11"
-      },
-      {
-        "input": "1",
-        "expected_output": "2"
-      },
-      {
-        "input": "2",
-        "expected_output": "2"
-      },
-      {
-        "input": "5",
-        "expected_output": "2 5 11"
-      },
-      {
-        "input": "10",
-        "expected_output": "2 5 11 17 23"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:23:31.135003"
-  },
-  {
-    "id": "P41_1774259643193",
-    "title": "Generate Fibonacci Series for N Numbers",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to generate the first N numbers in the Fibonacci sequence. The Fibonacci sequence starts with 0 and 1, and each subsequent number is the sum of the previous two numbers. The input consists of a single integer N, and you must print the sequence up to N terms. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "description": "Given an integer N, your task is to generate the first N numbers in the Fibonacci sequence. The Fibonacci sequence starts with 0 and 1, and each subsequent number is the sum of the previous two numbers. The input consists of a single integer N, and you must print the sequence up to N terms. Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print the first N Fibonacci numbers separated by spaces.",
-    "sample_input": "5",
-    "sample_output": "0 1 1 2 3",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "0 1 1 2 3"
-      },
-      {
-        "input": "1",
-        "expected_output": "0"
-      },
-      {
-        "input": "2",
-        "expected_output": "0 1"
-      },
-      {
-        "input": "7",
-        "expected_output": "0 1 1 2 3 5 8"
-      },
-      {
-        "input": "10",
-        "expected_output": "0 1 1 2 3 5 8 13 21 34"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:24:03.197655"
-  },
-  {
-    "id": "P42_1774259680757",
-    "title": "Find Prime Numbers within a Range",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given two integers L and R, your task is to print all prime numbers between L and R (inclusive). A prime number is a number greater than 1 that has no divisors other than 1 and itself. The input consists of two integers representing the range, and you must output all prime numbers within that range. Constraints: 1 â‰¤ L â‰¤ R â‰¤ 10^5.",
-    "description": "Given two integers L and R, your task is to print all prime numbers between L and R (inclusive). A prime number is a number greater than 1 that has no divisors other than 1 and itself. The input consists of two integers representing the range, and you must output all prime numbers within that range. Constraints: 1 â‰¤ L â‰¤ R â‰¤ 10^5.",
-    "input_format": "The first line contains two space-separated integers L and R.",
-    "output_format": "Print all prime numbers between L and R in ascending order, separated by spaces.",
-    "sample_input": "10 20",
-    "sample_output": "11 13 17 19",
-    "starter_code": "l, r = map(int, input().split())",
-    "test_cases": [
-      {
-        "input": "10 20",
-        "expected_output": "11 13 17 19"
-      },
-      {
-        "input": "1 10",
-        "expected_output": "2 3 5 7"
-      },
-      {
-        "input": "5 5",
-        "expected_output": "5"
-      },
-      {
-        "input": "14 16",
-        "expected_output": ""
-      },
-      {
-        "input": "20 30",
-        "expected_output": "23 29"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:24:40.760032"
-  },
-  {
-    "id": "P43_1774259724231",
-    "title": "Inverted Star Triangle",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to print an inverted right-angled triangle pattern using stars (*). The first row should contain N stars, and each subsequent row should contain one less star than the previous row until only one star remains. The input consists of a single integer N. Constraints: 1 â‰¤ N â‰¤ 100.",
-    "description": "Given an integer N, your task is to print an inverted right-angled triangle pattern using stars (*). The first row should contain N stars, and each subsequent row should contain one less star than the previous row until only one star remains. The input consists of a single integer N. Constraints: 1 â‰¤ N â‰¤ 100.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print N lines representing the inverted triangle pattern. Each line contains stars separated by a single space.",
-    "sample_input": "5",
-    "sample_output": "* * * * *\n* * * *\n* * *\n* *\n*",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "* * * * *\n* * * *\n* * *\n* *\n*"
-      },
-      {
-        "input": "1",
-        "expected_output": "*"
-      },
-      {
-        "input": "3",
-        "expected_output": "* * *\n* *\n*"
-      },
-      {
-        "input": "4",
-        "expected_output": "* * * *\n* * *\n* *\n*"
-      },
-      {
-        "input": "2",
-        "expected_output": "* *\n*"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:25:24.235590"
-  },
-  {
-    "id": "P44_1774260484637",
-    "title": "Number Pyramid",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to print a pyramid pattern using numbers. Each row i (starting from 1) should contain numbers from 1 up to i. The pyramid should have N rows, with each row printed on a new line. Constraints: 1 â‰¤ N â‰¤ 100.",
-    "description": "Given an integer N, your task is to print a pyramid pattern using numbers. Each row i (starting from 1) should contain numbers from 1 up to i. The pyramid should have N rows, with each row printed on a new line. Constraints: 1 â‰¤ N â‰¤ 100.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print N lines representing the number pyramid, where each row contains numbers from 1 to the row number separated by spaces.",
-    "sample_input": "5",
-    "sample_output": "1\n1 2\n1 2 3\n1 2 3 4\n1 2 3 4 5",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "1\n1 2\n1 2 3\n1 2 3 4\n1 2 3 4 5"
-      },
-      {
-        "input": "1",
-        "expected_output": "1"
-      },
-      {
-        "input": "3",
-        "expected_output": "1\n1 2\n1 2 3"
-      },
-      {
-        "input": "4",
-        "expected_output": "1\n1 2\n1 2 3\n1 2 3 4"
-      },
-      {
-        "input": "2",
-        "expected_output": "1\n1 2"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:38:04.644738"
-  },
-  {
-    "id": "P12_1774260644098",
-    "title": "FizzBuzz",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N, your task is to print numbers from 1 to N following the FizzBuzz rules. For multiples of 3, print \"Fizz\" instead of the number. For multiples of 5, print \"Buzz\" instead of the number. For numbers which are multiples of both 3 and 5, print \"FizzBuzz\". Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "description": "Given an integer N, your task is to print numbers from 1 to N following the FizzBuzz rules. For multiples of 3, print \"Fizz\" instead of the number. For multiples of 5, print \"Buzz\" instead of the number. For numbers which are multiples of both 3 and 5, print \"FizzBuzz\". Constraints: 1 â‰¤ N â‰¤ 10^5.",
-    "input_format": "The first line contains a single integer N.",
-    "output_format": "Print N lines. For each number from 1 to N, print the corresponding value based on the FizzBuzz rules.",
-    "sample_input": "5",
-    "sample_output": "1\n2\nFizz\n4\nBuzz",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5",
-        "expected_output": "1\n2\nFizz\n4\nBuzz"
-      },
-      {
-        "input": "1",
-        "expected_output": "1"
-      },
-      {
-        "input": "3",
-        "expected_output": "1\n2\nFizz"
-      },
-      {
-        "input": "15",
-        "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz"
-      },
-      {
-        "input": "10",
-        "expected_output": "1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:40:44.106002"
-  },
-  {
-    "id": "P13_1774260690895",
-    "title": "Count Uppercase and Lowercase using ASCII",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a string S, your task is to count the number of uppercase and lowercase letters using ASCII values. Uppercase letters range from 'A' to 'Z' and lowercase letters range from 'a' to 'z'. The input consists of a single string, and you must output the count of uppercase and lowercase characters separately. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to count the number of uppercase and lowercase letters using ASCII values. Uppercase letters range from 'A' to 'Z' and lowercase letters range from 'a' to 'z'. The input consists of a single string, and you must output the count of uppercase and lowercase characters separately. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print two integers â€” the count of uppercase letters followed by the count of lowercase letters, separated by a space.",
-    "sample_input": "HelloWorld",
-    "sample_output": "2 8",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "HelloWorld",
-        "expected_output": "2 8"
-      },
-      {
-        "input": "ABC",
-        "expected_output": "3 0"
-      },
-      {
-        "input": "abc",
-        "expected_output": "0 3"
-      },
-      {
-        "input": "AbC123xYz",
-        "expected_output": "3 3"
-      },
-      {
-        "input": "XYZabcDEF",
-        "expected_output": "6 3"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:41:30.904508"
-  },
-  {
-    "id": "P14_1774260726706",
-    "title": "Reverse Words in a Sentence",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a sentence S, your task is to reverse the order of words in the sentence. A word is defined as a sequence of characters separated by spaces. The input consists of a single sentence, and you must output the sentence with the words in reverse order while maintaining proper spacing. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a sentence S, your task is to reverse the order of words in the sentence. A word is defined as a sequence of characters separated by spaces. The input consists of a single sentence, and you must output the sentence with the words in reverse order while maintaining proper spacing. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print the sentence with the words reversed.",
-    "sample_input": "hello world from python",
-    "sample_output": "python from world hello",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello world from python",
-        "expected_output": "python from world hello"
-      },
-      {
-        "input": "a b c",
-        "expected_output": "c b a"
-      },
-      {
-        "input": "single",
-        "expected_output": "single"
-      },
-      {
-        "input": "reverse these words",
-        "expected_output": "words these reverse"
-      },
-      {
-        "input": "one two three four",
-        "expected_output": "four three two one"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:42:06.711125"
-  },
-  {
-    "id": "P15_1774260818911",
-    "title": "Count Words in a Sentence",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a sentence S, your task is to count the total number of words in the sentence. A word is defined as a sequence of characters separated by spaces. The input consists of a single sentence, and you must determine the number of words present. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a sentence S, your task is to count the total number of words in the sentence. A word is defined as a sequence of characters separated by spaces. The input consists of a single sentence, and you must determine the number of words present. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print a single integer â€” the total number of words in the sentence.",
-    "sample_input": "hello world from python",
-    "sample_output": "4",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello world from python",
-        "expected_output": "4"
-      },
-      {
-        "input": "one",
-        "expected_output": "1"
-      },
-      {
-        "input": "a b c d e",
-        "expected_output": "5"
-      },
-      {
-        "input": "count the number of words",
-        "expected_output": "5"
-      },
-      {
-        "input": "this is a simple test case",
-        "expected_output": "6"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:43:39.894560"
-  },
-  {
-    "id": "P16_1774260845617",
-    "title": "Find Largest and Smallest Element in a List",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N followed by a list of N integers, your task is to identify the largest and smallest elements in the list. The input consists of the number of elements and the list values, and you must determine the maximum and minimum values present. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to identify the largest and smallest elements in the list. The input consists of the number of elements and the list values, and you must determine the maximum and minimum values present. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print two integers â€” the largest and smallest elements in the list, separated by a space.",
-    "sample_input": "5\n3 1 4 2 5",
-    "sample_output": "5 1",
-    "starter_code": "n = int(input().strip())\narr = list(map(int, input().split()))",
-    "test_cases": [
-      {
-        "input": "5\n3 1 4 2 5",
-        "expected_output": "5 1"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10 10"
-      },
-      {
-        "input": "4\n-1 -5 -3 -2",
-        "expected_output": "-1 -5"
-      },
-      {
-        "input": "6\n7 7 7 7 7 7",
-        "expected_output": "7 7"
-      },
-      {
-        "input": "5\n100 200 300 400 500",
-        "expected_output": "500 100"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:44:05.625016"
-  },
-  {
-    "id": "P17_1774260870547",
-    "title": "Remove Vowels from a String",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a string S, your task is to remove all vowels from the string. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. The input consists of a single string, and you must output the string after removing all vowels while preserving the order of the remaining characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to remove all vowels from the string. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. The input consists of a single string, and you must output the string after removing all vowels while preserving the order of the remaining characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print the string after removing all vowels.",
-    "sample_input": "Hello World",
-    "sample_output": "Hll Wrld",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "Hello World",
-        "expected_output": "Hll Wrld"
-      },
-      {
-        "input": "AEIOU",
-        "expected_output": ""
-      },
-      {
-        "input": "python",
-        "expected_output": "pythn"
-      },
-      {
-        "input": "aEiOu",
-        "expected_output": ""
-      },
-      {
-        "input": "Data Science",
-        "expected_output": "Dt Scnc"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:44:30.554356"
-  },
-  {
-    "id": "P18_1774260908225",
-    "title": "Find Length of String",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a string S, your task is to calculate its length without using any built-in functions such as len(). The length of a string is defined as the number of characters it contains. The input consists of a single string, and you must determine the count of characters manually. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to calculate its length without using any built-in functions such as len(). The length of a string is defined as the number of characters it contains. The input consists of a single string, and you must determine the count of characters manually. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print a single integer â€” the length of the string.",
-    "sample_input": "hello",
-    "sample_output": "5",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello",
-        "expected_output": "5"
-      },
-      {
-        "input": "a",
-        "expected_output": "1"
-      },
-      {
-        "input": "aaaaa",
-        "expected_output": "5"
-      },
-      {
-        "input": "programming",
-        "expected_output": "11"
-      },
-      {
-        "input": "abcdefghijklmnopqrstuvwxyz",
-        "expected_output": "26"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:45:08.231936"
-  },
-  {
-    "id": "P19_1774260935535",
-    "title": "Remove Duplicate Elements from a List",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given an integer N followed by a list of N integers, your task is to remove duplicate elements and print only the unique values while preserving their original order. The input consists of the number of elements and the list values, and you must output the list after removing duplicates. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to remove duplicate elements and print only the unique values while preserving their original order. The input consists of the number of elements and the list values, and you must output the list after removing duplicates. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print the list of unique elements in their original order, separated by spaces.",
-    "sample_input": "7\n1 2 2 3 4 4 5",
-    "sample_output": "1 2 3 4 5",
-    "starter_code": "n = int(input().strip())\narr = list(map(int, input().split()))",
-    "test_cases": [
-      {
-        "input": "7\n1 2 2 3 4 4 5",
-        "expected_output": "1 2 3 4 5"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10"
-      },
-      {
-        "input": "5\n1 1 1 1 1",
-        "expected_output": "1"
-      },
-      {
-        "input": "6\n1 2 3 4 5 6",
-        "expected_output": "1 2 3 4 5 6"
-      },
-      {
-        "input": "8\n5 3 5 2 3 1 2 4",
-        "expected_output": "5 3 2 1 4"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:45:35.542626"
-  },
-  {
-    "id": "P20_1774261008772",
-    "title": "Count Vowels",
-    "language": "python",
-    "difficulty": "Easy",
-    "marks": 10,
-    "time_limit": 10,
-    "statement": "Given a string S, your task is to count the number of vowels present in the string. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. The input consists of a single string, and you must determine how many vowels it contains. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to count the number of vowels present in the string. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. The input consists of a single string, and you must determine how many vowels it contains. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print a single integer â€” the number of vowels in the string.",
-    "sample_input": "Hello World",
-    "sample_output": "3",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "Hello World",
-        "expected_output": "3"
-      },
-      {
-        "input": "AEIOU",
-        "expected_output": "5"
-      },
-      {
-        "input": "bcdfg",
-        "expected_output": "0"
-      },
-      {
-        "input": "aEiOu",
-        "expected_output": "5"
-      },
-      {
-        "input": "Programming",
-        "expected_output": "3"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T15:46:48.778793"
-  },
-  {
-    "id": "P21_1774262718131",
-    "title": "Longest Substring Without Repeating Characters",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given a string S, your task is to find the length of the longest substring without repeating characters. A substring is a contiguous sequence of characters within the string. The input consists of a single string, and you must determine the maximum length of such a substring with all unique characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to find the length of the longest substring without repeating characters. A substring is a contiguous sequence of characters within the string. The input consists of a single string, and you must determine the maximum length of such a substring with all unique characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print a single integer â€” the length of the longest substring without repeating characters.",
-    "sample_input": "abcabcbb",
-    "sample_output": "3",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "abcabcbb",
-        "expected_output": "3"
-      },
-      {
-        "input": "a",
-        "expected_output": "1"
-      },
-      {
-        "input": "aaaaaa",
-        "expected_output": "1"
-      },
-      {
-        "input": "pwwkewxyzab",
-        "expected_output": "8"
-      },
-      {
-        "input": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
-        "expected_output": "26"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:15:18.140758"
-  },
-  {
-    "id": "P22_1774262835195",
-    "title": "Merge K Sorted Lists",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given K sorted lists, your task is to merge them into a single sorted list. Each list contains integers in non-decreasing order. The input consists of an integer K followed by K lines, where each line represents a sorted list of integers. You must combine all lists and output a single sorted list. Constraints: 1 â‰¤ K â‰¤ 100, total number of elements â‰¤ 10^5.",
-    "description": "Given K sorted lists, your task is to merge them into a single sorted list. Each list contains integers in non-decreasing order. The input consists of an integer K followed by K lines, where each line represents a sorted list of integers. You must combine all lists and output a single sorted list. Constraints: 1 â‰¤ K â‰¤ 100, total number of elements â‰¤ 10^5.",
-    "input_format": "The first line contains an integer K.\nThe next K lines each contain space-separated integers representing a sorted list.",
-    "output_format": "Print the merged sorted list as space-separated integers.",
-    "sample_input": "3\n1 4 5\n1 3 4\n2 6",
-    "sample_output": "1 1 2 3 4 4 5 6",
-    "starter_code": "k = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "3\n1 4 5\n1 3 4\n2 6",
-        "expected_output": "1 1 2 3 4 4 5 6"
-      },
-      {
-        "input": "1\n5 10 15",
-        "expected_output": "5 10 15"
-      },
-      {
-        "input": "2\n1 1 1\n1 1 1",
-        "expected_output": "1 1 1 1 1 1"
-      },
-      {
-        "input": "3\n2 4 6\n1 3 5\n7 8 9",
-        "expected_output": "1 2 3 4 5 6 7 8 9"
-      },
-      {
-        "input": "4\n10 20\n5 15 25\n1 2 3\n30",
-        "expected_output": "1 2 3 5 10 15 20 25 30"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:17:15.200626"
-  },
-  {
-    "id": "P23_1774262936510",
-    "title": "Median of Two Sorted Arrays",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given two sorted arrays of integers, your task is to find the median of the combined array. The median is the middle value when the total number of elements is odd, and the average of the two middle values when the total number of elements is even. The input consists of the sizes of the arrays followed by their elements. Constraints: 1 â‰¤ N, M â‰¤ 10^5.",
-    "description": "Given two sorted arrays of integers, your task is to find the median of the combined array. The median is the middle value when the total number of elements is odd, and the average of the two middle values when the total number of elements is even. The input consists of the sizes of the arrays followed by their elements. Constraints: 1 â‰¤ N, M â‰¤ 10^5.",
-    "input_format": "The first line contains two integers N and M.\nThe second line contains N space-separated integers.\nThe third line contains M space-separated integers.",
-    "output_format": "Print a single value â€” the median of the merged sorted arrays. If the result is a floating-point number, print it as is.",
-    "sample_input": "2 2\n1 3\n2 4",
-    "sample_output": "2.5",
-    "starter_code": "n, m = map(int, input().split())",
-    "test_cases": [
-      {
-        "input": "2 2\n1 3\n2 4",
-        "expected_output": "2.5"
-      },
-      {
-        "input": "1 1\n1\n2",
-        "expected_output": "1.5"
-      },
-      {
-        "input": "2 1\n1 2\n3",
-        "expected_output": "2"
-      },
-      {
-        "input": "3 3\n1 2 3\n4 5 6",
-        "expected_output": "3.5"
-      },
-      {
-        "input": "4 5\n1 3 5 7\n2 4 6 8 9",
-        "expected_output": "5"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:18:56.517002"
-  },
-  {
-    "id": "P24_1774263069634",
-    "title": "Minimum Window Substring",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given two strings S and T, your task is to find the smallest substring of S that contains all the characters of T, including their frequencies. If there is no such substring, return an empty string. The input consists of two strings, and you must determine the minimum window in S that satisfies the condition. Constraints: 1 â‰¤ length of S, T â‰¤ 10^5.",
-    "description": "Given two strings S and T, your task is to find the smallest substring of S that contains all the characters of T, including their frequencies. If there is no such substring, return an empty string. The input consists of two strings, and you must determine the minimum window in S that satisfies the condition. Constraints: 1 â‰¤ length of S, T â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.\nThe second line contains a string T.",
-    "output_format": "Print the smallest substring of S that contains all characters of T. If no such substring exists, print an empty string.",
-    "sample_input": "ADOBECODEBANC\nABC",
-    "sample_output": "BANC",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "ADOBECODEBANC\nABC",
-        "expected_output": "BANC"
-      },
-      {
-        "input": "a\na",
-        "expected_output": "a"
-      },
-      {
-        "input": "a\nb",
-        "expected_output": ""
-      },
-      {
-        "input": "aaabdabcefaecbef\nabc",
-        "expected_output": "abc"
-      },
-      {
-        "input": "thisisateststring\ntist",
-        "expected_output": "tstri"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:21:09.640901"
-  },
-  {
-    "id": "P25_1774263168008",
-    "title": "Minimum Swaps Using Selection Sort Logic",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given an array of integers, your task is to determine the minimum number of swaps required to sort the array in ascending order using the logic of selection sort. In selection sort, the smallest element is repeatedly selected from the unsorted portion and swapped with the first unsorted element. You must count how many swaps are performed during this process. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an array of integers, your task is to determine the minimum number of swaps required to sort the array in ascending order using the logic of selection sort. In selection sort, the smallest element is repeatedly selected from the unsorted portion and swapped with the first unsorted element. You must count how many swaps are performed during this process. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print a single integer â€” the number of swaps required to sort the array using selection sort logic.",
-    "sample_input": "5\n64 25 12 22 11",
-    "sample_output": "3",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n64 25 12 22 11",
-        "expected_output": "3"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "0"
-      },
-      {
-        "input": "4\n1 1 1 1",
-        "expected_output": "0"
-      },
-      {
-        "input": "5\n5 4 3 2 1",
-        "expected_output": "2"
-      },
-      {
-        "input": "6\n10 7 8 9 1 5",
-        "expected_output": "3"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:22:48.014802"
-  },
-  {
-    "id": "P26_1774263209855",
-    "title": "Word Search II",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given a 2D board of characters and a list of words, your task is to find all words that can be formed in the board. A word can be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. Each cell may not be used more than once in a word. The input consists of the board dimensions, the board itself, and a list of words. Constraints: 1 â‰¤ rows, cols â‰¤ 12, 1 â‰¤ number of words â‰¤ 10^4.",
-    "description": "Given a 2D board of characters and a list of words, your task is to find all words that can be formed in the board. A word can be constructed from letters of sequentially adjacent cells, where adjacent cells are horizontally or vertically neighboring. Each cell may not be used more than once in a word. The input consists of the board dimensions, the board itself, and a list of words. Constraints: 1 â‰¤ rows, cols â‰¤ 12, 1 â‰¤ number of words â‰¤ 10^4.",
-    "input_format": "The first line contains two integers R and C representing rows and columns.\nThe next R lines each contain C characters separated by spaces.\nThe next line contains an integer N representing number of words.\nThe next N lines each contain a word.",
-    "output_format": "Print all words found in the board, separated by spaces. The order does not matter.",
-    "sample_input": "4 4\no a a n\ne t a e\ni h k r\ni f l v\n4\noath\nea\neat\nrain",
-    "sample_output": "oath eat",
-    "starter_code": "r, c = map(int, input().split())",
-    "test_cases": [
-      {
-        "input": "4 4\no a a n\ne t a e\ni h k r\ni f l v\n4\noath\nea\neat\nrain",
-        "expected_output": "oath eat"
-      },
-      {
-        "input": "1 1\na\n1\na",
-        "expected_output": "a"
-      },
-      {
-        "input": "2 2\na b\nc d\n2\nab\ncd",
-        "expected_output": "ab cd"
-      },
-      {
-        "input": "3 3\na b c\nd e f\ng h i\n3\nabe\ncfi\ndhg",
-        "expected_output": "abe cfi dhg"
-      },
-      {
-        "input": "2 3\na b c\nd e f\n3\nabc\ndef\nfed",
-        "expected_output": "abc def"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:23:29.861664"
-  },
-  {
-    "id": "P27_1774263327833",
-    "title": "Optimized Bubble Sort â€“ Count Passes & Swaps",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given an array of integers, your task is to perform an optimized bubble sort and count the number of passes and swaps required to sort the array in ascending order. In optimized bubble sort, the algorithm stops early if no swaps are made during a pass. The input consists of the size of the array and its elements, and you must output the total number of passes and swaps performed. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an array of integers, your task is to perform an optimized bubble sort and count the number of passes and swaps required to sort the array in ascending order. In optimized bubble sort, the algorithm stops early if no swaps are made during a pass. The input consists of the size of the array and its elements, and you must output the total number of passes and swaps performed. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print two integers â€” the number of passes and the number of swaps performed during the optimized bubble sort.",
-    "sample_input": "5\n5 1 4 2 8",
-    "sample_output": "3 4",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n5 1 4 2 8",
-        "expected_output": "3 4"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "0 0"
-      },
-      {
-        "input": "4\n1 1 1 1",
-        "expected_output": "1 0"
-      },
-      {
-        "input": "5\n5 4 3 2 1",
-        "expected_output": "5 10"
-      },
-      {
-        "input": "6\n10 7 8 9 1 5",
-        "expected_output": "5 8"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:25:27.841925"
-  },
-  {
-    "id": "P28_1774263400519",
-    "title": "Largest Number",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "Given a list of non-negative integers, your task is to arrange them such that they form the largest possible number when concatenated together. The input consists of the number of elements followed by the list of integers. You must determine the correct order of elements to maximize the resulting number. Constraints: 1 â‰¤ N â‰¤ 10^5, 0 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given a list of non-negative integers, your task is to arrange them such that they form the largest possible number when concatenated together. The input consists of the number of elements followed by the list of integers. You must determine the correct order of elements to maximize the resulting number. Constraints: 1 â‰¤ N â‰¤ 10^5, 0 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated non-negative integers.",
-    "output_format": "Print a single string representing the largest possible number formed by concatenating the given integers.",
-    "sample_input": "5\n3 30 34 5 9",
-    "sample_output": "9534330",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n3 30 34 5 9",
-        "expected_output": "9534330"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10"
-      },
-      {
-        "input": "2\n10 2",
-        "expected_output": "210"
-      },
-      {
-        "input": "4\n0 0 0 0",
-        "expected_output": "0"
-      },
-      {
-        "input": "3\n20 1 34",
-        "expected_output": "34201"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:26:40.523926"
-  },
-  {
-    "id": "P29_1774263529255",
-    "title": "Median from Data Stream",
-    "language": "python",
-    "difficulty": "Hard",
-    "marks": 40,
-    "time_limit": 25,
-    "statement": "You are given a stream of integers, and your task is to continuously add numbers and return the median after each insertion. The median is the middle value when the numbers are sorted; if the count is even, it is the average of the two middle values. The input consists of an integer N followed by N integers representing the stream. After each insertion, you must output the current median. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "You are given a stream of integers, and your task is to continuously add numbers and return the median after each insertion. The median is the middle value when the numbers are sorted; if the count is even, it is the average of the two middle values. The input consists of an integer N followed by N integers representing the stream. After each insertion, you must output the current median. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers representing the stream.",
-    "output_format": "Print N values â€” the median after each insertion, separated by spaces.",
-    "sample_input": "5\n5 15 1 3 2",
-    "sample_output": "5 10 5 4 3",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n5 15 1 3 2",
-        "expected_output": "5 10 5 4 3"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10"
-      },
-      {
-        "input": "4\n1 2 3 4",
-        "expected_output": "1 1.5 2 2.5"
-      },
-      {
-        "input": "5\n10 20 30 40 50",
-        "expected_output": "10 15 20 25 30"
-      },
-      {
-        "input": "6\n5 3 8 9 2 7",
-        "expected_output": "5 4 5 6.5 5 6"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T16:28:49.261858"
-  },
-  {
-    "id": "P31_1774269768421",
-    "title": "Extract Initials",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a full name as a string, your task is to extract the initials of each word and return them in uppercase. Words in the name are separated by spaces, and you must consider only alphabetic characters while forming initials. The input consists of a single string, and you must output the uppercase initials. Constraints: 1 â‰¤ length of string â‰¤ 10^5.",
-    "description": "Given a full name as a string, your task is to extract the initials of each word and return them in uppercase. Words in the name are separated by spaces, and you must consider only alphabetic characters while forming initials. The input consists of a single string, and you must output the uppercase initials. Constraints: 1 â‰¤ length of string â‰¤ 10^5.",
-    "input_format": "The first line contains a string S representing the full name.",
-    "output_format": "Print a single string â€” the initials in uppercase.",
-    "sample_input": "guido van rossum",
-    "sample_output": "GVR",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "guido van rossum",
-        "expected_output": "GVR"
-      },
-      {
-        "input": "alan mathison turing",
-        "expected_output": "AMT"
-      },
-      {
-        "input": "ada",
-        "expected_output": "A"
-      },
-      {
-        "input": "grace brewster murray hopper",
-        "expected_output": "GBMH"
-      },
-      {
-        "input": "john   doe",
-        "expected_output": "JD"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:12:48.430422"
-  },
-  {
-    "id": "P32_1774269823925",
-    "title": "Toggle Case",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S, your task is to swap the case of every alphabetic character without using built-in functions like swapcase(). Convert uppercase letters to lowercase and lowercase letters to uppercase, while leaving non-alphabetic characters unchanged. The input consists of a single string, and you must output the transformed string. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to swap the case of every alphabetic character without using built-in functions like swapcase(). Convert uppercase letters to lowercase and lowercase letters to uppercase, while leaving non-alphabetic characters unchanged. The input consists of a single string, and you must output the transformed string. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print the transformed string after toggling the case of each character.",
-    "sample_input": "Hello World!",
-    "sample_output": "hELLO wORLD!",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "Hello World!",
-        "expected_output": "hELLO wORLD!"
-      },
-      {
-        "input": "Python123",
-        "expected_output": "pYTHON123"
-      },
-      {
-        "input": "ABCdef",
-        "expected_output": "abcDEF"
-      },
-      {
-        "input": "aBcD eFgH",
-        "expected_output": "AbCd EfGh"
-      },
-      {
-        "input": "12345",
-        "expected_output": "12345"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:13:43.931119"
-  },
-  {
-    "id": "P33_1774269882133",
-    "title": "First Non-Repeating Character Index",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S, your task is to find the index of the first non-repeating character. A non-repeating character is one that appears only once in the string. If no such character exists, return -1. The input consists of a single string, and you must output the index of the first unique character. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to find the index of the first non-repeating character. A non-repeating character is one that appears only once in the string. If no such character exists, return -1. The input consists of a single string, and you must output the index of the first unique character. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print a single integer â€” the index of the first non-repeating character, or -1 if none exists.",
-    "sample_input": "swiss",
-    "sample_output": "1",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "swiss",
-        "expected_output": "1"
-      },
-      {
-        "input": "aabbcc",
-        "expected_output": "-1"
-      },
-      {
-        "input": "leetcode",
-        "expected_output": "0"
-      },
-      {
-        "input": "loveleetcode",
-        "expected_output": "2"
-      },
-      {
-        "input": "z",
-        "expected_output": "0"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:14:42.139913"
-  },
-  {
-    "id": "P34_1774269938232",
-    "title": "Count Substring Occurrences",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S and a substring P, your task is to count how many times P appears in S, including overlapping occurrences. The input consists of two strings, and you must determine the total number of times the substring occurs within the main string. Constraints: 1 â‰¤ length of S â‰¤ 10^5, 1 â‰¤ length of P â‰¤ 10^5.",
-    "description": "Given a string S and a substring P, your task is to count how many times P appears in S, including overlapping occurrences. The input consists of two strings, and you must determine the total number of times the substring occurs within the main string. Constraints: 1 â‰¤ length of S â‰¤ 10^5, 1 â‰¤ length of P â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.\nThe second line contains a string P.",
-    "output_format": "Print a single integer â€” the number of occurrences of substring P in string S (including overlaps).",
-    "sample_input": "ababa\naba",
-    "sample_output": "2",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "ababa\naba",
-        "expected_output": "2"
-      },
-      {
-        "input": "aaaaa\naa",
-        "expected_output": "4"
-      },
-      {
-        "input": "hello\nll",
-        "expected_output": "1"
-      },
-      {
-        "input": "abcde\nf",
-        "expected_output": "0"
-      },
-      {
-        "input": "abababab\naba",
-        "expected_output": "3"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:15:38.249494"
-  },
-  {
-    "id": "P35_1774269972152",
-    "title": "Remove Specific Characters",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S and a list of forbidden characters, your task is to remove all occurrences of those characters from the string. The input consists of a string and another string representing forbidden characters. You must return the modified string after removing all forbidden characters while preserving the order of remaining characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S and a list of forbidden characters, your task is to remove all occurrences of those characters from the string. The input consists of a string and another string representing forbidden characters. You must return the modified string after removing all forbidden characters while preserving the order of remaining characters. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.\nThe second line contains a string F representing forbidden characters.",
-    "output_format": "Print the resulting string after removing all forbidden characters.",
-    "sample_input": "hello world\nlo",
-    "sample_output": "he wrd",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello world\nlo",
-        "expected_output": "he wrd"
-      },
-      {
-        "input": "abcdefg\nbd",
-        "expected_output": "acefg"
-      },
-      {
-        "input": "aaaaa\na",
-        "expected_output": ""
-      },
-      {
-        "input": "python programming\npg",
-        "expected_output": "ython roarammin"
-      },
-      {
-        "input": "12345\n13",
-        "expected_output": "245"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:16:12.159224"
-  },
-  {
-    "id": "P36_1774270010720",
-    "title": "Check String Rotation",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given two strings S and T, your task is to determine whether T is a rotation of S. A string T is considered a rotation of S if it can be obtained by rotating S some number of times. For example, \"erbottlewat\" is a rotation of \"waterbottle\". The input consists of two strings, and you must return whether T is a valid rotation of S. Constraints: 1 â‰¤ length of S, T â‰¤ 10^5.",
-    "description": "Given two strings S and T, your task is to determine whether T is a rotation of S. A string T is considered a rotation of S if it can be obtained by rotating S some number of times. For example, \"erbottlewat\" is a rotation of \"waterbottle\". The input consists of two strings, and you must return whether T is a valid rotation of S. Constraints: 1 â‰¤ length of S, T â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.\nThe second line contains a string T.",
-    "output_format": "Print \"Yes\" if T is a rotation of S, otherwise print \"No\".",
-    "sample_input": "waterbottle\nerbottlewat",
-    "sample_output": "Yes",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "waterbottle\nerbottlewat",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "hello\nllohe",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "abc\ncab",
-        "expected_output": "Yes"
-      },
-      {
-        "input": "abc\nacb",
-        "expected_output": "No"
-      },
-      {
-        "input": "a\na",
-        "expected_output": "Yes"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:16:50.727201"
-  },
-  {
-    "id": "P37_1774270064569",
-    "title": "Insert Every N-th Character",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S and an integer N, your task is to insert a dash '-' after every N characters in the string. The final string should maintain the original order of characters with dashes inserted at the correct positions. If the last group has fewer than N characters, it should remain unchanged. Constraints: 1 â‰¤ length of S â‰¤ 10^5, 1 â‰¤ N â‰¤ 10^5.",
-    "description": "Given a string S and an integer N, your task is to insert a dash '-' after every N characters in the string. The final string should maintain the original order of characters with dashes inserted at the correct positions. If the last group has fewer than N characters, it should remain unchanged. Constraints: 1 â‰¤ length of S â‰¤ 10^5, 1 â‰¤ N â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.\nThe second line contains an integer N.",
-    "output_format": "Print the modified string after inserting '-' after every N characters.",
-    "sample_input": "abcdefghi\n3",
-    "sample_output": "abc-def-ghi",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "abcdefghi\n3",
-        "expected_output": "abc-def-ghi"
-      },
-      {
-        "input": "hello\n2",
-        "expected_output": "he-ll-o"
-      },
-      {
-        "input": "a\n3",
-        "expected_output": "a"
-      },
-      {
-        "input": "abcdefgh\n4",
-        "expected_output": "abcd-efgh"
-      },
-      {
-        "input": "123456789\n1",
-        "expected_output": "1-2-3-4-5-6-7-8-9"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:17:44.575593"
-  },
-  {
-    "id": "P38_1774270105028",
-    "title": "Clean Whitespace",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S that may contain multiple spaces between words, your task is to normalize the whitespace. Remove leading and trailing spaces and ensure that there is exactly one space between each word. The input consists of a single string, and you must output the cleaned string. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S that may contain multiple spaces between words, your task is to normalize the whitespace. Remove leading and trailing spaces and ensure that there is exactly one space between each word. The input consists of a single string, and you must output the cleaned string. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print the string after removing extra spaces and normalizing whitespace.",
-    "sample_input": "  hello   world   python  ",
-    "sample_output": "hello world python",
-    "starter_code": "s = input()",
-    "test_cases": [
-      {
-        "input": "  hello   world   python  ",
-        "expected_output": "hello world python"
-      },
-      {
-        "input": "a   b",
-        "expected_output": "a b"
-      },
-      {
-        "input": "   singleword   ",
-        "expected_output": "singleword"
-      },
-      {
-        "input": "multiple     spaces    here",
-        "expected_output": "multiple spaces here"
-      },
-      {
-        "input": "   ",
-        "expected_output": ""
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:18:25.036071"
-  },
-  {
-    "id": "P39_1774270146860",
-    "title": "Vowel-Consonant Split",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S, your task is to separate all vowels and consonants into two different strings. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. All other alphabetic characters are considered consonants, and non-alphabetic characters should be ignored. The input consists of a single string, and you must output the vowels and consonants while preserving their original order. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to separate all vowels and consonants into two different strings. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. All other alphabetic characters are considered consonants, and non-alphabetic characters should be ignored. The input consists of a single string, and you must output the vowels and consonants while preserving their original order. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print two strings separated by a space â€” first the vowels string, then the consonants string.",
-    "sample_input": "hello world",
-    "sample_output": "eoo hllwrld",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello world",
-        "expected_output": "eoo hllwrld"
-      },
-      {
-        "input": "Python",
-        "expected_output": "o Pythn"
-      },
-      {
-        "input": "AEIOUxyz",
-        "expected_output": "AEIOU xyz"
-      },
-      {
-        "input": "abc123",
-        "expected_output": "a bc"
-      },
-      {
-        "input": "BCDF",
-        "expected_output": " BCDF"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:19:06.866348"
-  },
-  {
-    "id": "P40_1774270187115",
-    "title": "Vowel-Consonant Split",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given a string S, your task is to separate all vowels and consonants into two different strings. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. All other alphabetic characters are considered consonants, and non-alphabetic characters should be ignored. The input consists of a single string, and you must output the vowels and consonants while preserving their original order. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "description": "Given a string S, your task is to separate all vowels and consonants into two different strings. Vowels include both uppercase and lowercase characters: A, E, I, O, U, a, e, i, o, u. All other alphabetic characters are considered consonants, and non-alphabetic characters should be ignored. The input consists of a single string, and you must output the vowels and consonants while preserving their original order. Constraints: 1 â‰¤ length of S â‰¤ 10^5.",
-    "input_format": "The first line contains a string S.",
-    "output_format": "Print two strings separated by a space â€” first the vowels string, then the consonants string.",
-    "sample_input": "hello world",
-    "sample_output": "eoo hllwrld",
-    "starter_code": "s = input().strip()",
-    "test_cases": [
-      {
-        "input": "hello world",
-        "expected_output": "eoo hllwrld"
-      },
-      {
-        "input": "Python",
-        "expected_output": "o Pythn"
-      },
-      {
-        "input": "AEIOUxyz",
-        "expected_output": "AEIOU xyz"
-      },
-      {
-        "input": "abc123",
-        "expected_output": "a bc"
-      },
-      {
-        "input": "BCDF",
-        "expected_output": " BCDF"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:19:47.118923"
-  },
-  {
-    "id": "P41_1774270239762",
-    "title": "Move Zeros to the End",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers, your task is to move all zeros in the list to the end while maintaining the relative order of the non-zero elements. The input consists of the size of the list and the list values, and you must output the modified list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to move all zeros in the list to the end while maintaining the relative order of the non-zero elements. The input consists of the size of the list and the list values, and you must output the modified list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print the modified list with all zeros moved to the end, separated by spaces.",
-    "sample_input": "5\n0 1 0 3 12",
-    "sample_output": "1 3 12 0 0",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n0 1 0 3 12",
-        "expected_output": "1 3 12 0 0"
-      },
-      {
-        "input": "1\n0",
-        "expected_output": "0"
-      },
-      {
-        "input": "4\n1 2 3 4",
-        "expected_output": "1 2 3 4"
-      },
-      {
-        "input": "6\n0 0 1 0 2 3",
-        "expected_output": "1 2 3 0 0 0"
-      },
-      {
-        "input": "5\n4 0 5 0 6",
-        "expected_output": "4 5 6 0 0"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:20:39.768994"
-  },
-  {
-    "id": "P42_1774270278295",
-    "title": "Find the Difference List",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given two lists of integers, your task is to return a third list containing elements that are present in the first list but not in the second list. The order of elements in the result should follow their original order in the first list. Constraints: 1 â‰¤ N, M â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given two lists of integers, your task is to return a third list containing elements that are present in the first list but not in the second list. The order of elements in the result should follow their original order in the first list. Constraints: 1 â‰¤ N, M â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.\nThe third line contains an integer M.\nThe fourth line contains M space-separated integers.",
-    "output_format": "Print the elements present in the first list but not in the second list, separated by spaces.",
-    "sample_input": "5\n1 2 3 4 5\n3\n2 4 6",
-    "sample_output": "1 3 5",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n1 2 3 4 5\n3\n2 4 6",
-        "expected_output": "1 3 5"
-      },
-      {
-        "input": "3\n1 2 3\n3\n1 2 3",
-        "expected_output": ""
-      },
-      {
-        "input": "4\n10 20 30 40\n2\n20 50",
-        "expected_output": "10 30 40"
-      },
-      {
-        "input": "5\n1 1 2 2 3\n2\n1 3",
-        "expected_output": "2 2"
-      },
-      {
-        "input": "1\n100\n0\n",
-        "expected_output": "100"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:21:18.300590"
-  },
-  {
-    "id": "P43_1774270327337",
-    "title": "Remove Consecutive Duplicates",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers, your task is to remove consecutive duplicate elements from the list while preserving the original order. Only adjacent duplicates should be removed, meaning non-consecutive duplicates should remain. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to remove consecutive duplicate elements from the list while preserving the original order. Only adjacent duplicates should be removed, meaning non-consecutive duplicates should remain. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print the list after removing consecutive duplicates, separated by spaces.",
-    "sample_input": "8\n1 2 2 3 3 3 4 2",
-    "sample_output": "1 2 3 4 2",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "8\n1 2 2 3 3 3 4 2",
-        "expected_output": "1 2 3 4 2"
-      },
-      {
-        "input": "1\n5",
-        "expected_output": "5"
-      },
-      {
-        "input": "5\n1 1 1 1 1",
-        "expected_output": "1"
-      },
-      {
-        "input": "6\n1 2 3 4 5 6",
-        "expected_output": "1 2 3 4 5 6"
-      },
-      {
-        "input": "7\n2 2 3 3 2 2 1",
-        "expected_output": "2 3 2 1"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:22:07.342724"
-  },
-  {
-    "id": "P44_1774270451692",
-    "title": "List to String (Manual)",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N strings, your task is to manually concatenate them into a single string separated by commas, without using built-in methods like join(). The order of elements must be preserved. Constraints: 1 â‰¤ N â‰¤ 10^5, length of each string â‰¤ 10^5.",
-    "description": "Given an integer N followed by a list of N strings, your task is to manually concatenate them into a single string separated by commas, without using built-in methods like join(). The order of elements must be preserved. Constraints: 1 â‰¤ N â‰¤ 10^5, length of each string â‰¤ 10^5.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated strings.",
-    "output_format": "Print a single string where all elements are concatenated with commas between them.",
-    "sample_input": "3\napple banana cherry",
-    "sample_output": "apple,banana,cherry",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "3\napple banana cherry",
-        "expected_output": "apple,banana,cherry"
-      },
-      {
-        "input": "1\nhello",
-        "expected_output": "hello"
-      },
-      {
-        "input": "4\na b c d",
-        "expected_output": "a,b,c,d"
-      },
-      {
-        "input": "2\none two",
-        "expected_output": "one,two"
-      },
-      {
-        "input": "5\nx y z p q",
-        "expected_output": "x,y,z,p,q"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:24:11.700727"
-  },
-  {
-    "id": "P45_1774270599086",
-    "title": "Split List by Value",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers and a value X, your task is to split the list into two lists: one containing elements smaller than X and another containing elements greater than or equal to X. The relative order of elements must be preserved. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i], X â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers and a value X, your task is to split the list into two lists: one containing elements smaller than X and another containing elements greater than or equal to X. The relative order of elements must be preserved. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i], X â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.\nThe third line contains an integer X.",
-    "output_format": "Print two lines. The first line contains elements smaller than X, and the second line contains elements greater than or equal to X.",
-    "sample_input": "6\n5 1 8 3 10 2\n5",
-    "sample_output": "1 3 2\n5 8 10",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "6\n5 1 8 3 10 2\n5",
-        "expected_output": "1 3 2\n5 8 10"
-      },
-      {
-        "input": "1\n10\n5",
-        "expected_output": "\n10"
-      },
-      {
-        "input": "5\n1 2 3 4 5\n3",
-        "expected_output": "1 2\n3 4 5"
-      },
-      {
-        "input": "4\n7 8 9 10\n5",
-        "expected_output": "\n7 8 9 10"
-      },
-      {
-        "input": "5\n2 2 2 2 2\n2",
-        "expected_output": "\n2 2 2 2 2"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:26:39.094299"
-  },
-  {
-    "id": "P46_1774270630618",
-    "title": "Most Frequent Element",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers, your task is to find the element that appears most frequently in the list. If multiple elements have the same highest frequency, return the one that appears first in the list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to find the element that appears most frequently in the list. If multiple elements have the same highest frequency, return the one that appears first in the list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print a single integer â€” the most frequent element.",
-    "sample_input": "6\n1 3 2 3 4 3",
-    "sample_output": "3",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "6\n1 3 2 3 4 3",
-        "expected_output": "3"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10"
-      },
-      {
-        "input": "5\n1 2 3 4 5",
-        "expected_output": "1"
-      },
-      {
-        "input": "7\n2 2 3 3 4 4 4",
-        "expected_output": "4"
-      },
-      {
-        "input": "6\n5 6 5 6 5 6",
-        "expected_output": "5"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:27:10.622707"
-  },
-  {
-    "id": "P47_1774270681268",
-    "title": "Group Words by Length",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N words, your task is to group the words based on their lengths. Create a mapping where each key is a word length and the corresponding value is a list of words having that length. The order of words in each group should be preserved. Output the result sorted by increasing length. Constraints: 1 â‰¤ N â‰¤ 10^5, length of each word â‰¤ 10^5.",
-    "description": "Given an integer N followed by a list of N words, your task is to group the words based on their lengths. Create a mapping where each key is a word length and the corresponding value is a list of words having that length. The order of words in each group should be preserved. Output the result sorted by increasing length. Constraints: 1 â‰¤ N â‰¤ 10^5, length of each word â‰¤ 10^5.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated words.",
-    "output_format": "Print each length followed by its corresponding words in the format \"length: word1 word2 ...\" on separate lines, sorted by length.",
-    "sample_input": "5\ncat dog apple bat ball",
-    "sample_output": "3: cat dog bat\n4: ball\n5: apple",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\ncat dog apple bat ball",
-        "expected_output": "3: cat dog bat\n4: ball\n5: apple"
-      },
-      {
-        "input": "3\na bb ccc",
-        "expected_output": "1: a\n2: bb\n3: ccc"
-      },
-      {
-        "input": "4\none two six ten",
-        "expected_output": "3: one two six ten"
-      },
-      {
-        "input": "2\nhello world",
-        "expected_output": "5: hello world"
-      },
-      {
-        "input": "1\npython",
-        "expected_output": "6: python"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:28:01.273354"
-  },
-  {
-    "id": "P48_1774270719442",
-    "title": "Pairwise Sum",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers, your task is to compute a new list where each element is the sum of consecutive pairs from the original list. For example, given [1, 2, 3, 4], the result should be [1+2, 2+3, 3+4]. If the list has fewer than 2 elements, return an empty list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to compute a new list where each element is the sum of consecutive pairs from the original list. For example, given [1, 2, 3, 4], the result should be [1+2, 2+3, 3+4]. If the list has fewer than 2 elements, return an empty list. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print the list of pairwise sums separated by spaces.",
-    "sample_input": "4\n1 2 3 4",
-    "sample_output": "3 5 7",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "4\n1 2 3 4",
-        "expected_output": "3 5 7"
-      },
-      {
-        "input": "1\n5",
-        "expected_output": ""
-      },
-      {
-        "input": "2\n10 20",
-        "expected_output": "30"
-      },
-      {
-        "input": "5\n1 3 5 7 9",
-        "expected_output": "4 8 12 16"
-      },
-      {
-        "input": "3\n-1 -2 -3",
-        "expected_output": "-3 -5"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:28:39.446484"
-  },
-  {
-    "id": "P49_1774270778424",
-    "title": "Rotate List Right",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by a list of N integers, your task is to rotate the list to the right by one position. This means the last element of the list should move to the first position, and all other elements should shift one position to the right. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "description": "Given an integer N followed by a list of N integers, your task is to rotate the list to the right by one position. This means the last element of the list should move to the first position, and all other elements should shift one position to the right. Constraints: 1 â‰¤ N â‰¤ 10^5, -10^9 â‰¤ arr[i] â‰¤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print the rotated list separated by spaces.",
-    "sample_input": "5\n1 2 3 4 5",
-    "sample_output": "5 1 2 3 4",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "5\n1 2 3 4 5",
-        "expected_output": "5 1 2 3 4"
-      },
-      {
-        "input": "1\n10",
-        "expected_output": "10"
-      },
-      {
-        "input": "3\n7 8 9",
-        "expected_output": "9 7 8"
-      },
-      {
-        "input": "4\n-1 -2 -3 -4",
-        "expected_output": "-4 -1 -2 -3"
-      },
-      {
-        "input": "6\n1 1 2 2 3 3",
-        "expected_output": "3 1 1 2 2 3"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:29:38.430941"
-  },
-  {
-    "id": "P50_1774270957883",
-    "title": "Flatten a List of Lists",
-    "language": "python",
-    "difficulty": "Medium",
-    "marks": 20,
-    "time_limit": 15,
-    "statement": "Given an integer N followed by N lists of integers, your task is to flatten them into a single list while preserving the order of elements. Each of the next N lines represents a list of space-separated integers. You must combine all lists into one flat list. Constraints: 1 â‰¤ N â‰¤ 10^5, total number of elements â‰¤ 10^5.",
-    "description": "Given an integer N followed by N lists of integers, your task is to flatten them into a single list while preserving the order of elements. Each of the next N lines represents a list of space-separated integers. You must combine all lists into one flat list. Constraints: 1 â‰¤ N â‰¤ 10^5, total number of elements â‰¤ 10^5.",
-    "input_format": "The first line contains an integer N.\nThe next N lines each contain space-separated integers representing a list.",
-    "output_format": "Print the flattened list as space-separated integers.",
-    "sample_input": "3\n1 2\n3 4\n5",
-    "sample_output": "1 2 3 4 5",
-    "starter_code": "n = int(input().strip())",
-    "test_cases": [
-      {
-        "input": "3\n1 2\n3 4\n5",
-        "expected_output": "1 2 3 4 5"
-      },
-      {
-        "input": "1\n10 20 30",
-        "expected_output": "10 20 30"
-      },
-      {
-        "input": "2\n1\n2 3 4",
-        "expected_output": "1 2 3 4"
-      },
-      {
-        "input": "3\n-1 -2\n-3\n-4 -5",
-        "expected_output": "-1 -2 -3 -4 -5"
-      },
-      {
-        "input": "4\n1\n2\n3\n4",
-        "expected_output": "1 2 3 4"
-      }
-    ],
-    "schema_sql": "",
-    "seed_sql": "",
-    "created_at": "2026-03-23T18:32:37.887797"
-  },
-  {
     "id": "S03_1774327022322",
     "title": "Second Highest Marks",
     "language": "sql",
@@ -8742,7 +6742,7 @@
     "marks": 20,
     "time_limit": 15,
     "statement": "Write a SQL query to classify employees as 'High', 'Medium', or 'Low' earners based on their salary.",
-    "description": "If salary > 80000 â†’ 'High', if salary between 50000 and 80000 â†’ 'Medium', otherwise â†’ 'Low'. Display employee name and their category.",
+    "description": "If salary > 80000 → 'High', if salary between 50000 and 80000 → 'Medium', otherwise → 'Low'. Display employee name and their category.",
     "input_format": "{\"tables\": [{\"table_name\": \"employees\", \"columns\": [\"id\", \"name\", \"department\", \"salary\"], \"rows\": [[\"1\", \"Alice\", \"Engineering\", \"72000\"], [\"2\", \"Bob\", \"Marketing\", \"45000\"], [\"3\", \"Charlie\", \"Engineering\", \"85000\"], [\"4\", \"Diana\", \"HR\", \"51000\"]]}]}",
     "output_format": "",
     "sample_input": "",
@@ -10517,7 +8517,7 @@
     "marks": 20,
     "time_limit": 15,
     "statement": "Write a SQL query to count how many employees fall into each salary category (High, Medium, Low) in each department.",
-    "description": "Classify employees using CASE: salary > 80000 â†’ High, 50000â€“80000 â†’ Medium, <50000 â†’ Low. Then count employees in each category per department.",
+    "description": "Classify employees using CASE: salary > 80000 → High, 50000–80000 → Medium, <50000 → Low. Then count employees in each category per department.",
     "input_format": "{\"tables\": [{\"table_name\": \"employees\", \"columns\": [\"id\", \"name\", \"department\", \"salary\"], \"rows\": [[\"1\", \"Alice\", \"Engineering\", \"90000\"], [\"2\", \"Bob\", \"Engineering\", \"70000\"], [\"3\", \"Charlie\", \"Engineering\", \"40000\"], [\"4\", \"Diana\", \"HR\", \"60000\"], [\"5\", \"Eve\", \"HR\", \"45000\"]]}]}",
     "output_format": "",
     "sample_input": "",
@@ -11475,43 +9475,243 @@
     "created_at": "2026-03-24T12:26:02.392891"
   },
   {
-    "id": "P51_1774356514951",
-    "title": "Sum of N Numbers",
+    "id": "P01_1785843803779",
+    "title": "Find Even or Odd",
     "language": "python",
     "difficulty": "Easy",
     "marks": 10,
     "time_limit": 10,
-    "statement": "Given an integer N and a list of N integers, your task is to compute the sum of all the elements in the list. The input represents the number of elements followed by the elements themselves. You must output a single integer which is the total sum. Constraints: 1 ≤ N ≤ 10^5, -10^9 ≤ arr[i] ≤ 10^9.",
-    "description": "Given an integer N and a list of N integers, your task is to compute the sum of all the elements in the list. The input represents the number of elements followed by the elements themselves. You must output a single integer which is the total sum. Constraints: 1 ≤ N ≤ 10^5, -10^9 ≤ arr[i] ≤ 10^9.",
-    "input_format": "The first line contains an integer N.\nThe second line contains N space-separated integers.",
-    "output_format": "Print a single integer — the sum of the given numbers.",
-    "sample_input": "5\n1 2 3 4 5",
-    "sample_output": "15",
-    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n = int(input().strip())\n    arr = list(map(int, input().strip().split()))\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
+    "statement": "Given an integer N, determine whether it is even or odd. Print 'Even' if the number is divisible by 2, otherwise print 'Odd'.",
+    "description": "Given an integer N, determine whether it is even or odd. Print 'Even' if the number is divisible by 2, otherwise print 'Odd'.",
+    "input_format": "The first and only line contains an integer N.",
+    "output_format": "Print 'Even' if N is even, otherwise print 'Odd'.",
+    "sample_input": "24",
+    "sample_output": "Even",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n = int(input().strip())\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
     "test_cases": [
       {
-        "input": "5\n1 2 3 4 5",
-        "expected_output": "15"
+        "input": "24",
+        "expected_output": "Even"
       },
       {
-        "input": "1\n10",
-        "expected_output": "10"
+        "input": "17",
+        "expected_output": "Odd"
       },
       {
-        "input": "4\n0 0 0 0",
-        "expected_output": "0"
+        "input": "0",
+        "expected_output": "Even"
       },
       {
-        "input": "10\n1 2 3 4 5 6 7 8 9 10",
-        "expected_output": "55"
+        "input": "-9",
+        "expected_output": "Odd"
       },
       {
-        "input": "6\n1000000000 -1000000000 500000000 500000000 -200000000 200000000",
-        "expected_output": "1000000000"
+        "input": "100",
+        "expected_output": "Even"
       }
     ],
     "schema_sql": "",
     "seed_sql": "",
-    "created_at": "2026-03-24T18:18:34.957949"
+    "created_at": "2026-08-04T17:13:23.791660"
+  },
+  {
+    "id": "P02_1785843918123",
+    "title": "Find Last Digit in a Number",
+    "language": "python",
+    "difficulty": "Easy",
+    "marks": 10,
+    "time_limit": 10,
+    "statement": "Given an integer N, print its last digit. The number may be positive or negative. The last digit should always be printed as a non-negative integer.",
+    "description": "Given an integer N, print its last digit. The number may be positive or negative. The last digit should always be printed as a non-negative integer.",
+    "input_format": "The first and only line contains an integer N.",
+    "output_format": "Print the last digit of N.",
+    "sample_input": "12345",
+    "sample_output": "5",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n = int(input().strip())\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
+    "test_cases": [
+      {
+        "input": "12345",
+        "expected_output": "5"
+      },
+      {
+        "input": "98760",
+        "expected_output": "0"
+      },
+      {
+        "input": "-123",
+        "expected_output": "3"
+      },
+      {
+        "input": "7",
+        "expected_output": "7"
+      },
+      {
+        "input": "100000",
+        "expected_output": "0"
+      }
+    ],
+    "schema_sql": "",
+    "seed_sql": "",
+    "created_at": "2026-08-04T17:15:18.130192"
+  },
+  {
+    "id": "P03_1785843993206",
+    "title": "Length of Longest Subarray with Sum K",
+    "language": "python",
+    "difficulty": "Medium",
+    "marks": 20,
+    "time_limit": 10,
+    "statement": "Given an array of N integers and an integer K, find the length of the longest contiguous subarray whose sum is exactly K. If no such subarray exists, print 0.",
+    "description": "Given an array of N integers and an integer K, find the length of the longest contiguous subarray whose sum is exactly K. If no such subarray exists, print 0.",
+    "input_format": "The first line contains two integers N and K.\nThe second line contains N space-separated integers.",
+    "output_format": "Print a single integer representing the length of the longest subarray with sum K.",
+    "sample_input": "6 3\n1 2 3 -3 4 2",
+    "sample_output": "4",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n, k = map(int, input().split())\n    arr = list(map(int, input().split()))\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
+    "test_cases": [
+      {
+        "input": "6 3\n1 2 3 -3 4 2",
+        "expected_output": "4"
+      },
+      {
+        "input": "5 5\n1 2 3 2 5",
+        "expected_output": "2"
+      },
+      {
+        "input": "5 15\n1 2 3 4 5",
+        "expected_output": "5"
+      },
+      {
+        "input": "4 10\n1 2 3 4",
+        "expected_output": "0"
+      },
+      {
+        "input": "7 0\n1 -1 2 -2 3 -3 0",
+        "expected_output": "7"
+      }
+    ],
+    "schema_sql": "",
+    "seed_sql": "",
+    "created_at": "2026-08-04T17:16:33.212292"
+  },
+  {
+    "id": "P04_1785844011912",
+    "title": "Merge Intervals",
+    "language": "python",
+    "difficulty": "Medium",
+    "marks": 20,
+    "time_limit": 10,
+    "statement": "Given N intervals, merge all overlapping intervals and print the resulting intervals in sorted order.",
+    "description": "Given N intervals, merge all overlapping intervals and print the resulting intervals in sorted order.",
+    "input_format": "The first line contains an integer N.\nThe next N lines each contain two integers representing the start and end of an interval.",
+    "output_format": "Print each merged interval on a new line.",
+    "sample_input": "4\n1 3\n2 6\n8 10\n15 18",
+    "sample_output": "1 6\n8 10\n15 18",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n = int(input())\n    intervals = [list(map(int, input().split())) for _ in range(n)]\n\n    # Write your solution here\n\nsolve()",
+    "test_cases": [
+      {
+        "input": "4\n1 3\n2 6\n8 10\n15 18",
+        "expected_output": "1 6\n8 10\n15 18"
+      },
+      {
+        "input": "5\n1 4\n4 5\n6 8\n7 9\n10 12",
+        "expected_output": "1 5\n6 9\n10 12"
+      },
+      {
+        "input": "3\n1 2\n3 4\n5 6",
+        "expected_output": "1 2\n3 4\n5 6"
+      },
+      {
+        "input": "4\n1 10\n2 3\n4 5\n6 7",
+        "expected_output": "1 10"
+      },
+      {
+        "input": "2\n5 7\n1 3",
+        "expected_output": "1 3\n5 7"
+      }
+    ],
+    "schema_sql": "",
+    "seed_sql": "",
+    "created_at": "2026-08-04T17:16:51.919972"
+  },
+  {
+    "id": "P05_1785844049849",
+    "title": "Median of Two Sorted Arrays",
+    "language": "python",
+    "difficulty": "Hard",
+    "marks": 30,
+    "time_limit": 10,
+    "statement": "Given two sorted arrays of sizes N and M, find the median of the combined sorted array. The overall run time complexity should be O(log(min(N, M))).",
+    "description": "Given two sorted arrays of sizes N and M, find the median of the combined sorted array. The overall run time complexity should be O(log(min(N, M))).",
+    "input_format": "The first line contains two integers N and M.\nThe second line contains N space-separated sorted integers.\nThe third line contains M space-separated sorted integers.",
+    "output_format": "Print the median of the combined sorted array. If the total number of elements is even, print the average of the two middle elements.",
+    "sample_input": "2 2\n1 3\n2 4",
+    "sample_output": "2.5",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    n, m = map(int, input().split())\n    nums1 = list(map(int, input().split()))\n    nums2 = list(map(int, input().split()))\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
+    "test_cases": [
+      {
+        "input": "2 2\n1 3\n2 4",
+        "expected_output": "2.5"
+      },
+      {
+        "input": "2 1\n1 2\n3",
+        "expected_output": "2"
+      },
+      {
+        "input": "3 4\n1 4 7\n2 3 5 6",
+        "expected_output": "4"
+      },
+      {
+        "input": "1 1\n10\n20",
+        "expected_output": "15.0"
+      },
+      {
+        "input": "4 4\n1 2 3 4\n5 6 7 8",
+        "expected_output": "4.5"
+      }
+    ],
+    "schema_sql": "",
+    "seed_sql": "",
+    "created_at": "2026-08-04T17:17:29.854657"
+  },
+  {
+    "id": "P06_1785844069969",
+    "title": "Minimum Window Substring",
+    "language": "python",
+    "difficulty": "Hard",
+    "marks": 30,
+    "time_limit": 10,
+    "statement": "Given two strings S and T, find the smallest substring in S that contains all the characters of T (including duplicates). If no such substring exists, print an empty string.",
+    "description": "Given two strings S and T, find the smallest substring in S that contains all the characters of T (including duplicates). If no such substring exists, print an empty string.",
+    "input_format": "The first line contains the string S.\nThe second line contains the string T.",
+    "output_format": "Print the minimum window substring. If no valid window exists, print an empty string.",
+    "sample_input": "ADOBECODEBANC\nABC",
+    "sample_output": "BANC",
+    "starter_code": "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    s = input().strip()\n    t = input().strip()\n\n    # Write your solution here\n    result = None\n    print(result)\n\nsolve()",
+    "test_cases": [
+      {
+        "input": "ADOBECODEBANC\nABC",
+        "expected_output": "BANC"
+      },
+      {
+        "input": "a\naa",
+        "expected_output": ""
+      },
+      {
+        "input": "aa\naa",
+        "expected_output": "aa"
+      },
+      {
+        "input": "aaflslflsldkalskaaa\naaa",
+        "expected_output": "aaa"
+      },
+      {
+        "input": "thisisateststring\ntist",
+        "expected_output": "tstri"
+      }
+    ],
+    "schema_sql": "",
+    "seed_sql": "",
+    "created_at": "2026-08-04T17:17:49.975348"
   }
 ]

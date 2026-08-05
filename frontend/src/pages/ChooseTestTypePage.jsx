@@ -92,7 +92,7 @@ function ChooseTestTypePage() {
       return
     }
 
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadCandidates()
   }, [navigate])
 
@@ -212,7 +212,7 @@ function ChooseTestTypePage() {
   return (
     <HRSidebarLayout
       className="choose-test-type-page"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

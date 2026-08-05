@@ -113,7 +113,7 @@ function MCQQuestionsPage() {
       return
     }
 
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadQuestions()
   }, [navigate])
 
@@ -305,7 +305,7 @@ function MCQQuestionsPage() {
   return (
     <HRSidebarLayout
       className="mcq-questions-page"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       sidebarExtraAfterHref="/hr/questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}

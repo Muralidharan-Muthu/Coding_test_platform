@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary, startExam, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { DecisionMindsLogoSmall, PythonIcon, DatabaseIcon, TimerIcon, ChecklistIcon } from '../components/ui/Branding'
+import { PlatformLogoSmall, PythonIcon, DatabaseIcon, TimerIcon, ChecklistIcon } from '../components/ui/Branding'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import './TestStructure.css'
 
@@ -315,7 +315,7 @@ function TestStructure() {
       <header className="header">
         <div className="header-left">
           <div className="header-logo">
-            <DecisionMindsLogoSmall onClick={() => navigate('/dashboard')} />
+            <PlatformLogoSmall onClick={() => navigate('/dashboard')} />
           </div>
         </div>
         <div className="header-right">

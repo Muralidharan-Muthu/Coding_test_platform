@@ -156,7 +156,7 @@ function HRDashboard() {
       navigate('/hr')
       return
     }
-    setHrName(name || 'HR User')
+    setHrName(name || 'Admin User')
     loadSavedExamProblems()
   }, [navigate, previewCandidateEmail])
 
@@ -289,7 +289,7 @@ function HRDashboard() {
   return (
     <HRSidebarLayout
       className="hr-dashboard"
-      hrName={hrName || 'HR User'}
+      hrName={hrName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

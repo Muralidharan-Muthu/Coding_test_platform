@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Webcam from 'react-webcam'
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { DecisionMindsLogoSmall } from '../components/ui/Branding'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import './CandidateVerification.css'
 
@@ -58,7 +58,7 @@ function CandidateVerification() {
     <div className="candidate-verification-page">
       <header className="header">
         <div className="header-logo">
-          <DecisionMindsLogoSmall onClick={() => navigate('/dashboard')} />
+          <PlatformLogoSmall onClick={() => navigate('/dashboard')} />
         </div>
         <div className="header-right">
           <ThemeToggle />

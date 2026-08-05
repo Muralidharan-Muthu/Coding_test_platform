@@ -1,10 +1,15 @@
-/* ─── HR Login Page ─── */
+/* ─── Admin Login Page — Centered Layout ─── */
 .hr-login-page {
   min-height: 100vh;
-  display: flex;
-  position: relative;
   background: var(--color-bg);
   transition: background var(--transition-theme);
+  position: relative;
+}
+
+.hr-login-page--centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hr-login-theme-corner {
@@ -14,311 +19,174 @@
   z-index: 100;
 }
 
-/* ─── Brand Panel ─── */
-.hr-login-brand {
-  flex: 1;
-  background: linear-gradient(135deg, #085690 0%, #064d80 50%, #043d66 100%);
-  padding: 60px 56px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
-  min-height: 100vh;
-}
-
-.hr-brand-content {
-  position: relative;
-  z-index: 2;
-  max-width: 420px;
-}
-
-.hr-brand-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  margin-bottom: 36px;
-}
-
-.hr-brand-logo {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-shrink: 0;
-}
-
-.hr-brand-logo .dm-logo-only {
-  border-radius: 0 !important;
-  padding: 4px 6px !important;
-}
-
-.hr-brand-logo .dm-logo-only img {
-  height: 24px !important;
-}
-
-.hr-brand-title-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.hr-brand-title {
-  margin: 0;
-  font-size: 44px;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1;
-  letter-spacing: -1.2px;
-  font-family: "Roboto Slab", Georgia, serif;
-}
-
-.hr-brand-powered {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.hr-brand-powered-text {
-  color: rgba(255, 255, 255, 0.86);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.hr-brand-desc {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 1);
-  line-height: 1.7;
-  margin-bottom: 48px;
-}
-
-.hr-brand-stats {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: nowrap;
-}
-
-.hr-stat {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.hr-stat-icon-wrap {
-  width: 36px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #ffffff;
-}
-
-.hr-stat-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.hr-stat-value {
-  font-size: 14px;
-  font-weight: 700;
-  color: #ffffff;
-  white-space: nowrap;
-}
-
-.hr-stat-label {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.72);
-  font-weight: 400;
-  white-space: nowrap;
-}
-
-.hr-stat-divider {
-  width: 1px;
-  height: 36px;
-  background: rgba(255, 255, 255, 0.25);
-  flex-shrink: 0;
-}
-
-.hr-brand-decoration {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.hr-deco-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.hr-deco-1 {
-  width: 420px;
-  height: 420px;
-  bottom: -120px;
-  right: -80px;
-}
-
-.hr-deco-2 {
-  width: 200px;
-  height: 200px;
-  top: -60px;
-  right: 60px;
-  background: rgba(255, 255, 255, 0.04);
-}
-
-/* ─── Form Panel ─── */
-.hr-login-form-panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 60px;
-  background: var(--color-bg);
-  transition: background var(--transition-theme);
-}
-
-.hr-login-box {
+/* ─── Center Panel ─── */
+.hr-login-center-panel {
   width: 100%;
-  max-width: 520px;
-  animation: slideUp 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
 }
 
-.hr-login-header {
-  margin-bottom: 32px;
+.hr-login-center-box {
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 44px 40px 40px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 
-.hr-login-header h1 {
-  font-size: 28px;
+/* ─── Logo ─── */
+.hr-login-center-logo {
+  display: flex;
+  justify-content: center;
+}
+
+.hr-login-center-logo-img {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ─── Header ─── */
+.hr-login-center-header {
+  text-align: center;
+}
+
+.hr-login-center-header h1 {
+  font-size: 26px;
   font-weight: 800;
   color: var(--color-text);
-  letter-spacing: -0.5px;
-  margin-bottom: 6px;
-  transition: color var(--transition-theme);
+  margin: 0 0 8px;
+  letter-spacing: -0.4px;
 }
 
-.hr-subtitle {
+.hr-login-center-sub {
   font-size: 14px;
   color: var(--color-text-muted);
-  transition: color var(--transition-theme);
+  margin: 0;
+  line-height: 1.5;
 }
 
-/* ─── Form Styles ─── */
+/* ─── Form ─── */
+.hr-login-center-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
 .hr-form-group {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
 }
 
 .hr-form-group label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--color-text);
-  font-weight: 600;
   font-size: 13px;
-  transition: color var(--transition-theme);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .hr-form-group input {
-  width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-family: inherit;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--color-border-strong);
+  background: var(--color-surface-2);
   color: var(--color-text);
-  background: var(--color-surface);
-  transition: border-color var(--transition), background var(--transition-theme), color var(--transition-theme), box-shadow var(--transition);
+  font-size: 15px;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .hr-form-group input:focus {
   border-color: var(--color-secondary);
-  box-shadow: 0 0 0 3px var(--color-secondary-light);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
+  background: var(--color-surface);
+}
+
+.hr-form-group input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hr-form-group input::placeholder {
+  color: var(--color-text-subtle);
 }
 
 .error {
-  color: red;
   font-size: 12px;
-  margin-top: 4px;
+  color: var(--color-error);
+  margin: 0;
+  padding: 4px 0;
 }
 
+/* ─── Button ─── */
 .hr-login-btn {
   width: 100%;
-  padding: 12px;
-  background: var(--color-secondary);
-  color: #ffffff;
+  padding: 14px;
+  border-radius: 12px;
   border: none;
-  border-radius: var(--radius-md);
-  font-size: 15px;
+  background: linear-gradient(135deg, var(--color-secondary) 0%, #0a6cb4 100%);
+  color: #fff;
+  font-size: 16px;
   font-weight: 700;
-  font-family: inherit;
   cursor: pointer;
-  transition: all var(--transition);
-  margin-top: 8px;
-  letter-spacing: 0.2px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
 }
 
-.hr-login-btn:hover {
-  background: #064d80;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(8, 86, 144, 0.35);
+.hr-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--color-secondary) 40%, transparent);
 }
 
-.hr-login-btn:active {
+.hr-login-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.hr-login-footer-note {
-  text-align: center;
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-top: 20px;
-  transition: color var(--transition-theme);
+.hr-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.hr-login-footer-note a {
-  color: var(--color-accent);
-  font-weight: 600;
+/* ─── Spinner ─── */
+.hr-btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: hr-spin 0.7s linear infinite;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
-.hr-login-footer-note a:hover {
-  text-decoration: underline;
+@keyframes hr-spin {
+  to { transform: rotate(360deg); }
 }
 
 /* ─── Responsive ─── */
-@media (max-width: 900px) {
-  .hr-login-page {
-    flex-direction: column;
-  }
-
-  .hr-login-brand {
-    min-height: 220px;
-    padding: 40px 32px;
-    justify-content: flex-start;
-  }
-
-  .hr-brand-header {
-    gap: 16px;
-    margin-bottom: 28px;
-  }
-
-  .hr-brand-title {
-    font-size: 36px;
-  }
-
-  .hr-brand-stats {
-    display: none;
-  }
-
-  .hr-login-form-panel {
-    flex: unset;
-    width: 100%;
-    padding: 32px 20px;
+@media (max-width: 500px) {
+  .hr-login-center-box {
+    padding: 32px 20px 28px;
+    border-radius: 16px;
+    box-shadow: none;
+    border: none;
+    background: transparent;
   }
 }

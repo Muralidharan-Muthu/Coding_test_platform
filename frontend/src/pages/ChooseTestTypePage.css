@@ -3,6 +3,10 @@
   gap: 20px;
 }
 
+.choose-test-type-page .ctt-content > * {
+  min-width: 0;
+}
+
 .ctt-alert {
   padding: 12px 14px;
   border-radius: 10px;

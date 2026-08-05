@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { DecisionMindsLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon } from '../components/ui/Branding'
+import { PlatformLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon } from '../components/ui/Branding'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import './CandidateDashboard.css'
 
@@ -110,7 +110,7 @@ function CandidateDashboard() {
     <div className="dashboard-page">
       <header className="header">
         <div className="header-logo">
-          <DecisionMindsLogoSmall onClick={() => navigate('/dashboard')} />
+          <PlatformLogoSmall onClick={() => navigate('/dashboard')} />
         </div>
         <div className="header-right">
           <ThemeToggle />

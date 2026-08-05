@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
-import { DecisionMindsLogoSmall } from '../ui/Branding'
+import { PlatformLogoSmall } from '../ui/Branding'
 import './HRSidebarLayout.css'
 
 const SIDEBAR_STATE_KEY = 'hr_sidebar_collapsed'
@@ -108,7 +108,7 @@ function getGroupKey(item) {
 
 function HRSidebarLayout({
   className = '',
-  hrName = 'HR User',
+  hrName = 'Admin User',
   navItems = [],
   sidebarExtra = null,
   sidebarExtraAfterHref = null,
@@ -197,7 +197,7 @@ function HRSidebarLayout({
               onClick={() => onNavigate(navItems[0]?.href || '/dashboard/assessment')}
               aria-label="Go to assessment dashboard"
             >
-              <DecisionMindsLogoSmall />
+              <PlatformLogoSmall />
             </button>
           )}
 
@@ -322,7 +322,7 @@ function HRSidebarLayout({
               <div className="hr-shell-topbar-brand" aria-hidden="true">
                 <img
                   className="hr-shell-topbar-brand-img"
-                  src="/assets/decisionminds-logo-1.png"
+                  src="/assets/meptrasoft-logo.png"
                   alt=""
                 />
               </div>
@@ -332,11 +332,11 @@ function HRSidebarLayout({
 
           <div className="hr-shell-topbar-right">
             <ThemeToggle />
-            <div className="hr-shell-user-chip" title={hrName || 'HR User'}>
+            <div className="hr-shell-user-chip" title={hrName || 'Admin User'}>
               <span className="hr-shell-user-avatar" aria-hidden="true">
-                {(hrName || 'H').charAt(0).toUpperCase()}
+                {(hrName || 'A').charAt(0).toUpperCase()}
               </span>
-              <span className="hr-shell-user-name">{hrName || 'HR User'}</span>
+              <span className="hr-shell-user-name">{hrName || 'Admin User'}</span>
             </div>
           </div>
         </header>
