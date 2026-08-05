@@ -56,7 +56,11 @@ function PracticeLogin() {
       if (err.response?.status === 401) {
         setErrors({ password: 'Invalid email or password' })
       } else if (err.response?.status === 403) {
-        setErrors({ email: 'This email is not a candidate account' })
+        // Almost always an admin account typed into the practice form — say so,
+        // and say what to do about it.
+        setErrors({
+          email: 'This is an Admin account. Practice needs a candidate account — ask your Admin to create candidate credentials for you.',
+        })
       } else {
         setErrors({ password: detail })
       }
