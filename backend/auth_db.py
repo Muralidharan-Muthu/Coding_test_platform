@@ -9,7 +9,7 @@ import os
 import duckdb
 import bcrypt
 
-DUCK_DB_PATH = os.path.join(os.path.dirname(__file__), "auth.duckdb")
+DUCK_DB_PATH = os.path.join(os.path.dirname(__file__), "data", "auth.duckdb")
 
 # ── Seed credentials ──────────────────────────────────────────────
 SEED_USERS = [

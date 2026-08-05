@@ -1,4 +1,8 @@
+import os
+import sys
 import sqlite3
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 def fix_mojibake(text):
     if not text: return text
@@ -18,7 +22,7 @@ def fix_mojibake(text):
         text = text.replace(bad, good)
     return text
 
-conn = sqlite3.connect('coding_platform.db')
+conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'coding_platform.db'))
 c = conn.cursor()
 
 tables = ['problems', 'custom_problems']

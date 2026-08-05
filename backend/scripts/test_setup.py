@@ -45,6 +45,7 @@ for file in files:
 
 print("\n🔍 Testing database initialization...")
 try:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
     from database import init_db
     init_db()
     print("✅ Database initialized successfully")

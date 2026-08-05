@@ -1,4 +1,8 @@
 """Verify all SQL problems have 5 test cases"""
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from problems import get_problem, list_problems_by_language
 
 print("=" * 60)

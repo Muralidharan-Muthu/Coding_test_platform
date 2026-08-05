@@ -1,7 +1,11 @@
+import os
+import sys
 import sqlite3
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from database import sync_custom_problems_export
 
-conn = sqlite3.connect('coding_platform.db')
+conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'coding_platform.db'))
 c = conn.cursor()
 
 c.execute("SELECT count(*) FROM custom_problems WHERE language='python'")

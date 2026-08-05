@@ -74,6 +74,27 @@ exam_sessions = {}  # {user_id: {"start_time": datetime, "end_time": datetime, "
 
 EXAM_DURATION_SECONDS = 2 * 60 * 60 + 30 * 60  # 2 hours 30 minutes
 
+# In-memory candidate problem sets store
+candidate_problem_sets = {}
+
+def get_candidate_problem_set(email: str):
+    return candidate_problem_sets.get(email)
+
+def save_candidate_problem_set(email: str, problems: list):
+    candidate_problem_sets[email] = problems
+
+def clear_candidate_problem_set(email: str):
+    if email in candidate_problem_sets:
+        del candidate_problem_sets[email]
+
+def get_random_mcq_questions_by_difficulty(easy_count=2, medium_count=2, hard_count=1):
+    return []
+
+def get_assigned_mcq_questions_for_session(session_id: str, test_type: str):
+    return []
+
+def get_assigned_mcq_questions(candidate_test_type: str):
+    return []
 
 def get_selected_exam_problem_ids(language: str) -> List[str]:
     """Return exam problem ids in the same language-specific order used for candidates."""

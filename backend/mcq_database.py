@@ -4,8 +4,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-MCQ_DATABASE_PATH = BASE_DIR / "mcq_questions.db"
-MCQ_SEED_PATH = BASE_DIR / "mcq_seed_questions.json"
+MCQ_DATABASE_PATH = BASE_DIR / "data" / "mcq_questions.db"
+MCQ_SEED_PATH = BASE_DIR / "data" / "mcq_seed_questions.json"
 
 
 def init_mcq_db():

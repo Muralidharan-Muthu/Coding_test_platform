@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), 'coding_platform.db'))
+conn = sqlite3.connect(os.path.join(os.path.dirname(__file__), '..', 'coding_platform.db'))
 cursor = conn.cursor()
 
 # Get all tables

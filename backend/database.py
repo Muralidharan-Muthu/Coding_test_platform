@@ -5,7 +5,7 @@ from pathlib import Path
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-CUSTOM_EXPORT_PATH = os.path.join(os.path.dirname(__file__), "custom_problems_export.json")
+CUSTOM_EXPORT_PATH = os.path.join(os.path.dirname(__file__), "data", "custom_problems_export.json")
 
 DATABASE_PATH = Path(__file__).resolve().with_name("coding_platform.db")
 
