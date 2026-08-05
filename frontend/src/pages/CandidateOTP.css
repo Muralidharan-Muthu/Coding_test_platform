@@ -90,22 +90,6 @@
   color: var(--color-secondary);
 }
 
-.otp-success-msg {
-  padding: 12px 16px;
-  background: var(--color-success-bg);
-  color: var(--color-success);
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
-.otp-error-msg {
-  padding: 12px 16px;
-  background: var(--color-error-bg);
-  color: var(--color-error);
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-
 .otp-add-section {
   margin-bottom: 24px;
   padding: 20px;

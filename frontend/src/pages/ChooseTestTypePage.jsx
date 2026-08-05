@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCandidates, setCandidateTestType, shuffleCandidateQuestions } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import './CandidateOTP.css'
 import './ChooseTestTypePage.css'
 
@@ -75,14 +76,13 @@ function normalizeTestType(testType) {
 
 function ChooseTestTypePage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [adminName, setAdminName] = useState('')
   const [candidates, setCandidates] = useState([])
   const [selectedTypes, setSelectedTypes] = useState({})
   const [saving, setSaving] = useState({})
   const [shuffling, setShuffling] = useState({})
   const [loading, setLoading] = useState(true)
-  const [success, setSuccess] = useState('')
-  const [error, setError] = useState('')
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('admin_logged_in')
@@ -96,16 +96,9 @@ function ChooseTestTypePage() {
     loadCandidates()
   }, [navigate])
 
-  useEffect(() => {
-    if (!success) return
-    const timer = setTimeout(() => setSuccess(''), 4000)
-    return () => clearTimeout(timer)
-  }, [success])
-
   const loadCandidates = async () => {
     try {
       setLoading(true)
-      setError('')
       const response = await getCandidates()
       const candidateRows = response.candidates || []
       setCandidates(candidateRows)
@@ -116,7 +109,7 @@ function ChooseTestTypePage() {
       })
       setSelectedTypes(nextTypes)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to load candidates')
+      toast.error(err.response?.data?.detail || 'Failed to load candidates')
     } finally {
       setLoading(false)
     }
@@ -164,8 +157,6 @@ function ChooseTestTypePage() {
   const handleSaveCandidate = async (candidate) => {
     const nextType = normalizeTestType(selectedTypes[candidate.email] || candidate.test_type)
     setSaving((prev) => ({ ...prev, [candidate.email]: true }))
-    setError('')
-    setSuccess('')
 
     try {
       await setCandidateTestType(candidate.email, nextType)
@@ -174,9 +165,9 @@ function ChooseTestTypePage() {
           ? { ...row, test_type: nextType }
           : row
       )))
-      setSuccess(`Saved ${TEST_TYPES[nextType].label} for ${candidate.username}.`)
+      toast.success(`Saved ${TEST_TYPES[nextType].label} for ${candidate.username}.`)
     } catch (err) {
-      setError(err.response?.data?.detail || `Failed to save test type for ${candidate.username}`)
+      toast.error(err.response?.data?.detail || `Failed to save test type for ${candidate.username}`)
     } finally {
       setSaving((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -185,8 +176,6 @@ function ChooseTestTypePage() {
   const handleShuffleCandidate = async (candidate) => {
     const nextType = normalizeTestType(selectedTypes[candidate.email] || candidate.test_type)
     setShuffling((prev) => ({ ...prev, [candidate.email]: true }))
-    setError('')
-    setSuccess('')
 
     try {
       const response = await shuffleCandidateQuestions(candidate.email, nextType)
@@ -195,9 +184,9 @@ function ChooseTestTypePage() {
           ? { ...row, test_type: nextType }
           : row
       )))
-      setSuccess(`Shuffled ${response.saved} questions for ${candidate.username} (${TEST_TYPES[nextType].label}).`)
+      toast.success(`Shuffled ${response.saved} questions for ${candidate.username} (${TEST_TYPES[nextType].label}).`)
     } catch (err) {
-      setError(err.response?.data?.detail || `Failed to shuffle questions for ${candidate.username}`)
+      toast.error(err.response?.data?.detail || `Failed to shuffle questions for ${candidate.username}`)
     } finally {
       setShuffling((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -218,8 +207,6 @@ function ChooseTestTypePage() {
       onLogout={handleLogout}
     >
       <main className="otp-content ctt-content">
-        {error && <div className="otp-error-msg">{error}</div>}
-        {success && <div className="otp-success-msg">{success}</div>}
 
         <section className="ctt-card">
           <h2>Choose Test Type For Individual Candidates</h2>

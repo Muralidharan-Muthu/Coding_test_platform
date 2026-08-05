@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import './QuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -414,12 +415,12 @@ function formatIST(isoString) {
 
 function QuestionsPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [adminName, setAdminName] = useState('')
   const [problems, setProblems] = useState([])
   const [activeTab, setActiveTab] = useState('python')
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
-  const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
 
   // Prompt Builder state
@@ -447,7 +448,6 @@ function QuestionsPage() {
     if (requestedTab === 'python' || requestedTab === 'sql') {
       setActiveTab(requestedTab)
       setShowAdd(false)
-      setSuccess('')
       setError('')
     }
   }, [location.state])
@@ -465,18 +465,15 @@ function QuestionsPage() {
     if (!window.confirm(`Delete "${title}"?`)) return
     try {
       await api.delete(`/admin/problems/${problemId}`)
-      setSuccess(`"${title}" deleted`)
-      setError('')
+      toast.success(`"${title}" deleted`)
       loadProblems()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to delete')
-      setSuccess('')
+      toast.error(err.response?.data?.detail || 'Failed to delete')
     }
   }
 
   const handleAdd = async () => {
     setError('')
-    setSuccess('')
     if (!jsonInput.trim()) {
       setError('Paste the AI-generated JSON here')
       return
@@ -505,7 +502,7 @@ function QuestionsPage() {
     }
     try {
       await api.post('/admin/problems', parsed)
-      setSuccess(`"${parsed.title}" added successfully!`)
+      toast.success(`"${parsed.title}" added successfully!`)
       setJsonInput('')
       setShowAdd(false)
       setGeneratedPrompt('')
@@ -525,7 +522,6 @@ function QuestionsPage() {
     setShowAdd(true)
     setJsonInput('')
     setError('')
-    setSuccess('')
     setGeneratedPrompt('')
     setDifficulty('Easy')
     setHasQuestion(false)
@@ -579,7 +575,6 @@ function QuestionsPage() {
 
     setActiveTab(nextTab)
     setShowAdd(false)
-    setSuccess('')
     setError('')
   }
 
@@ -639,8 +634,6 @@ function QuestionsPage() {
       onLogout={handleLogout}
     >
       <div className="questions-content">
-        {success && <div className="success-msg">{success}</div>}
-        {error && !showAdd && <div className="error-msg">{error}</div>}
 
         {renderQuestionTypeTabs('content')}
 

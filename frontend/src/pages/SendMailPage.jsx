@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { generateOTP, getCandidates, sendOTPEmail } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import './CandidateOTP.css'
 import './SendMailPage.css'
 
@@ -25,10 +26,9 @@ const NAV_ITEMS = [
 
 function SendMailPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [candidates, setCandidates] = useState([])
   const [generating, setGenerating] = useState({})
   const [sending, setSending] = useState({})
@@ -44,20 +44,13 @@ function SendMailPage() {
     loadCandidates()
   }, [navigate])
 
-  useEffect(() => {
-    if (!success) return
-    const timer = setTimeout(() => setSuccess(''), 4500)
-    return () => clearTimeout(timer)
-  }, [success])
-
   const loadCandidates = async () => {
     setLoading(true)
-    setError('')
     try {
       const response = await getCandidates()
       setCandidates(response.candidates || [])
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to load candidates')
+      toast.error(err.response?.data?.detail || 'Failed to load candidates')
     } finally {
       setLoading(false)
     }
@@ -99,15 +92,17 @@ function SendMailPage() {
 
   const handleGenerateOTP = async (candidate) => {
     setGenerating((prev) => ({ ...prev, [candidate.email]: true }))
-    setError('')
-    setSuccess('')
 
     try {
       const response = await generateOTP(candidate.username, candidate.email)
-      setSuccess(`OTP generated for ${candidate.email}: ${response.otp}`)
+      // Carries a code the admin may need to transcribe — stays until dismissed.
+      toast.success(`OTP generated for ${candidate.email}: ${response.otp}`, {
+        title: 'OTP generated',
+        duration: Infinity,
+      })
       await loadCandidates()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to generate OTP')
+      toast.error(err.response?.data?.detail || 'Failed to generate OTP')
     } finally {
       setGenerating((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -115,30 +110,36 @@ function SendMailPage() {
 
   const handleSendEmail = async (candidate) => {
     setSending((prev) => ({ ...prev, [candidate.email]: true }))
-    setError('')
-    setSuccess('')
 
     try {
       const response = await sendOTPEmail(candidate.username, candidate.email)
       if (response.delivered) {
-        setSuccess(
+        toast.success(
           response.otp_regenerated
             ? `Email sent successfully to ${candidate.email} with a fresh OTP`
-            : `Email sent successfully to ${candidate.email}`
+            : `Email sent successfully to ${candidate.email}`,
+          { title: 'Mail sent' }
         )
       } else if (response.status === 'warning') {
+        // Delivery failed but the OTP is usable — the admin has to pass it on
+        // by hand, so this must not disappear on a timer.
         const manualDetails = [
           response.message,
           response.otp ? `OTP: ${response.otp}` : '',
           response.login_link ? `Login: ${response.login_link}` : '',
         ].filter(Boolean).join(' ')
-        setError(manualDetails)
+        toast.warning(manualDetails, {
+          title: 'Send this manually',
+          duration: Infinity,
+        })
       } else {
-        setSuccess(`Email sent to ${candidate.email}`)
+        toast.success(`Email sent to ${candidate.email}`, { title: 'Mail sent' })
       }
       await loadCandidates()
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || `Failed to send mail to ${candidate.email}`)
+      toast.error(
+        err.response?.data?.detail || err.message || `Failed to send mail to ${candidate.email}`
+      )
     } finally {
       setSending((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -159,9 +160,6 @@ function SendMailPage() {
       onLogout={handleLogout}
     >
       <div className="otp-content send-mail-content">
-        {error && <div className="otp-error-msg">{error}</div>}
-        {success && <div className="otp-success-msg">{success}</div>}
-
         <div className="otp-table-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
             <h3 style={{ margin: 0 }}>Imported Candidates ({dedupedCandidates.rows.length})</h3>

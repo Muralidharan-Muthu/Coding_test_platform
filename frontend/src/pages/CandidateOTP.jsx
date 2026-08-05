@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import * as XLSX from 'xlsx'
 import './CandidateOTP.css'
 
@@ -27,11 +28,10 @@ const EMPTY_EDIT_FORM = { username: '', email: '' }
 
 function CandidateOTP() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [adminName, setAdminName] = useState('')
   const [candidates, setCandidates] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
   const [importing, setImporting] = useState(false)
   const [clearing, setClearing] = useState(false)
   const [deleting, setDeleting] = useState({})
@@ -63,7 +63,7 @@ function CandidateOTP() {
       const response = await getCandidates()
       setCandidates(response.candidates || [])
     } catch (err) {
-      setError('Failed to load candidates')
+      toast.error('Failed to load candidates')
       console.error(err)
     } finally {
       setLoading(false)
@@ -100,17 +100,15 @@ function CandidateOTP() {
       return
     }
 
-    setError('')
-    setSuccess('')
     setClearing(true)
 
     try {
       const response = await clearAllCandidates()
-      setSuccess(response.message || 'All candidates deleted successfully')
+      toast.success(response.message || 'All candidates deleted successfully')
       resetEditState()
       await loadCandidates()
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to delete candidates')
+      toast.error(err.response?.data?.detail || 'Failed to delete candidates')
     } finally {
       setClearing(false)
     }
@@ -121,8 +119,6 @@ function CandidateOTP() {
       return
     }
 
-    setError('')
-    setSuccess('')
     setDeleting((prev) => ({ ...prev, [candidate.email]: true }))
 
     try {
@@ -130,10 +126,10 @@ function CandidateOTP() {
       if (editingEmail === candidate.email) {
         resetEditState()
       }
-      setSuccess(response.message || `Candidate ${candidate.username} deleted successfully`)
+      toast.success(response.message || `Candidate ${candidate.username} deleted successfully`)
       await loadCandidates()
     } catch (err) {
-      setError(err.response?.data?.detail || `Failed to delete candidate ${candidate.username}`)
+      toast.error(err.response?.data?.detail || `Failed to delete candidate ${candidate.username}`)
     } finally {
       setDeleting((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -142,33 +138,30 @@ function CandidateOTP() {
   const handleAddCandidate = async () => {
     const validation = validateCandidateInput(newUsername, newEmail)
     if (!validation.valid) {
-      setError(validation.message)
+      toast.error(validation.message)
       return
     }
 
-    setError('')
-    setSuccess('')
     setImporting(true)
 
     try {
       const response = await importCandidates([{ username: validation.username, email: validation.email }])
 
       if (response.duplicates && response.duplicates.length > 0) {
-        setError(`Duplicate candidate skipped: ${validation.username} (${validation.email}) already exists`)
-        setSuccess('')
+        toast.warning(`Duplicate candidate skipped: ${validation.username} (${validation.email}) already exists`)
       } else if (response.imported && response.imported.length > 0) {
-        setSuccess(`Candidate ${validation.username} added successfully`)
+        toast.success(`Candidate ${validation.username} added successfully`)
         setNewUsername('')
         setNewEmail('')
       } else {
-        setError('Failed to add candidate. Please try again.')
+        toast.error('Failed to add candidate. Please try again.')
       }
 
       await loadCandidates()
     } catch (err) {
       console.error('Error adding candidate:', err)
       const errorMsg = err.response?.data?.detail || err.message || 'Failed to add candidate'
-      setError(errorMsg)
+      toast.error(errorMsg)
     } finally {
       setImporting(false)
     }
@@ -182,17 +175,15 @@ function CandidateOTP() {
     input.onchange = (e) => {
       const file = e.target.files?.[0]
       if (!file) {
-        setError('No file selected')
+        toast.error('No file selected')
         return
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        setError('File size must be less than 5MB')
+        toast.error('File size must be less than 5MB')
         return
       }
 
-      setError('')
-      setSuccess('')
       setImporting(true)
 
       const reader = new FileReader()
@@ -223,7 +214,7 @@ function CandidateOTP() {
             .filter(Boolean)
 
           if (parsedCandidates.length === 0) {
-            setError('No valid candidates found in Excel file. Ensure columns are named "username" and "email".')
+            toast.error('No valid candidates found in Excel file. Ensure columns are named "username" and "email".')
             setImporting(false)
             return
           }
@@ -239,7 +230,7 @@ function CandidateOTP() {
             }
           }
 
-          setSuccess(message)
+          toast.success(message)
           await loadCandidates()
         } catch (err) {
           console.error('Excel import error:', err)
@@ -249,7 +240,7 @@ function CandidateOTP() {
           } else {
             errorMsg += 'Make sure columns are named "username" and "email".'
           }
-          setError(errorMsg)
+          toast.error(errorMsg)
         } finally {
           setImporting(false)
           input.value = ''
@@ -257,7 +248,7 @@ function CandidateOTP() {
       }
 
       reader.onerror = () => {
-        setError('Failed to read file')
+        toast.error('Failed to read file')
         setImporting(false)
       }
 
@@ -268,8 +259,6 @@ function CandidateOTP() {
   }
 
   const startEditing = (candidate) => {
-    setError('')
-    setSuccess('')
     setEditingEmail(candidate.email)
     setEditForm({
       username: candidate.username || '',
@@ -279,7 +268,6 @@ function CandidateOTP() {
 
   const cancelEditing = () => {
     resetEditState()
-    setError('')
   }
 
   const handleEditChange = (field, value) => {
@@ -292,21 +280,19 @@ function CandidateOTP() {
   const handleSaveEdit = async (candidate) => {
     const validation = validateCandidateInput(editForm.username, editForm.email)
     if (!validation.valid) {
-      setError(validation.message)
+      toast.error(validation.message)
       return
     }
 
-    setError('')
-    setSuccess('')
     setSaving((prev) => ({ ...prev, [candidate.email]: true }))
 
     try {
       const response = await updateCandidate(candidate.email, validation.username, validation.email)
-      setSuccess(response.message || 'Candidate updated successfully')
+      toast.success(response.message || 'Candidate updated successfully')
       resetEditState()
       await loadCandidates()
     } catch (err) {
-      setError(err.response?.data?.detail || `Failed to update candidate ${candidate.username}`)
+      toast.error(err.response?.data?.detail || `Failed to update candidate ${candidate.username}`)
     } finally {
       setSaving((prev) => ({ ...prev, [candidate.email]: false }))
     }
@@ -327,8 +313,6 @@ function CandidateOTP() {
       onLogout={handleLogout}
     >
       <div className="otp-content">
-        {error && <div className="otp-error-msg">{error}</div>}
-        {success && <div className="otp-success-msg">{success}</div>}
 
         <div className="otp-instructions">
           <h3>How to Manage Candidates:</h3>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { createMcqQuestion, deleteMcqQuestion } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import './MCQQuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -81,12 +82,12 @@ function normalizeMcqQuestion(rawQuestion) {
 
 function MCQQuestionsPage() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [questions, setQuestions] = useState([])
   const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
-  const [success, setSuccess] = useState('')
   const [error, setError] = useState('')
   const [expandedQuestions, setExpandedQuestions] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -142,13 +143,11 @@ function MCQQuestionsPage() {
     setShowAdd(true)
     setJsonInput('')
     setError('')
-    setSuccess('')
   }
 
   const handleAdd = async () => {
     if (!jsonInput.trim()) {
       setError('Paste the MCQ JSON here')
-      setSuccess('')
       return
     }
 
@@ -161,7 +160,6 @@ function MCQQuestionsPage() {
       parsed = JSON.parse(sanitized)
     } catch {
       setError('Invalid JSON. Please check the format and try again.')
-      setSuccess('')
       return
     }
 
@@ -169,20 +167,18 @@ function MCQQuestionsPage() {
 
     if (questionsToCreate.length === 0) {
       setError('No MCQ questions found in the pasted JSON')
-      setSuccess('')
       return
     }
 
     setSubmitting(true)
     setError('')
-    setSuccess('')
 
     try {
       for (const question of questionsToCreate) {
         await createMcqQuestion(question)
       }
 
-      setSuccess(
+      toast.success(
         `${questionsToCreate.length} MCQ question${questionsToCreate.length === 1 ? '' : 's'} added successfully!`
       )
       setJsonInput('')
@@ -190,7 +186,6 @@ function MCQQuestionsPage() {
       await loadQuestions()
     } catch (submitError) {
       setError(submitError.response?.data?.detail || 'Failed to add MCQ question(s)')
-      setSuccess('')
     } finally {
       setSubmitting(false)
     }
@@ -207,12 +202,10 @@ function MCQQuestionsPage() {
 
     try {
       await deleteMcqQuestion(questionId)
-      setSuccess(`"${questionTitle}" deleted`)
-      setError('')
+      toast.success(`"${questionTitle}" deleted`)
       await loadQuestions()
     } catch (deleteError) {
-      setError(deleteError.response?.data?.detail || 'Failed to delete MCQ question')
-      setSuccess('')
+      toast.error(deleteError.response?.data?.detail || 'Failed to delete MCQ question')
     }
   }
 
@@ -313,8 +306,6 @@ function MCQQuestionsPage() {
       onLogout={handleLogout}
     >
       <div className="questions-content">
-        {success && <div className="success-msg">{success}</div>}
-        {error && !showAdd && <div className="error-msg">{error}</div>}
 
         {renderQuestionTypeTabs('content')}
 
