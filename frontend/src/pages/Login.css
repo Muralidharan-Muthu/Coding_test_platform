@@ -130,6 +130,49 @@
   padding: 4px 0;
 }
 
+/* Inline hint next to a field label (e.g. OTP length / validity) */
+.login-label-hint {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-subtle);
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* OTP field — monospaced and tracked out so digits are easy to check */
+.form-group input.otp-input {
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-align: center;
+}
+
+.form-group input.otp-input::placeholder {
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: normal;
+}
+
+.login-footer-note {
+  margin: 22px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.login-footer-note a {
+  color: var(--color-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-footer-note a:hover {
+  text-decoration: underline;
+}
+
 /* ─── Button ─── */
 .login-btn {
   width: 100%;

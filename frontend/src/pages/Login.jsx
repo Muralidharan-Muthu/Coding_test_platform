@@ -1,21 +1,32 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { candidateLogin } from '../api'
+import { login } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import './Login.css'
 
 function Login() {
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [otp, setOtp] = useState('')
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
+  const handleOtpChange = (e) => {
+    // Digits only, capped at the 6-digit OTP length.
+    setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const usernameValue = username.trim()
     const emailValue = email.trim().toLowerCase()
-    const passwordValue = password.trim()
+    const otpValue = otp.trim()
     const newErrors = {}
+
+    if (!usernameValue) {
+      newErrors.username = 'Enter the username from your invitation email'
+    }
 
     if (!emailValue) {
       newErrors.email = 'Enter your email'
@@ -23,8 +34,10 @@ function Login() {
       newErrors.email = 'Enter a valid email'
     }
 
-    if (!passwordValue) {
-      newErrors.password = 'Enter your password'
+    if (!otpValue) {
+      newErrors.otp = 'Enter the 6-digit OTP'
+    } else if (otpValue.length !== 6) {
+      newErrors.otp = 'OTP must be 6 digits'
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -36,23 +49,30 @@ function Login() {
     setLoading(true)
 
     try {
-      const response = await candidateLogin(emailValue, passwordValue)
+      // The OTP is verified server-side against candidate_otp; never fetch the
+      // candidate list here, it would expose every candidate's OTP to the browser.
+      const response = await login(usernameValue, emailValue, otpValue, 'office')
 
+      localStorage.setItem('session_id', response.session_id)
       localStorage.setItem('user_id', response.user_id)
       localStorage.setItem('user_name', response.name)
       localStorage.setItem('user_email', response.email)
-      localStorage.setItem('test_location', 'office')
+      localStorage.setItem('test_location', response.test_location)
 
       navigate('/dashboard')
     } catch (err) {
       console.error('Login error:', err)
-      const detail = err.response?.data?.detail || 'Login failed. Please try again.'
-      if (err.response?.status === 401) {
-        setErrors({ password: 'Invalid email or password' })
-      } else if (err.response?.status === 403) {
-        setErrors({ email: 'This email is not a candidate account' })
+      const detail = err.response?.data?.detail || 'Verification failed. Please try again.'
+
+      if (typeof detail === 'string' && detail.includes('Candidate not found')) {
+        setErrors({
+          username: 'Username and email do not match any invitation',
+          email: 'Username and email do not match any invitation',
+        })
+      } else if (typeof detail === 'string' && detail.toUpperCase().includes('OTP')) {
+        setErrors({ otp: detail })
       } else {
-        setErrors({ password: detail })
+        setErrors({ otp: detail })
       }
     } finally {
       setLoading(false)
@@ -76,13 +96,27 @@ function Login() {
           </div>
 
           <div className="login-center-header">
-            <h1>Candidate Sign In</h1>
+            <h1>Candidate Verification</h1>
             <p className="login-center-sub">
-              Your login credentials are provided by the Admin.
+              Enter the username and OTP from your invitation email to start your assessment.
             </p>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="login-center-form">
+            <div className="form-group">
+              <label htmlFor="candidateUsername">Username</label>
+              <input
+                id="candidateUsername"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Username from your email"
+                disabled={loading}
+                autoComplete="username"
+              />
+              {errors.username && <p className="error">{errors.username}</p>}
+            </div>
+
             <div className="form-group">
               <label htmlFor="candidateEmail">Email</label>
               <input
@@ -90,7 +124,7 @@ function Login() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder="Email the invitation was sent to"
                 disabled={loading}
                 autoComplete="email"
               />
@@ -98,30 +132,40 @@ function Login() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="candidatePassword">Password</label>
+              <label htmlFor="candidateOtp">
+                OTP <span className="login-label-hint">6 digits, valid 24 hours</span>
+              </label>
               <input
-                id="candidatePassword"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                id="candidateOtp"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={otp}
+                onChange={handleOtpChange}
+                placeholder="Enter 6-digit OTP"
+                maxLength={6}
                 disabled={loading}
-                autoComplete="current-password"
+                autoComplete="one-time-code"
+                className="otp-input"
               />
-              {errors.password && <p className="error">{errors.password}</p>}
+              {errors.otp && <p className="error">{errors.otp}</p>}
             </div>
 
             <button type="submit" disabled={loading} className="login-btn">
               {loading ? (
                 <>
                   <span className="btn-spinner" aria-hidden="true"></span>
-                  Signing in...
+                  Verifying...
                 </>
               ) : (
-                'Sign In'
+                'Verify & Start'
               )}
             </button>
           </form>
+
+          <p className="login-footer-note">
+            Just want to practice? <a href="/practice">Go to Practice →</a>
+          </p>
         </div>
       </main>
     </div>
