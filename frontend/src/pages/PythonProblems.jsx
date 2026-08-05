@@ -76,18 +76,6 @@ function PythonProblems() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Guest bypass — skip API calls, inject mock data
-      if (sessionId === 'guest-session') {
-        setRemainingTime(150 * 60) // 2h 30m
-        setProblems([
-          { id: 'py-1', title: 'Two Sum', difficulty: 'Easy', marks: 10, time_limit: 20 },
-          { id: 'py-2', title: 'Reverse a String', difficulty: 'Easy', marks: 10, time_limit: 20 },
-          { id: 'py-3', title: 'Fibonacci Series', difficulty: 'Medium', marks: 20, time_limit: 30 },
-        ])
-        setLoading(false)
-        return
-      }
-
       // Check exam status
       const status = await getExamStatus(sessionId)
       

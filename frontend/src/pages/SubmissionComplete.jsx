@@ -53,7 +53,7 @@ function SubmissionComplete() {
             </li>
             <li>
               <span aria-hidden="true">✓</span>
-              The HR team will review your answers
+              The Admin team will review your answers
             </li>
             <li>
               <span aria-hidden="true">✓</span>

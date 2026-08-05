@@ -46,3 +46,5 @@ Thumbs.db
 # Qoder logs
 .qoder/*.log
 *.log
+# Local DB backups taken before destructive migrations
+.backup-*/

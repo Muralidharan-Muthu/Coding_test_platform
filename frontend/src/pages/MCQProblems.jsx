@@ -78,50 +78,6 @@ function MCQProblems() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Guest bypass — skip API calls, inject mock MCQ questions
-      if (sessionId === 'guest-session') {
-        setRemainingTime(150 * 60)
-        setQuestions([
-          {
-            id: 'mcq-1',
-            question_title: 'Python Data Types',
-            question: 'Which of the following is an immutable data type in Python?',
-            options: ['List', 'Dictionary', 'Tuple', 'Set'],
-            difficulty: 'Easy', marks: 5, time_limit: 5, topic: 'Python Basics',
-          },
-          {
-            id: 'mcq-2',
-            question_title: 'SQL Joins',
-            question: 'Which JOIN returns rows that have matching values in both tables?',
-            options: ['LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'FULL OUTER JOIN'],
-            difficulty: 'Easy', marks: 5, time_limit: 5, topic: 'SQL',
-          },
-          {
-            id: 'mcq-3',
-            question_title: 'Big-O Notation',
-            question: 'What is the time complexity of binary search?',
-            options: ['O(n)', 'O(log n)', 'O(n²)', 'O(1)'],
-            difficulty: 'Medium', marks: 10, time_limit: 5, topic: 'Algorithms',
-          },
-          {
-            id: 'mcq-4',
-            question_title: 'OOP Concepts',
-            question: 'Which OOP principle allows a class to inherit from multiple classes?',
-            options: ['Encapsulation', 'Polymorphism', 'Multiple Inheritance', 'Abstraction'],
-            difficulty: 'Medium', marks: 10, time_limit: 5, topic: 'OOP',
-          },
-          {
-            id: 'mcq-5',
-            question_title: 'Database Normalization',
-            question: 'Which normal form eliminates transitive functional dependencies?',
-            options: ['1NF', '2NF', '3NF', 'BCNF'],
-            difficulty: 'Hard', marks: 20, time_limit: 10, topic: 'Database',
-          },
-        ])
-        setLoading(false)
-        return
-      }
-
       const status = await getExamStatus(sessionId)
 
       if (status.status === 'not_started') {
@@ -227,7 +183,7 @@ function MCQProblems() {
         {questions.length === 0 ? (
           <div className="mcq-empty-state">
             <h2>No MCQ questions assigned</h2>
-            <p>Return to the assessment sections page and contact HR if this looks unexpected.</p>
+            <p>Return to the assessment sections page and contact Admin if this looks unexpected.</p>
           </div>
         ) : (
           <>

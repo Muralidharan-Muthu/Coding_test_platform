@@ -93,7 +93,7 @@ export const exportAssessmentResults = async (filters = {}) => {
   const downloadUrl = window.URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = downloadUrl
-  link.setAttribute('download', `HR_Assessment_Report_${new Date().toISOString().split('T')[0]}.xlsx`)
+  link.setAttribute('download', `Admin_Assessment_Report_${new Date().toISOString().split('T')[0]}.xlsx`)
   document.body.appendChild(link)
   link.click()
   link.remove()

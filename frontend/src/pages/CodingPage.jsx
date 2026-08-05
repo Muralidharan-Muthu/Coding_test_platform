@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { clearCandidateSession, clearHrSession, clearPracticeSession } from '../utils/sessionStorage'
+import { clearCandidateSession, clearAdminSession, clearPracticeSession } from '../utils/sessionStorage'
 import './CodingPage.css'
 
 const PROCTORING_EXAM_ID = 1
@@ -210,15 +210,15 @@ function CodingPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const requestedMode = new URLSearchParams(location.search).get('mode')
-  const isHrPreviewMode = Boolean(localStorage.getItem('hr_logged_in'))
-    && requestedMode === 'hr-preview'
+  const isAdminPreviewMode = Boolean(localStorage.getItem('admin_logged_in'))
+    && requestedMode === 'admin-preview'
   const isPracticeMode = localStorage.getItem('practice_logged_in') === 'true'
     && requestedMode === 'practice'
-  // Practice and HR preview both evaluate against test cases without persisting
-  // a submission, so they share the stateless /hr/preview/* endpoints.
-  const isStatelessMode = isHrPreviewMode || isPracticeMode
+  // Practice and Admin preview both evaluate against test cases without persisting
+  // a submission, so they share the stateless /admin/preview/* endpoints.
+  const isStatelessMode = isAdminPreviewMode || isPracticeMode
   const buildCodingPath = (id) => {
-    if (isHrPreviewMode) return `/coding/${id}?mode=hr-preview`
+    if (isAdminPreviewMode) return `/coding/${id}?mode=admin-preview`
     if (isPracticeMode) return `/coding/${id}?mode=practice`
     return `/coding/${id}`
   }
@@ -485,9 +485,9 @@ function CodingPage() {
     }
 
     const name = localStorage.getItem('user_name')
-    const hrName = localStorage.getItem('hr_name')
-    if (!name && !hrName) { navigate('/'); return }
-    setUserName(name || hrName)
+    const adminName = localStorage.getItem('admin_name')
+    if (!name && !adminName) { navigate('/'); return }
+    setUserName(name || adminName)
     checkExamStatus()
     loadProblem()
     return () => {
@@ -769,124 +769,6 @@ function CodingPage() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Guest bypass — inject mock problem data based on problemId
-      if (sessionId === 'guest-session' && !isStatelessMode) {
-        const MOCK_PROBLEMS = {
-          'py-1': {
-            id: 'py-1',
-            title: 'Two Sum',
-            language: 'python',
-            difficulty: 'Easy',
-            marks: 10,
-            time_limit: 20,
-            statement: 'Given an array of integers nums and an integer target, return the indices of the two numbers that add up to target.\n\nYou may assume each input has exactly one solution, and you may not use the same element twice.\n\nExample:\nInput: nums = [2, 7, 11, 15], target = 9\nOutput: [0, 1]  (because nums[0] + nums[1] = 2 + 7 = 9)',
-            input_format: 'Line 1: Space-separated integers (the array)\nLine 2: The target integer',
-            output_format: 'A list of two indices [i, j] such that nums[i] + nums[j] == target',
-            starter_code: 'def two_sum(nums, target):\n    # Write your solution here\n    pass\n\n# Read input\nnums = list(map(int, input().split()))\ntarget = int(input())\nprint(two_sum(nums, target))',
-            sample_input: '2 7 11 15\n9',
-            sample_output: '[0, 1]',
-            test_cases: [{ input: '2 7 11 15\n9', expected_output: '[0, 1]' }],
-          },
-          'py-2': {
-            id: 'py-2',
-            title: 'Reverse a String',
-            language: 'python',
-            difficulty: 'Easy',
-            marks: 10,
-            time_limit: 20,
-            statement: 'Write a function that reverses a string and returns it.\n\nExample:\nInput: "hello"\nOutput: "olleh"',
-            input_format: 'A single line containing the string to reverse',
-            output_format: 'The reversed string',
-            starter_code: 'def reverse_string(s):\n    # Write your solution here\n    pass\n\ns = input()\nprint(reverse_string(s))',
-            sample_input: 'hello',
-            sample_output: 'olleh',
-            test_cases: [{ input: 'hello', expected_output: 'olleh' }],
-          },
-          'py-3': {
-            id: 'py-3',
-            title: 'Fibonacci Series',
-            language: 'python',
-            difficulty: 'Medium',
-            marks: 20,
-            time_limit: 30,
-            statement: 'Given a number n, return a list of the first n Fibonacci numbers.\n\nThe Fibonacci sequence starts with 0 and 1, and each subsequent number is the sum of the two preceding ones.\n\nExample:\nInput: 7\nOutput: [0, 1, 1, 2, 3, 5, 8]',
-            input_format: 'A single integer n (1 ≤ n ≤ 50)',
-            output_format: 'A list of the first n Fibonacci numbers',
-            starter_code: 'def fibonacci(n):\n    # Write your solution here\n    pass\n\nn = int(input())\nprint(fibonacci(n))',
-            sample_input: '7',
-            sample_output: '[0, 1, 1, 2, 3, 5, 8]',
-            test_cases: [{ input: '7', expected_output: '[0, 1, 1, 2, 3, 5, 8]' }],
-          },
-          'sql-1': {
-            id: 'sql-1',
-            title: 'Find All Customers',
-            language: 'sql',
-            difficulty: 'Easy',
-            marks: 10,
-            time_limit: 20,
-            statement: 'Write a SQL query to fetch all records from the customers table.\n\nReturn all columns for every row in the table.',
-            input_format: 'Table: customers\nColumns: id (INT), name (VARCHAR), email (VARCHAR), city (VARCHAR)',
-            output_format: 'All rows and columns from the customers table',
-            starter_code: '-- Write your SQL query here\nSELECT * FROM customers;',
-            sample_input: '',
-            sample_output: 'All rows from customers table',
-            test_cases: [],
-          },
-          'sql-2': {
-            id: 'sql-2',
-            title: 'Sales Report Query',
-            language: 'sql',
-            difficulty: 'Medium',
-            marks: 20,
-            time_limit: 30,
-            statement: 'Write a SQL query to get total sales per product, ordered by total sales in descending order.\n\nGroup by product_id and calculate the sum of the amount column.',
-            input_format: 'Table: sales\nColumns: id (INT), product_id (INT), amount (DECIMAL), sale_date (DATE)',
-            output_format: 'product_id and total_sales, ordered by total_sales DESC',
-            starter_code: '-- Write your SQL query here\nSELECT product_id, SUM(amount) as total_sales\nFROM sales\nGROUP BY product_id\nORDER BY total_sales DESC;',
-            sample_input: '',
-            sample_output: 'Product sales summary',
-            test_cases: [],
-          },
-        }
-
-        const mockProblem = MOCK_PROBLEMS[problemId] || {
-          id: problemId,
-          title: `Problem ${problemId}`,
-          language: problemId.startsWith('sql') ? 'sql' : 'python',
-          difficulty: 'Medium',
-          marks: 10,
-          time_limit: 30,
-          statement: 'Solve this problem.',
-          input_format: '',
-          output_format: '',
-          starter_code: '# Write your solution here\n',
-          sample_input: '',
-          sample_output: '',
-          test_cases: [],
-        }
-
-        const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
-        setProblem(mockProblem)
-        setCode(answers[problemId] ? answers[problemId].code : mockProblem.starter_code)
-        setStarterCode(mockProblem.starter_code)
-        if (mockProblem.language === 'python') setCustomInput(mockProblem.sample_input)
-
-        // Set mock problem list for navigation
-        const mockList = mockProblem.language === 'python'
-          ? [
-              { id: 'py-1', title: 'Two Sum', difficulty: 'Easy', marks: 10 },
-              { id: 'py-2', title: 'Reverse a String', difficulty: 'Easy', marks: 10 },
-              { id: 'py-3', title: 'Fibonacci Series', difficulty: 'Medium', marks: 20 },
-            ]
-          : [
-              { id: 'sql-1', title: 'Find All Customers', difficulty: 'Easy', marks: 10 },
-              { id: 'sql-2', title: 'Sales Report Query', difficulty: 'Medium', marks: 20 },
-            ]
-        setProblemList(mockList)
-        setCurrentProblemIndex(mockList.findIndex(p => p.id === problemId))
-        return
-      }
-
       const data = await getProblem(problemId)
       setProblem(data)
       // Practice never restores exam answers — every visit starts from the starter code.
@@ -908,8 +790,8 @@ function CodingPage() {
       let problems
       if (isPracticeMode) {
         problems = await getPracticeProblems(language)
-      } else if (isHrPreviewMode) {
-        const response = await api.get('/hr/problems')
+      } else if (isAdminPreviewMode) {
+        const response = await api.get('/admin/problems')
         problems = (response.data || []).filter((item) => item.language === language)
       } else {
         problems = language === 'python' ? await getPythonProblems() : await getSqlProblems()
@@ -925,8 +807,8 @@ function CodingPage() {
     if (isPracticeMode) {
       navigate('/practice/problems')
     }
-    else if (isHrPreviewMode) {
-      navigate('/hr/questions', {
+    else if (isAdminPreviewMode) {
+      navigate('/admin/questions', {
         state: { activeTab: problem?.language === 'sql' ? 'sql' : 'python' }
       })
     }
@@ -1024,9 +906,9 @@ function CodingPage() {
     }
 
     localStorage.removeItem(EXAM_SECURE_MODE_KEY)
-    if (isHrPreviewMode) {
-      clearHrSession()
-      navigate('/hr')
+    if (isAdminPreviewMode) {
+      clearAdminSession()
+      navigate('/admin')
       return
     }
 

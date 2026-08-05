@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminLogin } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import './HRLogin.css'
+import './AdminLogin.css'
 
-function HRLogin() {
+function AdminLogin() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState({})
@@ -37,8 +37,8 @@ function HRLogin() {
 
     try {
       const response = await adminLogin(emailValue, passwordValue)
-      localStorage.setItem('hr_name', response.name)
-      localStorage.setItem('hr_logged_in', 'true')
+      localStorage.setItem('admin_name', response.name)
+      localStorage.setItem('admin_logged_in', 'true')
       navigate('/dashboard/assessment')
     } catch (err) {
       console.error('Admin login error:', err)
@@ -55,30 +55,30 @@ function HRLogin() {
   }
 
   return (
-    <div className="hr-login-page hr-login-page--centered">
-      <div className="hr-login-theme-corner">
+    <div className="admin-login-page admin-login-page--centered">
+      <div className="admin-login-theme-corner">
         <ThemeToggle />
       </div>
 
-      <main className="hr-login-center-panel">
-        <div className="hr-login-center-box">
-          <div className="hr-login-center-logo" aria-label="Platform logo">
+      <main className="admin-login-center-panel">
+        <div className="admin-login-center-box">
+          <div className="admin-login-center-logo" aria-label="Platform logo">
             <img
               src="/assets/meptrasoft-logo.png"
               alt="Coding Platform"
-              className="hr-login-center-logo-img"
+              className="admin-login-center-logo-img"
             />
           </div>
 
-          <div className="hr-login-center-header">
+          <div className="admin-login-center-header">
             <h1>Admin Sign In</h1>
-            <p className="hr-login-center-sub">
+            <p className="admin-login-center-sub">
               Sign in to manage coding assessments and candidates.
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} noValidate className="hr-login-center-form">
-            <div className="hr-form-group">
+          <form onSubmit={handleSubmit} noValidate className="admin-login-center-form">
+            <div className="admin-form-group">
               <label htmlFor="adminEmail">Email</label>
               <input
                 id="adminEmail"
@@ -92,7 +92,7 @@ function HRLogin() {
               {errors.email && <p className="error">{errors.email}</p>}
             </div>
 
-            <div className="hr-form-group">
+            <div className="admin-form-group">
               <label htmlFor="adminPassword">Password</label>
               <input
                 id="adminPassword"
@@ -106,10 +106,10 @@ function HRLogin() {
               {errors.password && <p className="error">{errors.password}</p>}
             </div>
 
-            <button type="submit" disabled={loading} className="hr-login-btn">
+            <button type="submit" disabled={loading} className="admin-login-btn">
               {loading ? (
                 <>
-                  <span className="hr-btn-spinner" aria-hidden="true"></span>
+                  <span className="admin-btn-spinner" aria-hidden="true"></span>
                   Signing in...
                 </>
               ) : (
@@ -123,4 +123,4 @@ function HRLogin() {
   )
 }
 
-export default HRLogin
+export default AdminLogin

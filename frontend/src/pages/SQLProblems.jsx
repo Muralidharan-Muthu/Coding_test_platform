@@ -59,17 +59,6 @@ function SQLProblems() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Guest bypass — skip API calls, inject mock data
-      if (sessionId === 'guest-session') {
-        setRemainingTime(150 * 60)
-        setProblems([
-          { id: 'sql-1', title: 'Find All Customers', difficulty: 'Easy', marks: 10, time_limit: 20 },
-          { id: 'sql-2', title: 'Sales Report Query', difficulty: 'Medium', marks: 20, time_limit: 30 },
-        ])
-        setLoading(false)
-        return
-      }
-
       const status = await getExamStatus(sessionId)
       if (status.status === 'not_started') { navigate('/dashboard'); return }
       if (status.status === 'completed') { navigate('/submission-complete'); return }

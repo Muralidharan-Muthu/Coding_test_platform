@@ -10,9 +10,9 @@ const CANDIDATE_SESSION_KEYS = [
   'exam_secure_mode_started',
 ]
 
-const HR_SESSION_KEYS = [
-  'hr_name',
-  'hr_logged_in',
+const ADMIN_SESSION_KEYS = [
+  'admin_name',
+  'admin_logged_in',
 ]
 
 const PRACTICE_SESSION_KEYS = [
@@ -26,8 +26,8 @@ export function clearCandidateSession() {
   CANDIDATE_SESSION_KEYS.forEach((key) => localStorage.removeItem(key))
 }
 
-export function clearHrSession() {
-  HR_SESSION_KEYS.forEach((key) => localStorage.removeItem(key))
+export function clearAdminSession() {
+  ADMIN_SESSION_KEYS.forEach((key) => localStorage.removeItem(key))
 }
 
 export function clearPracticeSession() {

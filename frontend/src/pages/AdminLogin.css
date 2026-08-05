@@ -1,18 +1,18 @@
 /* ─── Admin Login Page — Centered Layout ─── */
-.hr-login-page {
+.admin-login-page {
   min-height: 100vh;
   background: var(--color-bg);
   transition: background var(--transition-theme);
   position: relative;
 }
 
-.hr-login-page--centered {
+.admin-login-page--centered {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.hr-login-theme-corner {
+.admin-login-theme-corner {
   position: fixed;
   top: 20px;
   right: 24px;
@@ -20,7 +20,7 @@
 }
 
 /* ─── Center Panel ─── */
-.hr-login-center-panel {
+.admin-login-center-panel {
   width: 100%;
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@
   padding: 40px 20px;
 }
 
-.hr-login-center-box {
+.admin-login-center-box {
   width: 100%;
   max-width: 420px;
   background: var(--color-surface);
@@ -42,23 +42,23 @@
 }
 
 /* ─── Logo ─── */
-.hr-login-center-logo {
+.admin-login-center-logo {
   display: flex;
   justify-content: center;
 }
 
-.hr-login-center-logo-img {
+.admin-login-center-logo-img {
   height: 52px;
   width: auto;
   object-fit: contain;
 }
 
 /* ─── Header ─── */
-.hr-login-center-header {
+.admin-login-center-header {
   text-align: center;
 }
 
-.hr-login-center-header h1 {
+.admin-login-center-header h1 {
   font-size: 26px;
   font-weight: 800;
   color: var(--color-text);
@@ -66,7 +66,7 @@
   letter-spacing: -0.4px;
 }
 
-.hr-login-center-sub {
+.admin-login-center-sub {
   font-size: 14px;
   color: var(--color-text-muted);
   margin: 0;
@@ -74,19 +74,19 @@
 }
 
 /* ─── Form ─── */
-.hr-login-center-form {
+.admin-login-center-form {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-.hr-form-group {
+.admin-form-group {
   display: flex;
   flex-direction: column;
   gap: 7px;
 }
 
-.hr-form-group label {
+.admin-form-group label {
   font-size: 13px;
   font-weight: 600;
   color: var(--color-text-muted);
@@ -94,7 +94,7 @@
   text-transform: uppercase;
 }
 
-.hr-form-group input {
+.admin-form-group input {
   padding: 13px 16px;
   border-radius: 12px;
   border: 1.5px solid var(--color-border-strong);
@@ -108,18 +108,18 @@
   font-family: inherit;
 }
 
-.hr-form-group input:focus {
+.admin-form-group input:focus {
   border-color: var(--color-secondary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 18%, transparent);
   background: var(--color-surface);
 }
 
-.hr-form-group input:disabled {
+.admin-form-group input:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.hr-form-group input::placeholder {
+.admin-form-group input::placeholder {
   color: var(--color-text-subtle);
 }
 
@@ -131,7 +131,7 @@
 }
 
 /* ─── Button ─── */
-.hr-login-btn {
+.admin-login-btn {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
@@ -150,39 +150,39 @@
   margin-top: 6px;
 }
 
-.hr-login-btn:hover:not(:disabled) {
+.admin-login-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--color-secondary) 40%, transparent);
 }
 
-.hr-login-btn:active:not(:disabled) {
+.admin-login-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.hr-login-btn:disabled {
+.admin-login-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
 /* ─── Spinner ─── */
-.hr-btn-spinner {
+.admin-btn-spinner {
   width: 16px;
   height: 16px;
   border: 2px solid rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: hr-spin 0.7s linear infinite;
+  animation: admin-spin 0.7s linear infinite;
   display: inline-block;
   flex-shrink: 0;
 }
 
-@keyframes hr-spin {
+@keyframes admin-spin {
   to { transform: rotate(360deg); }
 }
 
 /* ─── Responsive ─── */
 @media (max-width: 500px) {
-  .hr-login-center-box {
+  .admin-login-center-box {
     padding: 32px 20px 28px;
     border-radius: 16px;
     box-shadow: none;

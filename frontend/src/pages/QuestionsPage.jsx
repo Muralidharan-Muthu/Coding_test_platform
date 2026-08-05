@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
-import HRSidebarLayout from '../components/hr/HRSidebarLayout'
+import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import './QuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -10,14 +10,14 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/hr/questions', activePaths: ['/hr/questions'] },
+  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
-    href: '/hr/otp',
-    activePaths: ['/hr/otp'],
+    href: '/admin/otp',
+    activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/hr/test-type', activePaths: ['/hr/test-type'] },
-      { label: 'Send Mail', href: '/hr/send-mail', activePaths: ['/hr/send-mail'] },
+      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
+      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
     ],
   },
 ]
@@ -414,7 +414,7 @@ function formatIST(isoString) {
 
 function QuestionsPage() {
   const navigate = useNavigate()
-  const [hrName, setHrName] = useState('')
+  const [adminName, setAdminName] = useState('')
   const [problems, setProblems] = useState([])
   const [activeTab, setActiveTab] = useState('python')
   const [showAdd, setShowAdd] = useState(false)
@@ -432,13 +432,13 @@ function QuestionsPage() {
   const [jsonCopied, setJsonCopied] = useState(false)
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('hr_logged_in')
-    const name = localStorage.getItem('hr_name')
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
     if (!loggedIn) {
-      navigate('/hr')
+      navigate('/admin')
       return
     }
-    setHrName(name)
+    setAdminName(name)
     loadProblems()
   }, [navigate])
 
@@ -454,7 +454,7 @@ function QuestionsPage() {
 
   const loadProblems = async () => {
     try {
-      const response = await api.get('/hr/problems')
+      const response = await api.get('/admin/problems')
       setProblems(response.data)
     } catch (err) {
       console.error('Failed to load problems', err)
@@ -464,7 +464,7 @@ function QuestionsPage() {
   const handleDelete = async (problemId, title) => {
     if (!window.confirm(`Delete "${title}"?`)) return
     try {
-      await api.delete(`/hr/problems/${problemId}`)
+      await api.delete(`/admin/problems/${problemId}`)
       setSuccess(`"${title}" deleted`)
       setError('')
       loadProblems()
@@ -504,7 +504,7 @@ function QuestionsPage() {
       parsed.id = `${lang}${String(existing.length + 1).padStart(2, '0')}_${Date.now()}`
     }
     try {
-      await api.post('/hr/problems', parsed)
+      await api.post('/admin/problems', parsed)
       setSuccess(`"${parsed.title}" added successfully!`)
       setJsonInput('')
       setShowAdd(false)
@@ -516,9 +516,9 @@ function QuestionsPage() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('hr_name')
-    localStorage.removeItem('hr_logged_in')
-    navigate('/hr')
+    localStorage.removeItem('admin_name')
+    localStorage.removeItem('admin_logged_in')
+    navigate('/admin')
   }
 
   const openAdd = () => {
@@ -573,7 +573,7 @@ function QuestionsPage() {
 
   const handleTabChange = (nextTab) => {
     if (nextTab === 'mcq') {
-      navigate('/hr/questions/mcq')
+      navigate('/admin/questions/mcq')
       return
     }
 
@@ -622,18 +622,18 @@ function QuestionsPage() {
         </div>
       </div>
       <div className="question-actions">
-        <button onClick={() => navigate(`/coding/${p.id}?mode=hr-preview`)} className="btn-view">View</button>
+        <button onClick={() => navigate(`/coding/${p.id}?mode=admin-preview`)} className="btn-view">View</button>
         <button onClick={() => handleDelete(p.id, p.title)} className="btn-delete">Delete</button>
       </div>
     </div>
   )
 
   return (
-    <HRSidebarLayout
+    <AdminSidebarLayout
       className="questions-page"
-      hrName={hrName || 'Admin User'}
+      adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
-      sidebarExtraAfterHref="/hr/questions"
+      sidebarExtraAfterHref="/admin/questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
@@ -860,7 +860,7 @@ function QuestionsPage() {
           </div>
         )}
       </div>
-    </HRSidebarLayout>
+    </AdminSidebarLayout>
   )
 }
 

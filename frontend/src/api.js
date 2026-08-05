@@ -51,7 +51,7 @@ export const submitCode = async (sessionId, problemId, code, timeTaken) => {
 }
 
 export const previewSubmitCode = async (problemId, code) => {
-  const response = await api.post('/hr/preview/submit', {
+  const response = await api.post('/admin/preview/submit', {
     problem_id: problemId,
     code,
   })
@@ -76,7 +76,7 @@ export const submitSql = async (sessionId, problemId, query, timeTaken, dialect 
 }
 
 export const previewSubmitSql = async (problemId, query, dialect = 'sql') => {
-  const response = await api.post('/hr/preview/sql-submit', {
+  const response = await api.post('/admin/preview/sql-submit', {
     problem_id: problemId,
     query,
     dialect,
@@ -140,24 +140,24 @@ export const submitExam = async (sessionId, answers, autoSubmit = false) => {
   return response.data
 }
 
-// HR Candidate OTP Management APIs
+// Admin Candidate OTP Management APIs
 export const getCandidates = async () => {
-  const response = await api.get('/hr/candidates')
+  const response = await api.get('/admin/candidates')
   return response.data
 }
 
 export const clearAllCandidates = async () => {
-  const response = await api.delete('/hr/candidates/clear')
+  const response = await api.delete('/admin/candidates/clear')
   return response.data
 }
 
 export const deleteCandidate = async (email) => {
-  const response = await api.delete(`/hr/candidates/${encodeURIComponent(email)}`)
+  const response = await api.delete(`/admin/candidates/${encodeURIComponent(email)}`)
   return response.data
 }
 
 export const updateCandidate = async (currentEmail, username, email) => {
-  const response = await api.put(`/hr/candidates/${encodeURIComponent(currentEmail)}`, {
+  const response = await api.put(`/admin/candidates/${encodeURIComponent(currentEmail)}`, {
     username,
     email,
   })
@@ -165,22 +165,22 @@ export const updateCandidate = async (currentEmail, username, email) => {
 }
 
 export const importCandidates = async (candidates) => {
-  const response = await api.post('/hr/import-candidates', { candidates })
+  const response = await api.post('/admin/import-candidates', { candidates })
   return response.data
 }
 
 export const generateOTP = async (username, email) => {
-  const response = await api.post('/hr/generate-otp', { username, email })
+  const response = await api.post('/admin/generate-otp', { username, email })
   return response.data
 }
 
 export const sendOTPEmail = async (username, email) => {
-  const response = await api.post('/hr/send-otp-email', { username, email })
+  const response = await api.post('/admin/send-otp-email', { username, email })
   return response.data
 }
 
 export const setCandidateTestType = async (email, testType) => {
-  const response = await api.post('/hr/candidate-test-type', {
+  const response = await api.post('/admin/candidate-test-type', {
     email,
     test_type: testType,
   })
@@ -188,7 +188,7 @@ export const setCandidateTestType = async (email, testType) => {
 }
 
 export const shuffleCandidateQuestions = async (email, testType) => {
-  const response = await api.post('/hr/candidate-shuffle', {
+  const response = await api.post('/admin/candidate-shuffle', {
     email,
     test_type: testType,
   })
@@ -201,12 +201,12 @@ export const getMcqQuestions = async () => {
 }
 
 export const createMcqQuestion = async (payload) => {
-  const response = await api.post('/hr/mcq-questions', payload)
+  const response = await api.post('/admin/mcq-questions', payload)
   return response.data
 }
 
 export const deleteMcqQuestion = async (questionId) => {
-  const response = await api.delete(`/hr/mcq-questions/${questionId}`)
+  const response = await api.delete(`/admin/mcq-questions/${questionId}`)
   return response.data
 }
 

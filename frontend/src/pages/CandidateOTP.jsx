@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
-import HRSidebarLayout from '../components/hr/HRSidebarLayout'
+import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import * as XLSX from 'xlsx'
 import './CandidateOTP.css'
 
@@ -11,14 +11,14 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/hr/questions', activePaths: ['/hr/questions'] },
+  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
-    href: '/hr/otp',
-    activePaths: ['/hr/otp'],
+    href: '/admin/otp',
+    activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/hr/test-type', activePaths: ['/hr/test-type'] },
-      { label: 'Send Mail', href: '/hr/send-mail', activePaths: ['/hr/send-mail'] },
+      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
+      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
     ],
   },
 ]
@@ -27,7 +27,7 @@ const EMPTY_EDIT_FORM = { username: '', email: '' }
 
 function CandidateOTP() {
   const navigate = useNavigate()
-  const [hrName, setHrName] = useState('')
+  const [adminName, setAdminName] = useState('')
   const [candidates, setCandidates] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -42,13 +42,13 @@ function CandidateOTP() {
   const [newEmail, setNewEmail] = useState('')
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('hr_logged_in')
-    const name = localStorage.getItem('hr_name')
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
     if (!loggedIn) {
-      navigate('/hr')
+      navigate('/admin')
       return
     }
-    setHrName(name || 'Admin User')
+    setAdminName(name || 'Admin User')
     loadCandidates()
   }, [navigate])
 
@@ -313,15 +313,15 @@ function CandidateOTP() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('hr_name')
-    localStorage.removeItem('hr_logged_in')
-    navigate('/hr')
+    localStorage.removeItem('admin_name')
+    localStorage.removeItem('admin_logged_in')
+    navigate('/admin')
   }
 
   return (
-    <HRSidebarLayout
+    <AdminSidebarLayout
       className="otp-dashboard"
-      hrName={hrName || 'Admin User'}
+      adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
@@ -484,7 +484,7 @@ function CandidateOTP() {
           )}
         </div>
       </div>
-    </HRSidebarLayout>
+    </AdminSidebarLayout>
   )
 }
 

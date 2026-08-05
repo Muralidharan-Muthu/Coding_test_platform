@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary, startExam, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall, PythonIcon, DatabaseIcon, TimerIcon, ChecklistIcon } from '../components/ui/Branding'
+import { useToast } from '../components/ui/ToastProvider'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import './TestStructure.css'
 
@@ -52,6 +53,7 @@ const secureExamErrorStyle = {
 
 function TestStructure() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [userName, setUserName] = useState('')
   const [remainingTime, setRemainingTime] = useState(0)
   const [examSummary, setExamSummary] = useState(null)
@@ -152,22 +154,6 @@ function TestStructure() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Guest bypass — skip backend API calls and go straight to the exam UI
-      if (sessionId === 'guest-session') {
-        setExamSessionStarted(true)
-        setRemainingTime(EXAM_DURATION_SECONDS)
-        setIsExamEnvironmentReady(true)
-        setExamSummary({
-          python_questions: 3,
-          sql_questions: 2,
-          mcq_questions: 5,
-          total_questions: 10,
-          total_marks: 100,
-          problems: [],
-        })
-        return
-      }
-
       // Get exam status to check remaining time
       const status = await getExamStatus(sessionId)
       
@@ -208,14 +194,6 @@ function TestStructure() {
 
     try {
       const sessionId = localStorage.getItem('session_id')
-
-      // Guest bypass — skip fullscreen & API, go straight to exam UI
-      if (sessionId === 'guest-session') {
-        setExamSessionStarted(true)
-        setRemainingTime(EXAM_DURATION_SECONDS)
-        setIsExamEnvironmentReady(true)
-        return
-      }
 
       if (!document.fullscreenElement) {
         if (!document.documentElement.requestFullscreen) {
@@ -282,7 +260,7 @@ function TestStructure() {
       navigate('/submission-complete')
     } catch (err) {
       console.error('Submit failed', err)
-      alert('Failed to submit. Please try again.')
+      toast.error(err.response?.data?.detail || 'Failed to submit. Please try again.')
     } finally {
       setSubmitting(false)
       setShowSubmitConfirm(false)

@@ -2,9 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
 import { PlatformLogoSmall } from '../ui/Branding'
-import './HRSidebarLayout.css'
+import './AdminSidebarLayout.css'
 
-const SIDEBAR_STATE_KEY = 'hr_sidebar_collapsed'
+const SIDEBAR_STATE_KEY = 'admin_sidebar_collapsed'
 
 const ChevronLeftIcon = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -87,10 +87,10 @@ const MailIcon = () => (
 
 function getNavIcon(href = '') {
   if (href.includes('/dashboard/assessment')) return <DashboardIcon />
-  if (href.includes('/hr/questions')) return <QuestionsIcon />
-  if (href.includes('/hr/otp')) return <UsersIcon />
-  if (href.includes('/hr/test-type')) return <TestTypeIcon />
-  if (href.includes('/hr/send-mail')) return <MailIcon />
+  if (href.includes('/admin/questions')) return <QuestionsIcon />
+  if (href.includes('/admin/otp')) return <UsersIcon />
+  if (href.includes('/admin/test-type')) return <TestTypeIcon />
+  if (href.includes('/admin/send-mail')) return <MailIcon />
   return <DashboardIcon />
 }
 
@@ -106,9 +106,9 @@ function getGroupKey(item) {
   return item.href || item.label
 }
 
-function HRSidebarLayout({
+function AdminSidebarLayout({
   className = '',
-  hrName = 'Admin User',
+  adminName = 'Admin User',
   navItems = [],
   sidebarExtra = null,
   sidebarExtraAfterHref = null,
@@ -180,20 +180,20 @@ function HRSidebarLayout({
   }
 
   return (
-    <div className={`hr-shell ${className} ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+    <div className={`admin-shell ${className} ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <button
         type="button"
-        className="hr-shell-overlay"
+        className="admin-shell-overlay"
         aria-label="Close navigation menu"
         onClick={() => setMobileOpen(false)}
       />
 
-      <aside className="hr-shell-sidebar" aria-label="HR navigation">
-        <div className="hr-shell-brand-row">
+      <aside className="admin-shell-sidebar" aria-label="Admin navigation">
+        <div className="admin-shell-brand-row">
           {!collapsed && (
             <button
               type="button"
-              className="hr-shell-brand"
+              className="admin-shell-brand"
               onClick={() => onNavigate(navItems[0]?.href || '/dashboard/assessment')}
               aria-label="Go to assessment dashboard"
             >
@@ -203,7 +203,7 @@ function HRSidebarLayout({
 
           <button
             type="button"
-            className="hr-shell-toggle"
+            className="admin-shell-toggle"
             onClick={() => setCollapsed((prev) => !prev)}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -212,7 +212,7 @@ function HRSidebarLayout({
           </button>
         </div>
 
-        <nav className="hr-shell-nav">
+        <nav className="admin-shell-nav">
           {navItems.map((item) => {
             const hasChildren = Array.isArray(item.children) && item.children.length > 0
             const hasActiveChild = hasChildren && item.children.some((child) => isNavItemActive(child, location.pathname))
@@ -223,26 +223,26 @@ function HRSidebarLayout({
             return (
               <Fragment key={`${item.label}-${item.href || 'root'}`}>
                 <div
-                  className={`hr-shell-nav-group${hasActiveChild ? ' has-active-child' : ''}${isExpanded ? ' expanded' : ''}`}
+                  className={`admin-shell-nav-group${hasActiveChild ? ' has-active-child' : ''}${isExpanded ? ' expanded' : ''}`}
                 >
-                  <div className={`hr-shell-nav-row${hasChildren ? ' has-children' : ''}`}>
+                  <div className={`admin-shell-nav-row${hasChildren ? ' has-children' : ''}`}>
                     <button
                       type="button"
-                      className={`hr-shell-nav-item hr-shell-nav-main${isActive ? ' active' : ''}`}
+                      className={`admin-shell-nav-item admin-shell-nav-main${isActive ? ' active' : ''}`}
                       onClick={() => item.href && onNavigate(item.href)}
                       title={collapsed ? item.label : undefined}
                       aria-current={isActive ? 'page' : undefined}
                     >
-                      <span className="hr-shell-nav-icon" aria-hidden="true">
+                      <span className="admin-shell-nav-icon" aria-hidden="true">
                         {getNavIcon(item.href)}
                       </span>
-                      <span className="hr-shell-nav-label">{item.label}</span>
+                      <span className="admin-shell-nav-label">{item.label}</span>
                     </button>
 
                     {!collapsed && hasChildren && (
                       <button
                         type="button"
-                        className={`hr-shell-nav-toggle${isExpanded ? ' expanded' : ''}${isActive ? ' active' : ''}`}
+                        className={`admin-shell-nav-toggle${isExpanded ? ' expanded' : ''}${isActive ? ' active' : ''}`}
                         onClick={() => toggleGroup(item)}
                         aria-label={isExpanded ? `Collapse ${item.label}` : `Expand ${item.label}`}
                         aria-expanded={isExpanded}
@@ -253,21 +253,21 @@ function HRSidebarLayout({
                   </div>
 
                   {!collapsed && hasChildren && isExpanded && (
-                    <div className={`hr-shell-subnav${hasActiveChild ? ' active' : ''}`}>
+                    <div className={`admin-shell-subnav${hasActiveChild ? ' active' : ''}`}>
                       {item.children.map((child) => {
                         const isChildActive = isNavItemActive(child, location.pathname)
                         return (
                           <button
                             key={`${child.label}-${child.href || 'child'}`}
                             type="button"
-                            className={`hr-shell-nav-item hr-shell-subnav-item${isChildActive ? ' active' : ''}`}
+                            className={`admin-shell-nav-item admin-shell-subnav-item${isChildActive ? ' active' : ''}`}
                             onClick={() => child.href && onNavigate(child.href)}
                             aria-current={isChildActive ? 'page' : undefined}
                           >
-                            <span className="hr-shell-nav-icon" aria-hidden="true">
+                            <span className="admin-shell-nav-icon" aria-hidden="true">
                               {getNavIcon(child.href)}
                             </span>
-                            <span className="hr-shell-nav-label">{child.label}</span>
+                            <span className="admin-shell-nav-label">{child.label}</span>
                           </button>
                         )
                       })}
@@ -276,7 +276,7 @@ function HRSidebarLayout({
                 </div>
 
                 {insertSidebarExtraAfterItem && (
-                  <div className="hr-shell-nav-extra">
+                  <div className="admin-shell-nav-extra">
                     {renderedSidebarExtra}
                   </div>
                 )}
@@ -285,63 +285,63 @@ function HRSidebarLayout({
           })}
 
           {appendSidebarExtraToEnd && (
-            <div className="hr-shell-nav-extra">
+            <div className="admin-shell-nav-extra">
               {renderedSidebarExtra}
             </div>
           )}
         </nav>
 
-        <div className="hr-shell-sidebar-footer">
+        <div className="admin-shell-sidebar-footer">
           <button
             type="button"
-            className="hr-shell-logout"
+            className="admin-shell-logout"
             onClick={onLogout}
             title={collapsed ? 'Logout' : undefined}
             aria-label="Log out"
           >
-            <span className="hr-shell-nav-icon" aria-hidden="true">
+            <span className="admin-shell-nav-icon" aria-hidden="true">
               <LogoutIcon />
             </span>
-            <span className="hr-shell-nav-label">Logout</span>
+            <span className="admin-shell-nav-label">Logout</span>
           </button>
         </div>
       </aside>
 
-      <div className="hr-shell-main">
-        <header className="hr-shell-topbar">
-          <div className="hr-shell-topbar-left">
+      <div className="admin-shell-main">
+        <header className="admin-shell-topbar">
+          <div className="admin-shell-topbar-left">
             <button
               type="button"
-              className="hr-shell-mobile-toggle"
+              className="admin-shell-mobile-toggle"
               aria-label="Open navigation menu"
               onClick={() => setMobileOpen(true)}
             >
               <MenuIcon />
             </button>
             {collapsed && (
-              <div className="hr-shell-topbar-brand" aria-hidden="true">
+              <div className="admin-shell-topbar-brand" aria-hidden="true">
                 <img
-                  className="hr-shell-topbar-brand-img"
+                  className="admin-shell-topbar-brand-img"
                   src="/assets/meptrasoft-logo.png"
                   alt=""
                 />
               </div>
             )}
-            <p className="hr-shell-page-title">{currentLabel}</p>
+            <p className="admin-shell-page-title">{currentLabel}</p>
           </div>
 
-          <div className="hr-shell-topbar-right">
+          <div className="admin-shell-topbar-right">
             <ThemeToggle />
-            <div className="hr-shell-user-chip" title={hrName || 'Admin User'}>
-              <span className="hr-shell-user-avatar" aria-hidden="true">
-                {(hrName || 'A').charAt(0).toUpperCase()}
+            <div className="admin-shell-user-chip" title={adminName || 'Admin User'}>
+              <span className="admin-shell-user-avatar" aria-hidden="true">
+                {(adminName || 'A').charAt(0).toUpperCase()}
               </span>
-              <span className="hr-shell-user-name">{hrName || 'Admin User'}</span>
+              <span className="admin-shell-user-name">{adminName || 'Admin User'}</span>
             </div>
           </div>
         </header>
 
-        <div className="hr-shell-body">
+        <div className="admin-shell-body">
           {children}
         </div>
       </div>
@@ -349,4 +349,4 @@ function HRSidebarLayout({
   )
 }
 
-export default HRSidebarLayout
+export default AdminSidebarLayout

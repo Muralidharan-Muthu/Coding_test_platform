@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
+import { ToastProvider } from './components/ui/ToastProvider'
 import './index.css'
 import AssessmentDashboard from './pages/AssessmentDashboard'
 import CandidateDashboard from './pages/CandidateDashboard'
@@ -9,8 +10,8 @@ import CandidateVerification from './pages/CandidateVerification'
 import CandidateOTP from './pages/CandidateOTP'
 import ChooseTestTypePage from './pages/ChooseTestTypePage'
 import CodingPage from './pages/CodingPage'
-import HRDashboard from './pages/HRDashboard'
-import HRLogin from './pages/HRLogin'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminLogin from './pages/AdminLogin'
 import MCQProblems from './pages/MCQProblems'
 import MCQQuestionsPage from './pages/MCQQuestionsPage'
 import PracticeLogin from './pages/PracticeLogin'
@@ -33,10 +34,11 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Admin login */}
-        <Route path="/admin" element={<HRLogin />} />
+        <Route path="/admin" element={<AdminLogin />} />
 
-        {/* Legacy HR route → admin */}
+        {/* Legacy /hr route → /admin */}
         <Route path="/hr" element={<Navigate to="/admin" replace />} />
+        <Route path="/hr/*" element={<Navigate to="/admin" replace />} />
 
         {/* Practice flow — entered from the learning portal, untimed, unproctored */}
         <Route path="/practice" element={<PracticeLogin />} />
@@ -53,14 +55,14 @@ function App() {
         <Route path="/coding/:problemId" element={<CodingPage />} />
         <Route path="/submission-complete" element={<SubmissionComplete />} />
 
-        {/* Admin / HR flow */}
-        <Route path="/hr/dashboard" element={<HRDashboard />} />
-        <Route path="/hr/otp" element={<CandidateOTP />} />
-        <Route path="/hr/test-type" element={<ChooseTestTypePage />} />
-        <Route path="/hr/send-mail" element={<SendMailPage />} />
+        {/* Admin flow */}
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/otp" element={<CandidateOTP />} />
+        <Route path="/admin/test-type" element={<ChooseTestTypePage />} />
+        <Route path="/admin/send-mail" element={<SendMailPage />} />
         <Route path="/dashboard/assessment" element={<AssessmentDashboard />} />
-        <Route path="/hr/questions" element={<QuestionsPage />} />
-        <Route path="/hr/questions/mcq" element={<MCQQuestionsPage />} />
+        <Route path="/admin/questions" element={<QuestionsPage />} />
+        <Route path="/admin/questions/mcq" element={<MCQQuestionsPage />} />
       </Routes>
     </BrowserRouter>
   )
@@ -69,7 +71,9 @@ function App() {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThemeProvider>
-      <App />
+      <ToastProvider>
+        <App />
+      </ToastProvider>
     </ThemeProvider>
   </React.StrictMode>
 )

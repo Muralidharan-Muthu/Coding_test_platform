@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   Assessment Dashboard — matches HRDashboard design language
+   Assessment Dashboard — matches AdminDashboard design language
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Root ─── */
@@ -13,7 +13,7 @@
 }
 
 /* ══════════════════════════════════════════
-   HEADER — mirrors hr-header exactly
+   HEADER — mirrors admin-header exactly
    ══════════════════════════════════════════ */
 .asd-header {
   background: var(--color-surface);

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../api'
-import HRSidebarLayout from '../components/hr/HRSidebarLayout'
-import './HRDashboard.css'
+import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
+import './AdminDashboard.css'
 
 const NAV_ITEMS = [
   {
@@ -10,14 +11,14 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/hr/questions', activePaths: ['/hr/questions'] },
+  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
-    href: '/hr/otp',
-    activePaths: ['/hr/otp'],
+    href: '/admin/otp',
+    activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/hr/test-type', activePaths: ['/hr/test-type'] },
-      { label: 'Send Mail', href: '/hr/send-mail', activePaths: ['/hr/send-mail'] },
+      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
+      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
     ],
   },
 ]
@@ -32,7 +33,7 @@ const ShuffleIcon = () => (
 )
 
 const SpinnerIcon = () => (
-  <svg className="hr-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+  <svg className="admin-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
     <path d="M21 12a9 9 0 1 1-6.219-8.56" />
   </svg>
 )
@@ -79,37 +80,37 @@ function QuestionCard({ p, index, language, onChangeQuestion, changingKey, readO
 
   return (
     <div
-      className={`hr-qcard hr-qcard-${language}`}
+      className={`admin-qcard admin-qcard-${language}`}
       style={{ '--delay': `${index * 55}ms` }}
       role="article"
       aria-label={`${p.title}, ${p.difficulty}, ${p.marks} marks`}
     >
-      <div className="hr-qcard-body">
-        <div className="hr-qcard-top">
-          <span className="hr-qcard-num" aria-hidden="true">{index + 1}</span>
-          <h4 className="hr-qcard-title">{p.title}</h4>
+      <div className="admin-qcard-body">
+        <div className="admin-qcard-top">
+          <span className="admin-qcard-num" aria-hidden="true">{index + 1}</span>
+          <h4 className="admin-qcard-title">{p.title}</h4>
         </div>
 
-        <div className="hr-qcard-meta">
-          <span className={`hr-difficulty hr-difficulty-${diffLevel}`}>
+        <div className="admin-qcard-meta">
+          <span className={`admin-difficulty admin-difficulty-${diffLevel}`}>
             {diffLevel === 'easy' && <CheckIcon />}
             {diffLevel === 'hard' && <AlertIcon />}
             {p.difficulty}
           </span>
-          <span className="hr-meta-pill">
+          <span className="admin-meta-pill">
             <FileIcon />
             {p.marks} marks
           </span>
-          <span className="hr-meta-pill">
+          <span className="admin-meta-pill">
             <ClockSmIcon />
             {p.time_limit} min
           </span>
         </div>
 
         {!readOnly && (
-          <div className="hr-qcard-action">
+          <div className="admin-qcard-action">
             <button
-              className={`hr-btn-change hr-btn-change-${language}`}
+              className={`admin-btn-change admin-btn-change-${language}`}
               onClick={() => onChangeQuestion(p.id, language)}
               disabled={isChanging}
               aria-label={isChanging ? 'Changing question...' : `Change ${p.title}`}
@@ -135,13 +136,12 @@ function formatDuration(totalMinutes) {
   return `${remaining} Min`
 }
 
-function HRDashboard() {
+function AdminDashboard() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const previewCandidateEmail = String(searchParams.get('candidate_email') || '').trim().toLowerCase()
-  const [hrName, setHrName] = useState('')
-  const [success, setSuccess] = useState('')
-  const [error, setError] = useState('')
+  const toast = useToast()
+  const [adminName, setAdminName] = useState('')
   const [generatedPythonProblems, setGeneratedPythonProblems] = useState([])
   const [generatedSqlProblems, setGeneratedSqlProblems] = useState([])
   const [previewCandidate, setPreviewCandidate] = useState(null)
@@ -150,32 +150,19 @@ function HRDashboard() {
   const [changingQuestionKey, setChangingQuestionKey] = useState('')
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('hr_logged_in')
-    const name = localStorage.getItem('hr_name')
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
     if (!loggedIn) {
-      navigate('/hr')
+      navigate('/admin')
       return
     }
-    setHrName(name || 'Admin User')
+    setAdminName(name || 'Admin User')
     loadSavedExamProblems()
   }, [navigate, previewCandidateEmail])
 
-  useEffect(() => {
-    if (!success) return
-    const timer = setTimeout(() => setSuccess(''), 5000)
-    return () => clearTimeout(timer)
-  }, [success])
-
-  useEffect(() => {
-    if (!error) return
-    const timer = setTimeout(() => setError(''), 6000)
-    return () => clearTimeout(timer)
-  }, [error])
-
   const loadSavedExamProblems = async () => {
     try {
-      setError('')
-      const response = await api.get('/hr/exam/selected', {
+      const response = await api.get('/admin/exam/selected', {
         params: previewCandidateEmail ? { email: previewCandidateEmail } : {},
       })
       const allProblems = response.data.problems || []
@@ -186,35 +173,33 @@ function HRDashboard() {
       setGeneratedPythonProblems([])
       setGeneratedSqlProblems([])
       setPreviewCandidate(null)
-      setError(err.response?.data?.detail || 'Failed to load assessment configuration')
+      toast.error(err.response?.data?.detail || 'Failed to load assessment configuration')
     }
   }
 
   const handleGenerateRandom = async () => {
     setIsGenerating(true)
-    setError('')
-    setSuccess('')
 
     try {
       if (previewCandidateEmail) {
-        const response = await api.post('/hr/candidate-shuffle', {
+        const response = await api.post('/admin/candidate-shuffle', {
           email: previewCandidateEmail,
           test_type: previewCandidate?.test_type || 'both',
         })
         await loadSavedExamProblems()
-        setSuccess(`Shuffled ${response.data.saved} questions for ${previewCandidate?.username || previewCandidateEmail}.`)
+        toast.success(`Shuffled ${response.data.saved} questions for ${previewCandidate?.username || previewCandidateEmail}.`)
         return
       }
 
       const [pythonRes, sqlRes] = await Promise.all([
-        api.get('/hr/problems/random?language=python'),
-        api.get('/hr/problems/random?language=sql'),
+        api.get('/admin/problems/random?language=python'),
+        api.get('/admin/problems/random?language=sql'),
       ])
       setGeneratedPythonProblems(pythonRes.data.problems || [])
       setGeneratedSqlProblems(sqlRes.data.problems || [])
-      setSuccess('Generated random questions: 5 Python and 5 SQL.')
+      toast.success('Generated random questions: 5 Python and 5 SQL.')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to generate questions')
+      toast.error(err.response?.data?.detail || 'Failed to generate questions')
       if (!previewCandidateEmail) {
         setGeneratedPythonProblems([])
         setGeneratedSqlProblems([])
@@ -229,11 +214,9 @@ function HRDashboard() {
 
     const key = `${language}:${problemId}`
     setChangingQuestionKey(key)
-    setError('')
-    setSuccess('')
 
     try {
-      const response = await api.get(`/hr/problems/random/replace?problem_id=${problemId}&language=${language}`)
+      const response = await api.get(`/admin/problems/random/replace?problem_id=${problemId}&language=${language}`)
       if (language === 'python') {
         setGeneratedPythonProblems((prev) => prev.map((problem) => (
           problem.id === problemId ? response.data.new : problem
@@ -243,9 +226,9 @@ function HRDashboard() {
           problem.id === problemId ? response.data.new : problem
         )))
       }
-      setSuccess(`Replaced "${response.data.replaced.title}" with "${response.data.new.title}".`)
+      toast.success(`Replaced "${response.data.replaced.title}" with "${response.data.new.title}".`)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to replace question')
+      toast.error(err.response?.data?.detail || 'Failed to replace question')
     } finally {
       setChangingQuestionKey('')
     }
@@ -257,23 +240,22 @@ function HRDashboard() {
     }
 
     setIsSaving(true)
-    setError('')
 
     try {
       const allProblems = [...generatedPythonProblems, ...generatedSqlProblems]
-      await api.post('/hr/exam/save', { problems: allProblems })
-      setSuccess(`${allProblems.length} questions saved. Candidates can now take the test.`)
+      await api.post('/admin/exam/save', { problems: allProblems })
+      toast.success(`${allProblems.length} questions saved. Candidates can now take the test.`)
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to save exam questions')
+      toast.error(err.response?.data?.detail || 'Failed to save exam questions')
     } finally {
       setIsSaving(false)
     }
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('hr_name')
-    localStorage.removeItem('hr_logged_in')
-    navigate('/hr')
+    localStorage.removeItem('admin_name')
+    localStorage.removeItem('admin_logged_in')
+    navigate('/admin')
   }
 
   const hasGenerated = generatedPythonProblems.length > 0 || generatedSqlProblems.length > 0
@@ -287,71 +269,59 @@ function HRDashboard() {
     : 'Published assessment filtered by test type'
 
   return (
-    <HRSidebarLayout
-      className="hr-dashboard"
-      hrName={hrName || 'Admin User'}
+    <AdminSidebarLayout
+      className="admin-dashboard"
+      adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
     >
-      <main className="hr-content">
-        {success && (
-          <div className="hr-alert hr-alert-success" role="alert">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
-            {success}
-          </div>
-        )}
-        {error && (
-          <div className="hr-alert hr-alert-error" role="alert">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-            {error}
-          </div>
-        )}
+      <main className="admin-content">
 
-        <div className="hr-page-heading">
+        <div className="admin-page-heading">
           <h2>Candidate Assessment Configuration</h2>
         </div>
 
         {previewCandidate && (
-          <div className="hr-preview-banner">
-            <div className="hr-preview-text">
-              <span className="hr-preview-label">Previewing Candidate</span>
+          <div className="admin-preview-banner">
+            <div className="admin-preview-text">
+              <span className="admin-preview-label">Previewing Candidate</span>
               <strong>{previewCandidate.username}</strong>
-              <span className="hr-preview-email">{previewCandidate.email}</span>
+              <span className="admin-preview-email">{previewCandidate.email}</span>
             </div>
-            <div className="hr-preview-meta">
-              <span className="hr-preview-chip">{previewCandidate.test_type_label}</span>
-              <span className="hr-preview-source">{previewSourceLabel}</span>
+            <div className="admin-preview-meta">
+              <span className="admin-preview-chip">{previewCandidate.test_type_label}</span>
+              <span className="admin-preview-source">{previewSourceLabel}</span>
             </div>
           </div>
         )}
 
         {hasGenerated && (
-          <div className="hr-summary-panel" aria-label="Assessment summary">
-            <div className="hr-summary-stat hr-sstat-total">
-              <span className="hr-sstat-label">TOTAL QUESTIONS</span>
-              <span className="hr-sstat-num">{totalQuestions}</span>
+          <div className="admin-summary-panel" aria-label="Assessment summary">
+            <div className="admin-summary-stat admin-sstat-total">
+              <span className="admin-sstat-label">TOTAL QUESTIONS</span>
+              <span className="admin-sstat-num">{totalQuestions}</span>
             </div>
-            <div className="hr-summary-sep" aria-hidden="true" />
-            <div className="hr-summary-stat hr-sstat-python">
-              <span className="hr-sstat-label">PYTHON</span>
-              <span className="hr-sstat-num">{generatedPythonProblems.length}</span>
+            <div className="admin-summary-sep" aria-hidden="true" />
+            <div className="admin-summary-stat admin-sstat-python">
+              <span className="admin-sstat-label">PYTHON</span>
+              <span className="admin-sstat-num">{generatedPythonProblems.length}</span>
             </div>
-            <div className="hr-summary-sep" aria-hidden="true" />
-            <div className="hr-summary-stat hr-sstat-sql">
-              <span className="hr-sstat-label">SQL</span>
-              <span className="hr-sstat-num">{generatedSqlProblems.length}</span>
+            <div className="admin-summary-sep" aria-hidden="true" />
+            <div className="admin-summary-stat admin-sstat-sql">
+              <span className="admin-sstat-label">SQL</span>
+              <span className="admin-sstat-num">{generatedSqlProblems.length}</span>
             </div>
-            <div className="hr-summary-sep" aria-hidden="true" />
-            <div className="hr-summary-stat hr-sstat-duration">
-              <span className="hr-sstat-label">EST. DURATION</span>
-              <span className="hr-sstat-num">{formatDuration(totalDurationMinutes)}</span>
+            <div className="admin-summary-sep" aria-hidden="true" />
+            <div className="admin-summary-stat admin-sstat-duration">
+              <span className="admin-sstat-label">EST. DURATION</span>
+              <span className="admin-sstat-num">{formatDuration(totalDurationMinutes)}</span>
             </div>
           </div>
         )}
 
-        <div className="hr-actions">
-          <span className="hr-actions-info">
+        <div className="admin-actions">
+          <span className="admin-actions-info">
             {hasGenerated
               ? previewCandidate
                 ? `${previewCandidate.username} will receive ${totalQuestions} questions (${generatedPythonProblems.length} Python, ${generatedSqlProblems.length} SQL).`
@@ -362,7 +332,7 @@ function HRDashboard() {
           </span>
           <button
             onClick={handleGenerateRandom}
-            className="hr-btn-generate"
+            className="admin-btn-generate"
             disabled={isGenerating}
             aria-busy={isGenerating}
           >
@@ -373,21 +343,21 @@ function HRDashboard() {
         </div>
 
         {hasGenerated && (
-          <section className="hr-questions-section" aria-label="Selected assessment questions">
-            <div className="hr-questions-heading">
+          <section className="admin-questions-section" aria-label="Selected assessment questions">
+            <div className="admin-questions-heading">
               <h3>Selected Assessment Questions</h3>
             </div>
 
             {generatedPythonProblems.length > 0 && (
-              <div className="hr-lang-block">
-                <div className="hr-lang-header hr-lang-python">
-                  <span className="hr-lang-accent" aria-hidden="true" />
+              <div className="admin-lang-block">
+                <div className="admin-lang-header admin-lang-python">
+                  <span className="admin-lang-accent" aria-hidden="true" />
                   <h4>
                     Python Coding Questions
-                    <span className="hr-lang-count">({generatedPythonProblems.length})</span>
+                    <span className="admin-lang-count">({generatedPythonProblems.length})</span>
                   </h4>
                 </div>
-                <div className="hr-cards-grid" role="list">
+                <div className="admin-cards-grid" role="list">
                   {generatedPythonProblems.map((problem, index) => (
                     <div key={problem.id} role="listitem">
                       <QuestionCard
@@ -405,15 +375,15 @@ function HRDashboard() {
             )}
 
             {generatedSqlProblems.length > 0 && (
-              <div className="hr-lang-block">
-                <div className="hr-lang-header hr-lang-sql">
-                  <span className="hr-lang-accent" aria-hidden="true" />
+              <div className="admin-lang-block">
+                <div className="admin-lang-header admin-lang-sql">
+                  <span className="admin-lang-accent" aria-hidden="true" />
                   <h4>
                     SQL Query Questions
-                    <span className="hr-lang-count">({generatedSqlProblems.length})</span>
+                    <span className="admin-lang-count">({generatedSqlProblems.length})</span>
                   </h4>
                 </div>
-                <div className="hr-cards-grid" role="list">
+                <div className="admin-cards-grid" role="list">
                   {generatedSqlProblems.map((problem, index) => (
                     <div key={problem.id} role="listitem">
                       <QuestionCard
@@ -433,10 +403,10 @@ function HRDashboard() {
         )}
 
         {hasGenerated && !previewCandidate && (
-          <div className="hr-publish-section">
+          <div className="admin-publish-section">
             <button
               onClick={handleSaveExam}
-              className="hr-btn-publish"
+              className="admin-btn-publish"
               disabled={isSaving}
               aria-busy={isSaving}
             >
@@ -444,14 +414,14 @@ function HRDashboard() {
                 ? <><SpinnerIcon /> Saving...</>
                 : <><SaveIcon /> Publish Assessment for Candidates</>}
             </button>
-            <p className="hr-publish-note">
+            <p className="admin-publish-note">
               Save these questions permanently so candidates can begin the test
             </p>
           </div>
         )}
       </main>
-    </HRSidebarLayout>
+    </AdminSidebarLayout>
   )
 }
 
-export default HRDashboard
+export default AdminDashboard

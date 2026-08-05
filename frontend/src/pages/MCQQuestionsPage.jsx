@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { createMcqQuestion, deleteMcqQuestion } from '../api'
-import HRSidebarLayout from '../components/hr/HRSidebarLayout'
+import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import './MCQQuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -10,14 +10,14 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/hr/questions', activePaths: ['/hr/questions'] },
+  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
-    href: '/hr/otp',
-    activePaths: ['/hr/otp'],
+    href: '/admin/otp',
+    activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/hr/test-type', activePaths: ['/hr/test-type'] },
-      { label: 'Send Mail', href: '/hr/send-mail', activePaths: ['/hr/send-mail'] },
+      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
+      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
     ],
   },
 ]
@@ -82,7 +82,7 @@ function normalizeMcqQuestion(rawQuestion) {
 function MCQQuestionsPage() {
   const navigate = useNavigate()
   const [questions, setQuestions] = useState([])
-  const [hrName, setHrName] = useState('')
+  const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
@@ -93,7 +93,7 @@ function MCQQuestionsPage() {
 
   const loadQuestions = async () => {
     try {
-      const response = await api.get('/hr/mcq-questions')
+      const response = await api.get('/admin/mcq-questions')
       const nextQuestions = Array.isArray(response.data?.questions) ? response.data.questions : []
       setQuestions(nextQuestions)
     } catch (loadError) {
@@ -105,22 +105,22 @@ function MCQQuestionsPage() {
   }
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('hr_logged_in')
-    const name = localStorage.getItem('hr_name')
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
 
     if (!loggedIn) {
-      navigate('/hr')
+      navigate('/admin')
       return
     }
 
-    setHrName(name || 'Admin User')
+    setAdminName(name || 'Admin User')
     loadQuestions()
   }, [navigate])
 
   const handleLogout = () => {
-    localStorage.removeItem('hr_logged_in')
-    localStorage.removeItem('hr_name')
-    navigate('/hr')
+    localStorage.removeItem('admin_logged_in')
+    localStorage.removeItem('admin_name')
+    navigate('/admin')
   }
 
   const handleQuestionTypeChange = (nextType) => {
@@ -128,7 +128,7 @@ function MCQQuestionsPage() {
       return
     }
 
-    navigate('/hr/questions', { state: { activeTab: nextType } })
+    navigate('/admin/questions', { state: { activeTab: nextType } })
   }
 
   const toggleExpanded = (questionKey) => {
@@ -303,11 +303,11 @@ function MCQQuestionsPage() {
   }
 
   return (
-    <HRSidebarLayout
+    <AdminSidebarLayout
       className="mcq-questions-page"
-      hrName={hrName || 'Admin User'}
+      adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
-      sidebarExtraAfterHref="/hr/questions"
+      sidebarExtraAfterHref="/admin/questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
@@ -440,7 +440,7 @@ function MCQQuestionsPage() {
           </div>
         )}
       </div>
-    </HRSidebarLayout>
+    </AdminSidebarLayout>
   )
 }
 

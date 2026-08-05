@@ -182,14 +182,14 @@ def verify_candidate_otp(username: str, email: str, otp_code: str, db: sqlite3.C
     result = cursor.fetchone()
     cursor.close()
     if not result:
-        return {"valid": False, "error": "Candidate not found. Please contact HR for invitation."}
+        return {"valid": False, "error": "Candidate not found. Please contact Admin for invitation."}
     stored_otp, expires_at_str, status = result
     if not stored_otp or not expires_at_str:
-        return {"valid": False, "error": "OTP not generated. Please contact HR to generate your OTP."}
+        return {"valid": False, "error": "OTP not generated. Please contact Admin to generate your OTP."}
     if now > datetime.fromisoformat(expires_at_str):
-        return {"valid": False, "error": "OTP has expired. Please contact HR for a new OTP."}
+        return {"valid": False, "error": "OTP has expired. Please contact Admin for a new OTP."}
     if status == 'used':
-        return {"valid": False, "error": "OTP has already been used. Please contact HR for a new OTP."}
+        return {"valid": False, "error": "OTP has already been used. Please contact Admin for a new OTP."}
     if stored_otp != otp_code:
         return {"valid": False, "error": "Invalid OTP. Please check and try again."}
     return {"valid": True, "error": None}
@@ -378,7 +378,7 @@ def build_email_html(username: str, otp_code: str, app_link: str, for_email: boo
 
             <p style="margin:0 0 4px 0;color:#4a5568;font-size:14px;line-height:1.7;">
               We wish you the very best for your assessment. Should you have any questions,
-              please reach out to our HR team.
+              please reach out to our Admin team.
             </p>
             <p style="margin:0;color:#4a5568;font-size:14px;">
               If you did not expect this email, please disregard it safely.

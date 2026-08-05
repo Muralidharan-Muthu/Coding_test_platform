@@ -234,13 +234,13 @@
   box-shadow: 0 16px 48px rgba(236, 98, 37, 0.2), 0 1px 0 rgba(255,255,255,0.06) inset;
 }
 
-/* HR card */
-.portal-hr {
+/* Admin card */
+.portal-admin {
   border-color: rgba(99, 102, 241, 0.25);
   box-shadow: 0 4px 32px rgba(99, 102, 241, 0.08), 0 1px 0 rgba(255,255,255,0.04) inset;
 }
 
-.portal-hr:hover {
+.portal-admin:hover {
   border-color: rgba(99, 102, 241, 0.55);
   box-shadow: 0 16px 48px rgba(99, 102, 241, 0.2), 0 1px 0 rgba(255,255,255,0.06) inset;
 }
@@ -263,7 +263,7 @@
   box-shadow: 0 0 0 1px rgba(236, 98, 37, 0.3);
 }
 
-.portal-hr .portal-icon-wrap {
+.portal-admin .portal-icon-wrap {
   background: rgba(99, 102, 241, 0.15);
   color: #818cf8;
   box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3);
@@ -315,7 +315,7 @@
   border: 1px solid rgba(236, 98, 37, 0.25);
 }
 
-.pf-tag-hr {
+.pf-tag-admin {
   background: rgba(99, 102, 241, 0.12);
   color: #818cf8;
   border-color: rgba(99, 102, 241, 0.25);
@@ -329,7 +329,7 @@
 }
 
 .portal-candidate .portal-arrow { color: #f58a4e; }
-.portal-hr       .portal-arrow { color: #818cf8; }
+.portal-admin       .portal-arrow { color: #818cf8; }
 
 .portal-card:hover .portal-arrow {
   transform: translateX(5px);

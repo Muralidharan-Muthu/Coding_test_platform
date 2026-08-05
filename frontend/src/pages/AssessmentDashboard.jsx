@@ -8,25 +8,26 @@ import ProblemDetailTable from '../components/assessment/ProblemDetailTable'
 import StatCards from '../components/assessment/StatCards'
 import TestSummaryTable from '../components/assessment/TestSummaryTable'
 import TrustProctoringTable from '../components/assessment/TrustProctoringTable'
-import HRSidebarLayout from '../components/hr/HRSidebarLayout'
+import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import { useToast } from '../components/ui/ToastProvider'
 import { exportAssessmentResults, getProctoringReports } from '../services/assessmentApi'
 import './AssessmentDashboard.css'
 
-/* ─── Nav Items (matches HRDashboard) ─── */
+/* ─── Nav Items (matches AdminDashboard) ─── */
 const NAV_ITEMS = [
   {
     label: 'Assessment Dashboard',
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/hr/questions', activePaths: ['/hr/questions'] },
+  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
-    href: '/hr/otp',
-    activePaths: ['/hr/otp'],
+    href: '/admin/otp',
+    activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/hr/test-type', activePaths: ['/hr/test-type'] },
-      { label: 'Send Mail', href: '/hr/send-mail', activePaths: ['/hr/send-mail'] },
+      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
+      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
     ],
   },
 ]
@@ -217,12 +218,13 @@ const groupLogsForDisplay = (logs = []) => {
 
 function AssessmentDashboard() {
   const navigate = useNavigate()
+  const toast = useToast()
   const [results, setResults] = useState([])
   const [totalCount, setTotalCount] = useState(0)
   const [filteredCount, setFilteredCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
-  const [hrName, setHrName] = useState('')
+  const [adminName, setAdminName] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLogs, setSelectedLogs] = useState([])
   const [selectedCandidateName, setSelectedCandidateName] = useState('')
@@ -238,10 +240,10 @@ function AssessmentDashboard() {
   })
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem('hr_logged_in')
-    const name = localStorage.getItem('hr_name')
-    if (!loggedIn) { navigate('/hr'); return }
-    setHrName(name || 'Admin User')
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
+    if (!loggedIn) { navigate('/admin'); return }
+    setAdminName(name || 'Admin User')
     loadResults()
   }, [navigate])
 
@@ -309,18 +311,19 @@ function AssessmentDashboard() {
     setExporting(true)
     try {
       await exportAssessmentResults(filters)
+      toast.success('Excel report downloaded.')
     } catch (err) {
       console.error('Failed to export:', err)
-      alert('Failed to export Excel report')
+      toast.error(err.response?.data?.detail || 'Failed to export Excel report.')
     } finally {
       setExporting(false)
     }
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('hr_name')
-    localStorage.removeItem('hr_logged_in')
-    navigate('/hr')
+    localStorage.removeItem('admin_name')
+    localStorage.removeItem('admin_logged_in')
+    navigate('/admin')
   }
 
   const stats = {
@@ -338,9 +341,9 @@ function AssessmentDashboard() {
   }, 0)
 
   return (
-    <HRSidebarLayout
+    <AdminSidebarLayout
       className="asd-page"
-      hrName={hrName || 'Admin User'}
+      adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
@@ -532,7 +535,7 @@ function AssessmentDashboard() {
         onClose={handleCloseCodeReview}
         candidate={codeReviewCandidate}
       />
-    </HRSidebarLayout>
+    </AdminSidebarLayout>
   )
 }
 

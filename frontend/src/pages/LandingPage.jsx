@@ -7,19 +7,11 @@ function LandingPage() {
   const navigate = useNavigate()
 
   const handleCandidate = () => {
-    // Bypass login — set a guest session and go straight to the dashboard
-    localStorage.setItem('user_name', 'Guest Candidate')
-    localStorage.setItem('session_id', 'guest-session')
-    localStorage.setItem('user_id', 'guest')
-    localStorage.setItem('user_email', 'guest@dmrecruit.com')
-    localStorage.setItem('test_location', 'home')
-    navigate('/dashboard')
+    navigate('/login')
   }
 
-  const handleHR = () => {
-    localStorage.setItem('hr_logged_in', 'true')
-    localStorage.setItem('hr_name', 'Admin User')
-    navigate('/dashboard/assessment')
+  const handleAdmin = () => {
+    navigate('/admin')
   }
 
   return (
@@ -101,12 +93,12 @@ function LandingPage() {
             <span>or</span>
           </div>
 
-          {/* HR card */}
+          {/* Admin card */}
           <button
-            id="portal-hr"
-            className="portal-card portal-hr"
-            onClick={handleHR}
-            aria-label="Enter as HR"
+            id="portal-admin"
+            className="portal-card portal-admin"
+            onClick={handleAdmin}
+            aria-label="Enter as Admin"
           >
             <div className="portal-icon-wrap" aria-hidden="true">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
@@ -124,9 +116,9 @@ function LandingPage() {
                 review results from one dashboard.
               </p>
               <div className="portal-features">
-                <span className="pf-tag pf-tag-hr">Manage</span>
-                <span className="pf-tag pf-tag-hr">Invite</span>
-                <span className="pf-tag pf-tag-hr">Reports</span>
+                <span className="pf-tag pf-tag-admin">Manage</span>
+                <span className="pf-tag pf-tag-admin">Invite</span>
+                <span className="pf-tag pf-tag-admin">Reports</span>
               </div>
             </div>
             <div className="portal-arrow" aria-hidden="true">

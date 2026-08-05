@@ -364,9 +364,9 @@ async def login(request: LoginRequest, db: sqlite3.Connection = Depends(get_db))
         "test_type": normalize_test_type(candidate_test_type)
     }
 
-# HR OTP Management Endpoints
+# Admin OTP Management Endpoints
 
-@app.delete("/hr/candidates/clear")
+@app.delete("/admin/candidates/clear")
 async def clear_all_candidates(db: sqlite3.Connection = Depends(get_db)):
     """Delete all imported candidates"""
     cursor = db.cursor()
@@ -383,15 +383,15 @@ async def clear_all_candidates(db: sqlite3.Connection = Depends(get_db)):
         "deleted_count": deleted_count
     }
 
-@app.get("/hr/candidates")
+@app.get("/admin/candidates")
 async def get_candidates(db: sqlite3.Connection = Depends(get_db)):
     """Get all candidates with their OTP status"""
     candidates = get_all_candidates(db)
     return {"candidates": candidates}
 
 
-@app.post("/hr/candidate-test-type")
-@app.post("/hr/candidates/test-type")
+@app.post("/admin/candidate-test-type")
+@app.post("/admin/candidates/test-type")
 async def set_candidate_test_type(request: dict, db: sqlite3.Connection = Depends(get_db)):
     email = (request.get("email") or "").strip()
     test_type = normalize_test_type(request.get("test_type"))
@@ -412,8 +412,8 @@ async def set_candidate_test_type(request: dict, db: sqlite3.Connection = Depend
     }
 
 
-@app.post("/hr/candidate-shuffle")
-@app.post("/hr/candidates/shuffle")
+@app.post("/admin/candidate-shuffle")
+@app.post("/admin/candidates/shuffle")
 async def shuffle_candidate_questions(request: dict, db: sqlite3.Connection = Depends(get_db)):
     email = (request.get("email") or "").strip().lower()
     test_type = normalize_test_type(request.get("test_type"))
@@ -483,7 +483,7 @@ async def shuffle_candidate_questions(request: dict, db: sqlite3.Connection = De
     }
 
 
-@app.put("/hr/candidates/{email}")
+@app.put("/admin/candidates/{email}")
 async def update_candidate(email: str, request: dict, db: sqlite3.Connection = Depends(get_db)):
     current_email = (email or "").strip().lower()
     next_username = (request.get("username") or "").strip()
@@ -565,7 +565,7 @@ async def update_candidate(email: str, request: dict, db: sqlite3.Connection = D
     }
 
 
-@app.delete("/hr/candidates/{email}")
+@app.delete("/admin/candidates/{email}")
 async def delete_candidate(email: str, db: sqlite3.Connection = Depends(get_db)):
     """Delete a specific candidate by email"""
     cursor = db.cursor()
@@ -591,7 +591,7 @@ async def delete_candidate(email: str, db: sqlite3.Connection = Depends(get_db))
         "username": existing[0]
     }
 
-@app.post("/hr/import-candidates")
+@app.post("/admin/import-candidates")
 async def import_candidates(request: dict, db: sqlite3.Connection = Depends(get_db)):
     """Import candidates from a list (username, email) with duplicate checking"""
     candidates = request.get("candidates", [])
@@ -644,7 +644,7 @@ async def import_candidates(request: dict, db: sqlite3.Connection = Depends(get_
         "message": f"Imported {len(imported)} candidates, skipped {len(duplicates)} duplicates"
     }
 
-@app.post("/hr/generate-otp")
+@app.post("/admin/generate-otp")
 async def generate_candidate_otp(request: dict, db: sqlite3.Connection = Depends(get_db)):
     """Generate OTP for a candidate"""
     username = request.get("username")
@@ -670,7 +670,7 @@ async def generate_candidate_otp(request: dict, db: sqlite3.Connection = Depends
         "message": f"OTP generated for {email}"
     }
 
-@app.post("/hr/send-otp-email")
+@app.post("/admin/send-otp-email")
 async def send_otp_email(body: dict, db: sqlite3.Connection = Depends(get_db)):
     """Send OTP email to candidate with proper delivery confirmation"""
     email = (body.get("email") or "").strip().lower()
@@ -724,7 +724,7 @@ async def send_otp_email(body: dict, db: sqlite3.Connection = Depends(get_db)):
 
 @app.post("/send-otp")
 async def send_otp(request: dict, db: sqlite3.Connection = Depends(get_db)):
-    """Store OTP for user (called by HR before test)"""
+    """Store OTP for user (called by Admin before test)"""
     email = request.get("email")
     otp_code = request.get("otp")
     
@@ -810,7 +810,7 @@ async def evaluate_python_submission(problem: dict, code: str):
     return passed_tests, total_tests, failed_details, avg_execution_time
 
 def build_submission_response(passed_tests: int, total_tests: int, failed_details: list, avg_execution_time: float, extras: Optional[dict] = None):
-    """Shape submission responses consistently for exam and HR preview flows."""
+    """Shape submission responses consistently for exam and Admin preview flows."""
     score = (passed_tests / total_tests) * 100 if total_tests > 0 else 0
     response = {
         "submission_id": None,
@@ -856,7 +856,7 @@ async def submit_code(request: SubmitCodeRequest, db: sqlite3.Connection = Depen
 
     # Get current best score
     cursor.execute(
-        """SELECT best_score FROM hr_results
+        """SELECT best_score FROM admin_results
         WHERE user_id = ? AND problem_id = ?""",
         (user_id, request.problem_id)
     )
@@ -866,13 +866,13 @@ async def submit_code(request: SubmitCodeRequest, db: sqlite3.Connection = Depen
     # Check if this is a new best
     is_new_best = score > current_best_score
 
-    # Update hr_results only if new best score
+    # Update admin_results only if new best score
     if is_new_best:
         cursor.execute("SELECT name, email FROM users WHERE id = ?", (user_id,))
         user_info = cursor.fetchone()
 
         cursor.execute(
-            """INSERT OR REPLACE INTO hr_results
+            """INSERT OR REPLACE INTO admin_results
             (user_id, name, email, problem_id, best_score, passed_tests, total_tests, best_submission_id, verdict, execution_time_ms, time_taken, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (user_id, user_info[0], user_info[1], request.problem_id, score, passed_tests, total_tests, submission_id, verdict, avg_execution_time, request.time_taken, datetime.now().isoformat())
@@ -893,9 +893,9 @@ async def submit_code(request: SubmitCodeRequest, db: sqlite3.Connection = Depen
         "failed_details": failed_details
     }
 
-@app.post("/hr/preview/submit")
+@app.post("/admin/preview/submit")
 async def preview_submit_code(request: PreviewSubmitCodeRequest):
-    """HR-only preview submit: evaluate against test cases without requiring a candidate session."""
+    """Admin-only preview submit: evaluate against test cases without requiring a candidate session."""
     problem = get_problem(request.problem_id)
     if not problem:
         raise HTTPException(status_code=404, detail="Problem not found")
@@ -1484,7 +1484,7 @@ async def export_assessment_results(
         wb.save(output)
         output.seek(0)
         
-        filename = f"HR_Assessment_Report_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
+        filename = f"Admin_Assessment_Report_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
         
         return StreamingResponse(
             output,
@@ -1673,11 +1673,11 @@ async def get_problem_details(problem_id: str):
         "output_preview_rows": output_preview_rows,
     }
 
-@app.get("/hr/problems")
+@app.get("/admin/problems")
 async def get_all_problems():
     return list_problems()
 
-@app.post("/hr/problems")
+@app.post("/admin/problems")
 async def add_problem(problem: dict):
     import json
     import traceback
@@ -1750,7 +1750,7 @@ async def add_problem(problem: dict):
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Failed to add problem: {str(e)}")
 
-@app.delete("/hr/problems/{problem_id}")
+@app.delete("/admin/problems/{problem_id}")
 async def delete_problem(problem_id: str):
     if problem_id not in PROBLEMS:
         raise HTTPException(status_code=404, detail="Problem not found")
@@ -1772,12 +1772,12 @@ async def get_public_mcq_questions():
     return {"questions": fetch_all_mcq_questions(include_internal=False, descending=True)}
 
 
-@app.get("/hr/mcq-questions")
+@app.get("/admin/mcq-questions")
 async def get_all_mcq_questions():
     return {"questions": fetch_all_mcq_questions(include_internal=True, descending=True)}
 
 
-@app.post("/hr/mcq-questions")
+@app.post("/admin/mcq-questions")
 async def create_mcq_question(question: MCQQuestionCreate):
     conn = get_mcq_db_connection()
     try:
@@ -1821,7 +1821,7 @@ async def create_mcq_question(question: MCQQuestionCreate):
         conn.close()
 
 
-@app.delete("/hr/mcq-questions/{question_id}")
+@app.delete("/admin/mcq-questions/{question_id}")
 async def delete_mcq_question(question_id: str):
     conn = get_mcq_db_connection()
     try:
@@ -1834,7 +1834,7 @@ async def delete_mcq_question(question_id: str):
     finally:
         conn.close()
 
-@app.get("/hr/problems/random")
+@app.get("/admin/problems/random")
 async def get_random_problems(language: str = "python"):
     """Get 5 random problems extracted from Questions page (2 easy, 2 medium, 1 hard)"""
     if language not in ["python", "sql"]:
@@ -1857,7 +1857,7 @@ async def get_random_problems(language: str = "python"):
     
     return {"problems": selected_random_problems[language]}
 
-@app.get("/hr/problems/random/replace")
+@app.get("/admin/problems/random/replace")
 async def replace_problem(problem_id: str, language: str = "python"):
     """Replace a specific problem with another random problem of the same difficulty"""
     if language not in ["python", "sql"]:
@@ -1931,7 +1931,7 @@ async def replace_problem(problem_id: str, language: str = "python"):
         "new": replacement_info
     }
 
-@app.post("/hr/exam/save")
+@app.post("/admin/exam/save")
 async def save_exam_problems(request_data: dict):
     """Save selected exam problems permanently for candidates"""
     problems = request_data.get("problems", [])
@@ -1970,7 +1970,7 @@ async def save_exam_problems(request_data: dict):
     
     return {"status": "ok", "saved": len(problems)}
 
-@app.get("/hr/exam/selected")
+@app.get("/admin/exam/selected")
 async def get_saved_exam_problems(email: Optional[str] = None, db: sqlite3.Connection = Depends(get_db)):
     """Get saved exam problems, optionally filtered for a specific candidate."""
     conn = sqlite3.connect(DATABASE_PATH)
@@ -2365,9 +2365,9 @@ async def submit_exam(request: ExamSubmitRequest, db: sqlite3.Connection = Depen
         )
         submission_id = cursor.lastrowid
         
-        # Update hr_results for best score
+        # Update admin_results for best score
         cursor.execute(
-            """SELECT best_score FROM hr_results WHERE user_id = ? AND problem_id = ?""",
+            """SELECT best_score FROM admin_results WHERE user_id = ? AND problem_id = ?""",
             (user_id, answer.problem_id)
         )
         existing = cursor.fetchone()
@@ -2375,7 +2375,7 @@ async def submit_exam(request: ExamSubmitRequest, db: sqlite3.Connection = Depen
         
         if score > current_best:
             cursor.execute(
-                """INSERT OR REPLACE INTO hr_results
+                """INSERT OR REPLACE INTO admin_results
                 (user_id, name, email, problem_id, best_score, passed_tests, total_tests, best_submission_id, verdict, execution_time_ms, time_taken, updated_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (user_id, user_info[0], user_info[1], answer.problem_id, score, passed_tests, total_tests, submission_id, verdict, avg_execution_time, time_taken, datetime.now().isoformat())
@@ -2904,7 +2904,7 @@ async def submit_sql(request: SubmitSqlRequest, db: sqlite3.Connection = Depends
 
     # Best score logic
     cursor.execute(
-        """SELECT best_score FROM hr_results
+        """SELECT best_score FROM admin_results
         WHERE user_id = ? AND problem_id = ?""",
         (user_id, request.problem_id)
     )
@@ -2918,7 +2918,7 @@ async def submit_sql(request: SubmitSqlRequest, db: sqlite3.Connection = Depends
         user_info = cursor.fetchone()
 
         cursor.execute(
-            """INSERT OR REPLACE INTO hr_results
+            """INSERT OR REPLACE INTO admin_results
             (user_id, name, email, problem_id, best_score, passed_tests, total_tests, best_submission_id, verdict, execution_time_ms, time_taken, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (user_id, user_info[0], user_info[1], request.problem_id, score, passed_tests, total_tests, submission_id, verdict, avg_execution_time, request.time_taken, datetime.now().isoformat())
@@ -2940,9 +2940,9 @@ async def submit_sql(request: SubmitSqlRequest, db: sqlite3.Connection = Depends
         "dialect": request.dialect
     }
 
-@app.post("/hr/preview/sql-submit")
+@app.post("/admin/preview/sql-submit")
 async def preview_submit_sql(request: PreviewSubmitSqlRequest):
-    """HR-only SQL preview submit without candidate session persistence."""
+    """Admin-only SQL preview submit without candidate session persistence."""
     problem = get_problem(request.problem_id)
     if not problem or problem.get("language") != "sql":
         raise HTTPException(status_code=404, detail="SQL problem not found")

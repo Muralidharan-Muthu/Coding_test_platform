@@ -18,7 +18,7 @@ function ProblemList() {
 
   const loadProblems = async () => {
     try {
-      const response = await api.get('/hr/problems')
+      const response = await api.get('/admin/problems')
       setProblems(response.data)
     } catch (err) {
       console.error('Failed to load problems', err)

@@ -54,9 +54,9 @@ def init_db():
         )
     """)
     
-    # HR Results table (final table for HR with verdict and execution time)
+    # Admin Results table (final table for Admin with verdict and execution time)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS hr_results (
+        CREATE TABLE IF NOT EXISTS admin_results (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER NOT NULL,
             name TEXT NOT NULL,
@@ -113,9 +113,9 @@ def init_db():
         ("submissions", "time_taken", "INTEGER DEFAULT 0"),
         ("submissions", "verdict", "TEXT DEFAULT 'Pending'"),
         ("submissions", "execution_time_ms", "REAL DEFAULT 0"),
-        ("hr_results", "time_taken", "INTEGER DEFAULT 0"),
-        ("hr_results", "verdict", "TEXT DEFAULT 'Pending'"),
-        ("hr_results", "execution_time_ms", "REAL DEFAULT 0"),
+        ("admin_results", "time_taken", "INTEGER DEFAULT 0"),
+        ("admin_results", "verdict", "TEXT DEFAULT 'Pending'"),
+        ("admin_results", "execution_time_ms", "REAL DEFAULT 0"),
         ("users", "test_location", "TEXT DEFAULT NULL"),
         ("assessments", "test_location", "TEXT DEFAULT NULL"),
         ("assessments", "max_possible_score", "REAL DEFAULT NULL"),
@@ -199,7 +199,7 @@ def init_custom_problems_db():
         )
     """)
     
-    # Custom problems table - stores HR-added questions permanently
+    # Custom problems table - stores Admin-added questions permanently
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS custom_problems (
             id TEXT PRIMARY KEY,
@@ -368,7 +368,7 @@ def load_problems_from_db():
         }
         problems[row[0]] = problem
     
-    # Load custom problems (HR-added)
+    # Load custom problems (Admin-added)
     cursor.execute("""
         SELECT id, title, language, difficulty, marks, time_limit, statement, description,
                input_format, output_format, sample_input, sample_output, starter_code,
