@@ -1,0 +1,137 @@
+/* ─── Practice section (layered on top of SectionProblems.css) ─── */
+
+/* SectionProblems.css styles .loading but not the spinner inside it. */
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.practice-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background var(--transition-theme), color var(--transition-theme), border-color var(--transition-theme);
+}
+
+.btn-practice-logout {
+  padding: 6px 16px;
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+
+.btn-practice-logout:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-2);
+}
+
+/* ─── Language tabs ─── */
+.practice-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 32px 0;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.practice-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all var(--transition);
+}
+
+.practice-tab:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+}
+
+.practice-tab.active {
+  color: #fff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.sql-section .practice-tab.active {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+}
+
+.practice-tab-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  transition: background var(--transition-theme), color var(--transition-theme);
+}
+
+.practice-tab.active .practice-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+/* ─── Empty / error states ─── */
+.practice-empty,
+.practice-error {
+  max-width: 900px;
+  margin: 0 auto 16px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  transition: background var(--transition-theme), color var(--transition-theme), border-color var(--transition-theme);
+}
+
+.practice-error {
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+@media (max-width: 768px) {
+  .practice-tabs {
+    padding: 16px 16px 0;
+  }
+
+  .practice-badge {
+    display: none;
+  }
+}

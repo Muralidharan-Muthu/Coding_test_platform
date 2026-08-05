@@ -109,6 +109,66 @@ def get_selected_exam_problem_ids(language: str) -> List[str]:
     ]
 
 
+def get_session_test_type(session_id: Optional[str]) -> str:
+    """Resolve the test type assigned to a candidate session."""
+    if not session_id:
+        return normalize_test_type(None)
+    return normalize_test_type(session_test_types.get(session_id))
+
+
+def _problem_summary(problem: dict) -> dict:
+    """Shape a problem for list responses (no test cases / answers leaked)."""
+    return {
+        "id": problem.get("id"),
+        "title": problem.get("title"),
+        "language": problem.get("language"),
+        "difficulty": problem.get("difficulty", "Medium"),
+        "marks": problem.get("marks", 10),
+        "time_limit": problem.get("time_limit", 10),
+    }
+
+
+def get_problems_for_language(language: str) -> list:
+    """All problems the admin created for a language, in creation order."""
+    refresh_problems()
+    return [
+        _problem_summary(problem)
+        for problem in PROBLEMS.values()
+        if problem.get("language") == language
+    ]
+
+
+def get_assigned_problem_sets_for_session(session_id: Optional[str], test_type: str):
+    """Resolve the (python, sql) problem sets a candidate session may access.
+
+    Priority: per-candidate shuffled set > admin-saved exam selection > full
+    admin problem bank for that language. Each set is emptied when the
+    candidate's test type does not include that section.
+    """
+    email = session_candidate_emails.get(session_id) if session_id else None
+    candidate_set = get_candidate_problem_set(email) if email else None
+
+    python_problems = []
+    sql_problems = []
+
+    if candidate_set:
+        for problem in candidate_set:
+            if problem.get("language") == "python":
+                python_problems.append(problem)
+            elif problem.get("language") == "sql":
+                sql_problems.append(problem)
+    else:
+        python_problems = list(selected_random_problems.get("python") or []) or get_problems_for_language("python")
+        sql_problems = list(selected_random_problems.get("sql") or []) or get_problems_for_language("sql")
+
+    if not has_test_type_section(test_type, "python"):
+        python_problems = []
+    if not has_test_type_section(test_type, "sql"):
+        sql_problems = []
+
+    return python_problems, sql_problems
+
+
 # ── LOGO STATIC ENDPOINT ─────────────────────────────────────────────────────
 @app.get("/logo.png")
 async def serve_logo():
@@ -1473,6 +1533,25 @@ async def get_mcq_problems(session_id: Optional[str] = None):
     if not has_test_type_section(test_type, "mcq"):
         return []
     return get_assigned_mcq_questions_for_session(session_id, test_type)
+
+@app.get("/practice/problems")
+async def get_practice_problems(language: Optional[str] = None):
+    """Practice mode: the full admin problem bank, no exam session required.
+
+    Practice is untimed and unproctored, so it is never filtered by test type
+    or by the admin's exam selection — a logged-in candidate sees everything.
+    """
+    if language:
+        normalized = language.strip().lower()
+        if normalized not in ("python", "sql"):
+            raise HTTPException(status_code=400, detail="language must be 'python' or 'sql'.")
+        return get_problems_for_language(normalized)
+
+    return {
+        "python": get_problems_for_language("python"),
+        "sql": get_problems_for_language("sql"),
+    }
+
 
 @app.get("/problems/{problem_id}")
 async def get_problem_details(problem_id: str):

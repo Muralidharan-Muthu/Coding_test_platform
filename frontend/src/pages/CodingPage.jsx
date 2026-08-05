@@ -1,13 +1,13 @@
 import '@mediapipe/face_mesh'
 import Editor from '@monaco-editor/react'
-import api, { getExamStatus, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
+import api, { getExamStatus, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
 import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection'
 import * as tf from '@tensorflow/tfjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { clearCandidateSession, clearHrSession } from '../utils/sessionStorage'
+import { clearCandidateSession, clearHrSession, clearPracticeSession } from '../utils/sessionStorage'
 import './CodingPage.css'
 
 const PROCTORING_EXAM_ID = 1
@@ -209,11 +209,19 @@ function CodingPage() {
   const { problemId } = useParams()
   const location = useLocation()
   const navigate = useNavigate()
+  const requestedMode = new URLSearchParams(location.search).get('mode')
   const isHrPreviewMode = Boolean(localStorage.getItem('hr_logged_in'))
-    && new URLSearchParams(location.search).get('mode') === 'hr-preview'
-  const buildCodingPath = (id) => (
-    isHrPreviewMode ? `/coding/${id}?mode=hr-preview` : `/coding/${id}`
-  )
+    && requestedMode === 'hr-preview'
+  const isPracticeMode = localStorage.getItem('practice_logged_in') === 'true'
+    && requestedMode === 'practice'
+  // Practice and HR preview both evaluate against test cases without persisting
+  // a submission, so they share the stateless /hr/preview/* endpoints.
+  const isStatelessMode = isHrPreviewMode || isPracticeMode
+  const buildCodingPath = (id) => {
+    if (isHrPreviewMode) return `/coding/${id}?mode=hr-preview`
+    if (isPracticeMode) return `/coding/${id}?mode=practice`
+    return `/coding/${id}`
+  }
 
   const [problem, setProblem] = useState(null)
   const [code, setCode] = useState('')
@@ -467,6 +475,15 @@ function CodingPage() {
   }, [getProctoringFrameSource, initializeFaceDetector, logViolation, resetAdaptiveTracking, webcamReady])
 
   useEffect(() => {
+    if (isPracticeMode) {
+      setUserName(localStorage.getItem('practice_name') || '')
+      // Practice is untimed and unproctored — never enter exam mode.
+      loadProblem()
+      return () => {
+        if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
+      }
+    }
+
     const name = localStorage.getItem('user_name')
     const hrName = localStorage.getItem('hr_name')
     if (!name && !hrName) { navigate('/'); return }
@@ -477,7 +494,7 @@ function CodingPage() {
       if (timerRef.current) clearInterval(timerRef.current)
       if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
     }
-  }, [problemId, navigate])
+  }, [problemId, navigate, isPracticeMode])
 
   useEffect(() => {
     if (!isExamMode) {
@@ -753,7 +770,7 @@ function CodingPage() {
       const sessionId = localStorage.getItem('session_id')
 
       // Guest bypass — inject mock problem data based on problemId
-      if (sessionId === 'guest-session' && !isHrPreviewMode) {
+      if (sessionId === 'guest-session' && !isStatelessMode) {
         const MOCK_PROBLEMS = {
           'py-1': {
             id: 'py-1',
@@ -872,7 +889,10 @@ function CodingPage() {
 
       const data = await getProblem(problemId)
       setProblem(data)
-      const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
+      // Practice never restores exam answers — every visit starts from the starter code.
+      const answers = isPracticeMode
+        ? {}
+        : JSON.parse(localStorage.getItem('exam_answers') || '{}')
       setCode(answers[problemId] ? answers[problemId].code : data.starter_code)
       setStarterCode(data.starter_code)
       if (data.language === 'python') setCustomInput(data.sample_input)
@@ -886,7 +906,9 @@ function CodingPage() {
   const loadProblemList = async (language) => {
     try {
       let problems
-      if (isHrPreviewMode) {
+      if (isPracticeMode) {
+        problems = await getPracticeProblems(language)
+      } else if (isHrPreviewMode) {
         const response = await api.get('/hr/problems')
         problems = (response.data || []).filter((item) => item.language === language)
       } else {
@@ -900,7 +922,10 @@ function CodingPage() {
   }
 
   const handleBack = () => {
-    if (isHrPreviewMode) {
+    if (isPracticeMode) {
+      navigate('/practice/problems')
+    }
+    else if (isHrPreviewMode) {
       navigate('/hr/questions', {
         state: { activeTab: problem?.language === 'sql' ? 'sql' : 'python' }
       })
@@ -951,17 +976,16 @@ function CodingPage() {
   const handleSubmit = async () => {
     const sessionId = localStorage.getItem('session_id')
     if (!problem) { setError('Problem not loaded. Please refresh the page.'); return }
-    const isHRPreview = isHrPreviewMode
-    if (!sessionId && !isHRPreview) { navigate('/'); return }
+    if (!sessionId && !isStatelessMode) { navigate('/'); return }
     setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setShowInputRequired(false)
     try {
       let result
       if (problem.language === 'sql') {
-        result = isHRPreview
+        result = isStatelessMode
           ? await previewSubmitSql(problemId, code, sqlDialect)
           : await submitSql(sessionId, problemId, code, remainingTime > 0 ? 9000 - remainingTime : 0, sqlDialect)
       } else {
-        result = isHRPreview
+        result = isStatelessMode
           ? await previewSubmitCode(problemId, code)
           : await submitCode(sessionId, problemId, code, remainingTime > 0 ? 9000 - remainingTime : 0)
       }
@@ -993,6 +1017,12 @@ function CodingPage() {
   }
 
   const handleLogout = () => {
+    if (isPracticeMode) {
+      clearPracticeSession()
+      navigate('/practice')
+      return
+    }
+
     localStorage.removeItem(EXAM_SECURE_MODE_KEY)
     if (isHrPreviewMode) {
       clearHrSession()
@@ -1133,10 +1163,11 @@ function CodingPage() {
 
       <header className="header">
         <div className="header-left">
-          {(isExamMode || isHrPreviewMode) && (
+          {(isExamMode || isStatelessMode) && (
             <button onClick={handleBack} className="btn-back-coding" aria-label="Go back">← Back</button>
           )}
           <h1 title={problem.title}>{problem.title}</h1>
+          {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
         </div>
         <div className="user-info">
           {isExamMode && (

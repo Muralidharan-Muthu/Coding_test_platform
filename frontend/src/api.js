@@ -109,6 +109,13 @@ export const getMcqProblems = async (sessionId = '') => {
   return response.data
 }
 
+// Practice mode — full admin problem bank, no exam session required
+export const getPracticeProblems = async (language) => {
+  const suffix = language ? `?language=${encodeURIComponent(language)}` : ''
+  const response = await api.get(`/practice/problems${suffix}`)
+  return response.data
+}
+
 export const startExam = async (sessionId) => {
   const response = await api.post('/exam/start', { session_id: sessionId })
   return response.data

@@ -841,3 +841,24 @@
     height: 96px;
   }
 }
+
+/* ─── Practice mode badge ─── */
+.practice-mode-badge {
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: background var(--transition-theme), color var(--transition-theme), border-color var(--transition-theme);
+}
+
+@media (max-width: 768px) {
+  .practice-mode-badge {
+    display: none;
+  }
+}

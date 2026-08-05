@@ -13,6 +13,8 @@ import HRDashboard from './pages/HRDashboard'
 import HRLogin from './pages/HRLogin'
 import MCQProblems from './pages/MCQProblems'
 import MCQQuestionsPage from './pages/MCQQuestionsPage'
+import PracticeLogin from './pages/PracticeLogin'
+import PracticeProblems from './pages/PracticeProblems'
 import ProblemList from './pages/ProblemList'
 import PythonProblems from './pages/PythonProblems'
 import QuestionsPage from './pages/QuestionsPage'
@@ -35,6 +37,10 @@ function App() {
 
         {/* Legacy HR route → admin */}
         <Route path="/hr" element={<Navigate to="/admin" replace />} />
+
+        {/* Practice flow — entered from the learning portal, untimed, unproctored */}
+        <Route path="/practice" element={<PracticeLogin />} />
+        <Route path="/practice/problems" element={<PracticeProblems />} />
 
         {/* Candidate flow */}
         <Route path="/dashboard" element={<CandidateDashboard />} />

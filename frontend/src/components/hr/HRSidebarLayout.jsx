@@ -163,7 +163,7 @@ function HRSidebarLayout({
     [flattenedNavItems, location.pathname]
   )
 
-  const currentLabel = activeItem?.label || 'HR Dashboard'
+  const currentLabel = activeItem?.label || 'Admin Dashboard'
   const renderedSidebarExtra = typeof sidebarExtra === 'function'
     ? sidebarExtra({ collapsed, pathname: location.pathname })
     : sidebarExtra

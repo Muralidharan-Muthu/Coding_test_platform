@@ -118,7 +118,7 @@ function LandingPage() {
               </svg>
             </div>
             <div className="portal-body">
-              <h2 className="portal-title">HR Portal</h2>
+              <h2 className="portal-title">Admin Portal</h2>
               <p className="portal-desc">
                 Manage candidates, send OTPs, configure assessments, and
                 review results from one dashboard.
