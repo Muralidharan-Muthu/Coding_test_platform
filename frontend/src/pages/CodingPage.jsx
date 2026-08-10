@@ -8,6 +8,8 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { clearCandidateSession, clearAdminSession, clearPracticeSession } from '../utils/sessionStorage'
+import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode } from 'react-icons/fi'
+import { FaLightbulb } from 'react-icons/fa'
 import './CodingPage.css'
 
 const PROCTORING_EXAM_ID = 1
@@ -26,7 +28,7 @@ const LEFT_FACE_EDGE_INDEX = 234
 const RIGHT_FACE_EDGE_INDEX = 454
 
 const examGateContainerStyle = {
-  minHeight: 'calc(100vh - 52px)',
+  minHeight: 'calc(100vh - 48px)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -214,8 +216,6 @@ function CodingPage() {
     && requestedMode === 'admin-preview'
   const isPracticeMode = localStorage.getItem('practice_logged_in') === 'true'
     && requestedMode === 'practice'
-  // Practice and Admin preview both evaluate against test cases without persisting
-  // a submission, so they share the stateless /admin/preview/* endpoints.
   const isStatelessMode = isAdminPreviewMode || isPracticeMode
   const buildCodingPath = (id) => {
     if (isAdminPreviewMode) return `/coding/${id}?mode=admin-preview`
@@ -244,6 +244,13 @@ function CodingPage() {
   const [sqlDialect, setSqlDialect] = useState('sql')
   const [problemList, setProblemList] = useState([])
   const [currentProblemIndex, setCurrentProblemIndex] = useState(-1)
+
+  // UI state for the LeetCode-style layout
+  const [leftTab, setLeftTab] = useState('description')
+  const [bottomTab, setBottomTab] = useState('testcase')
+  const [selectedTestCase, setSelectedTestCase] = useState(0)
+  const [selectedResultCase, setSelectedResultCase] = useState(0)
+
   const timerRef = useRef(null)
   const autoSaveRef = useRef(null)
   const webcamRef = useRef(null)
@@ -292,7 +299,6 @@ function CodingPage() {
   const logViolation = useCallback((type, message) => {
     if (!isExamMode) return
 
-    // Show toast notification
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
     setToastMessage(message)
     setShowToast(true)
@@ -474,10 +480,11 @@ function CodingPage() {
     }
   }, [getProctoringFrameSource, initializeFaceDetector, logViolation, resetAdaptiveTracking, webcamReady])
 
+  // ─── Effects ───────────────────────────────────────────────────────────────
+
   useEffect(() => {
     if (isPracticeMode) {
       setUserName(localStorage.getItem('practice_name') || '')
-      // Practice is untimed and unproctored — never enter exam mode.
       loadProblem()
       return () => {
         if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
@@ -736,6 +743,8 @@ function CodingPage() {
     }
   }, [isExamMode, isExamActive, resetAdaptiveTracking])
 
+  // ─── Handlers ──────────────────────────────────────────────────────────────
+
   const checkExamStatus = async () => {
     try {
       const sessionId = localStorage.getItem('session_id')
@@ -766,12 +775,21 @@ function CodingPage() {
   }
 
   const loadProblem = async () => {
-    try {
-      const sessionId = localStorage.getItem('session_id')
+    // BUG FIX: Clear previous problem's output state when switching problems
+    setOutput('')
+    setOutputType('text')
+    setSubmitResult(null)
+    setTableHeaders([])
+    setTableRows([])
+    setError('')
+    setShowInputRequired(false)
+    setSelectedTestCase(0)
+    setSelectedResultCase(0)
+    setBottomTab('testcase')
 
+    try {
       const data = await getProblem(problemId)
       setProblem(data)
-      // Practice never restores exam answers — every visit starts from the starter code.
       const answers = isPracticeMode
         ? {}
         : JSON.parse(localStorage.getItem('exam_answers') || '{}')
@@ -818,6 +836,7 @@ function CodingPage() {
 
   const handleRun = async () => {
     setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setShowInputRequired(false)
+    setBottomTab('result')
     try {
       if (problem.language === 'sql') {
         const result = await runSql(problemId, code, sqlDialect)
@@ -843,10 +862,6 @@ function CodingPage() {
       setError('Failed to run code: ' + (err.response?.data?.detail || err.message))
     } finally {
       setLoading(false)
-      setTimeout(() => {
-        const el = document.querySelector('.output-section')
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }, 100)
     }
   }
 
@@ -860,6 +875,7 @@ function CodingPage() {
     if (!problem) { setError('Problem not loaded. Please refresh the page.'); return }
     if (!sessionId && !isStatelessMode) { navigate('/'); return }
     setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setShowInputRequired(false)
+    setBottomTab('result')
     try {
       let result
       if (problem.language === 'sql') {
@@ -872,10 +888,7 @@ function CodingPage() {
           : await submitCode(sessionId, problemId, code, remainingTime > 0 ? 9000 - remainingTime : 0)
       }
       setSubmitResult(result); setOutputType('submit'); setOutput(''); setTableHeaders([]); setTableRows([])
-      setTimeout(() => {
-        const el = document.querySelector('.output-section')
-        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }, 100)
+      setSelectedResultCase(0)
       if (isExamMode) {
         const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
         answers[problemId] = { code, language: problem.language }
@@ -888,7 +901,7 @@ function CodingPage() {
     }
   }
 
-  const handleReset = () => { setCode(starterCode); setOutput(''); setError(''); setSubmitResult(null) }
+  const handleReset = () => { setCode(starterCode); setOutput(''); setError(''); setSubmitResult(null); setOutputType('text') }
 
   const handlePrevious = () => {
     if (currentProblemIndex > 0) navigate(buildCodingPath(problemList[currentProblemIndex - 1].id))
@@ -916,8 +929,9 @@ function CodingPage() {
     navigate('/')
   }
 
+  // ─── SQL Helpers (unchanged) ───────────────────────────────────────────────
+
   const parseSqlInputFormat = (inputFormat, schemaSql, seedSql, tables) => {
-    // NEWEST FORMAT: Direct 'tables' array from API
     if (tables && Array.isArray(tables) && tables.length > 0) {
       const firstTable = tables[0]
       return {
@@ -926,8 +940,7 @@ function CodingPage() {
         rows: firstTable.rows || []
       }
     }
-    
-    // NEW FORMAT: input_format is an object with tables array
+
     if (inputFormat && typeof inputFormat === 'object' && inputFormat.tables) {
       const tablesArray = inputFormat.tables
       if (tablesArray.length > 0) {
@@ -939,8 +952,7 @@ function CodingPage() {
         }
       }
     }
-    
-    // OLD FORMAT: Parse from schema_sql
+
     if (schemaSql) {
       const match = schemaSql.trim().match(/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?[`"']?([a-zA-Z_][\w]*)[`"']?\s*\((.*)\)/is)
       if (match) {
@@ -952,12 +964,11 @@ function CodingPage() {
             type: parts[1] || ''
           }
         }).filter(col => col.name && !['PRIMARY', 'FOREIGN', 'UNIQUE', 'CHECK', 'CONSTRAINT'].some(k => col.name.toUpperCase().startsWith(k)))
-        
+
         return { tableName, columns: columnDefs }
       }
     }
-    
-    // OLD FORMAT: Fallback to parsing input_format string
+
     if (inputFormat && typeof inputFormat === 'string') {
       const match = inputFormat.match(/^([a-zA-Z_][\w]*)\s*\((.*)\)$/)
       if (match) {
@@ -973,7 +984,7 @@ function CodingPage() {
         return { tableName, columns: rawColumns }
       }
     }
-    
+
     return { tableName: '', columns: [], rows: [] }
   }
 
@@ -1019,8 +1030,16 @@ function CodingPage() {
     return { columns: [], rows: [] }
   }
 
+  // ─── Derived state ─────────────────────────────────────────────────────────
+
   const showExamGate = isExamMode && !isExamActive
   const showExamWorkspace = !isExamMode || isExamActive
+
+  // Get test cases for display in the Testcase tab
+  const testCases = problem?.test_cases || []
+  const displayTestCases = testCases.length > 0
+    ? testCases
+    : (problem?.sample_input ? [{ input: problem.sample_input, expected_output: problem.sample_output }] : [])
 
   if (!problem) {
     return (
@@ -1033,9 +1052,152 @@ function CodingPage() {
 
   const violationAlertContent = getViolationAlertContent(violationBanner)
 
+  // ─── Render Helpers ────────────────────────────────────────────────────────
+
+  const renderSqlInputFormat = () => {
+    const tables = problem.tables || []
+    const normalizedTables = normalizeSqlTables(problem)
+    const schemaData = parseSqlInputFormat(problem.input_format, problem.schema_sql, problem.seed_sql, tables)
+    const backendPreviewColumns = problem.input_preview_columns || []
+    const backendPreviewRows = problem.input_preview_rows || []
+    const tablesFieldRows = (tables && tables.length > 0) ? tables[0].rows || [] : []
+    const oldFormatRows = (problem.input_format && typeof problem.input_format === 'object' &&
+                          problem.input_format.tables && problem.input_format.tables.length > 0)
+                         ? problem.input_format.tables[0].rows || [] : []
+    const fallbackPreview = getFallbackSqlPreview(typeof problem.input_format === 'string' ? problem.input_format : '')
+
+    if (normalizedTables.length > 0) {
+      return (
+        <>
+          {normalizedTables.map((table) => (
+            <div key={table.key} className="sql-input-table-block">
+              {table.tableName && <div className="table-name-header">{table.tableName}</div>}
+              <div className="sample-table-container">
+                <table className="sample-table">
+                  <thead>
+                    <tr>{table.columns.map((col, idx) => <th key={idx}>{col}</th>)}</tr>
+                  </thead>
+                  <tbody>
+                    {table.rows.map((row, ri) => (
+                      <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </>
+      )
+    }
+
+    const previewColumns = tables.length > 0 && tables[0].columns
+      ? tables[0].columns.map(c => c.name || c)
+      : backendPreviewColumns.length > 0 ? backendPreviewColumns
+      : schemaData.columns.length > 0 ? schemaData.columns.map(c => c.name || c)
+      : fallbackPreview.columns
+    const previewRows = tablesFieldRows.length > 0 ? tablesFieldRows
+      : oldFormatRows.length > 0 ? oldFormatRows
+      : backendPreviewRows.length > 0 ? backendPreviewRows
+      : fallbackPreview.rows
+
+    if (previewColumns.length > 0 && previewRows.length > 0) {
+      return (
+        <>
+          {schemaData.tableName && <div className="table-name-header">{schemaData.tableName}</div>}
+          <div className="sample-table-container">
+            <table className="sample-table">
+              <thead><tr>{previewColumns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
+              <tbody>{previewRows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </>
+      )
+    }
+
+    if (schemaData.columns.length > 0) {
+      return (
+        <div className="sample-table-container">
+          <table className="sample-table">
+            <thead><tr><th>Column</th><th>Type</th></tr></thead>
+            <tbody>
+              {schemaData.columns.map((column, idx) => (
+                <tr key={idx}><td>{column.name || column}</td><td>{column.type || '-'}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+
+    return <pre className="format-text">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
+  }
+
+  const renderSqlExpectedOutput = () => {
+    const newFormatExpectedOutput = (problem.expected_output && typeof problem.expected_output === 'object' && problem.expected_output.columns && problem.expected_output.rows)
+      ? problem.expected_output : null
+    const backendOutputColumns = problem.output_preview_columns || []
+    const backendOutputRows = problem.output_preview_rows || []
+
+    if (newFormatExpectedOutput && newFormatExpectedOutput.columns.length > 0 && newFormatExpectedOutput.rows.length > 0) {
+      return (
+        <>
+          <h3 className="section-heading">Expected Output</h3>
+          <div className="sample-table-container">
+            <table className="sample-table">
+              <thead><tr>{newFormatExpectedOutput.columns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
+              <tbody>{newFormatExpectedOutput.rows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </>
+      )
+    }
+
+    if (backendOutputColumns.length > 0 && backendOutputRows.length > 0) {
+      return (
+        <>
+          <h3 className="section-heading">Expected Output</h3>
+          <div className="sample-table-container">
+            <table className="sample-table">
+              <thead><tr>{backendOutputColumns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
+              <tbody>{backendOutputRows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </>
+      )
+    }
+
+    if (problem.sample_output) {
+      const parsedTable = parsePipeTable(problem.sample_output)
+      if (parsedTable.length > 0) {
+        return (
+          <>
+            <h3 className="section-heading">Expected Output</h3>
+            <div className="sample-table-container">
+              <table className="sample-table">
+                <tbody>{parsedTable.map((row, i) => (
+                  <tr key={i}>{row.map((cell, ci) => <td key={ci}>{cell}</td>)}</tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </>
+        )
+      }
+    }
+
+    return null
+  }
+
+  // ─── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="coding-page">
-      {/* Recording Indicator - Top Center */}
+      {/* Recording Indicator */}
       {isExamMode && isExamActive && (
         <div style={recordingIndicatorStyle}>
           <div style={pulsatingDotStyle}></div>
@@ -1043,18 +1205,36 @@ function CodingPage() {
         </div>
       )}
 
-      <header className="header">
-        <div className="header-left">
+      {/* ═══ Top Toolbar ═══ */}
+      <div className="coding-toolbar">
+        <div className="toolbar-left">
           {(isExamMode || isStatelessMode) && (
             <button onClick={handleBack} className="btn-back-coding" aria-label="Go back">← Back</button>
           )}
-          <h1 title={problem.title}>{problem.title}</h1>
+          <span className="toolbar-title" title={problem.title}>{problem.title}</span>
           {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
+          {problemList.length > 0 && (
+            <div className="toolbar-nav-arrows">
+              <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">‹</button>
+              <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">›</button>
+              <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
+            </div>
+          )}
         </div>
-        <div className="user-info">
+
+        <div className="toolbar-center">
+          <button onClick={handleRun} disabled={loading} className="btn-run-toolbar">
+            <span className="toolbar-btn-icon"><FiPlay /></span> {loading ? 'Running...' : 'Run'}
+          </button>
+          <button onClick={handleSubmit} disabled={loading} className="btn-submit-toolbar">
+            <span className="toolbar-btn-icon"><FiUploadCloud /></span> {loading ? 'Submitting...' : 'Submit'}
+          </button>
+        </div>
+
+        <div className="toolbar-right">
           {isExamMode && (
             <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
-              <span className="timer-icon" aria-hidden="true">⏱</span>
+              <span className="timer-icon" aria-hidden="true"><FiClock /></span>
               <span className="timer-value">{formatTime(remainingTime)}</span>
             </div>
           )}
@@ -1064,7 +1244,7 @@ function CodingPage() {
             <button onClick={handleLogout} className="btn-logout">Logout</button>
           )}
         </div>
-      </header>
+      </div>
 
       {/* Toast Notification */}
       {showToast && (
@@ -1074,6 +1254,7 @@ function CodingPage() {
         </div>
       )}
 
+      {/* Proctoring Camera Overlay */}
       {isExamMode && isExamActive && (
         <div
           className="proctoring-overlay"
@@ -1087,9 +1268,7 @@ function CodingPage() {
             </span>
           </div>
           {proctoringError && (
-            <div className="proctoring-status-error" role="status">
-              {proctoringError}
-            </div>
+            <div className="proctoring-status-error" role="status">{proctoringError}</div>
           )}
           <div className="webcam-preview" aria-label="Candidate webcam feed">
             <div
@@ -1119,6 +1298,7 @@ function CodingPage() {
         </div>
       )}
 
+      {/* ═══ Main Content ═══ */}
       {showExamGate ? (
         <div style={examGateContainerStyle}>
           <div style={examGateCardStyle}>
@@ -1135,457 +1315,321 @@ function CodingPage() {
               Once secure mode is active on the test structure page, the coding pages continue inside the same exam session without asking again for every question.
             </p>
             {examGateError && (
-              <div style={examGateErrorStyle}>
-                {examGateError}
-              </div>
+              <div style={examGateErrorStyle}>{examGateError}</div>
             )}
-            <button
-              type="button"
-              onClick={handleReturnToExamHub}
-              style={examGateButtonStyle}
-            >
+            <button type="button" onClick={handleReturnToExamHub} style={examGateButtonStyle}>
               Return To Test Structure
             </button>
           </div>
         </div>
       ) : showExamWorkspace ? (
-        <>
-      <div className="main-content">
-        {/* Problem Panel */}
-        <div className="problem-panel">
-          <div className="problem-content">
-            <h2>Problem Statement</h2>
-            <div className="problem-text">
-              <pre>{problem.statement}</pre>
+        <div className="main-split">
+          {/* ═══ Left Panel — Description ═══ */}
+          <div className="left-panel">
+            <div className="left-panel-tabs">
+              <button className={`left-tab${leftTab === 'description' ? ' active' : ''}`} onClick={() => setLeftTab('description')}>
+                <span className="tab-icon-svg"><FiFileText /></span> Description
+              </button>
+              <button className={`left-tab${leftTab === 'editorial' ? ' active' : ''}`} onClick={() => setLeftTab('editorial')}>
+                <span className="tab-icon-svg"><FiBookOpen /></span> Editorial
+              </button>
+              <button className={`left-tab${leftTab === 'solutions' ? ' active' : ''}`} onClick={() => setLeftTab('solutions')}>
+                <span className="tab-icon-svg"><FaLightbulb /></span> Solutions
+              </button>
+              <button className={`left-tab${leftTab === 'submissions' ? ' active' : ''}`} onClick={() => setLeftTab('submissions')}>
+                <span className="tab-icon-svg"><FiClock /></span> Submissions
+              </button>
             </div>
 
-            <h3>Input Format</h3>
-            {problem.language === 'sql' ? (
-              <div className="sql-input-format">
-                {(() => {
-                  // NEWEST FORMAT: Use authored 'tables' arrays from API/input_format.
-                  // Supports multiple input tables for JOIN questions and keeps legacy fallbacks.
-                  const tables = problem.tables || []
-                  const normalizedTables = normalizeSqlTables(problem)
-                  
-                  // Parse schema from backend schema_sql or input_format (supports all formats)
-                  const schemaData = parseSqlInputFormat(
-                    problem.input_format, 
-                    problem.schema_sql, 
-                    problem.seed_sql,
-                    tables
-                  )
-                  
-                  // Priority order for preview data:
-                  // 1. Tables field: Direct authored table data from API
-                  // 2. New format: rows from input_format.tables[0].rows
-                  // 3. Backend preview: Fallback when full table data is unavailable
-                  // 4. Fallback: getFallbackSqlPreview
-                  const backendPreviewColumns = problem.input_preview_columns || []
-                  const backendPreviewRows = problem.input_preview_rows || []
-                  
-                  // Extract from 'tables' field (NEWEST FORMAT)
-                  const tablesFieldRows = (tables && tables.length > 0) 
-                    ? tables[0].rows || [] 
-                    : []
-                  
-                  // Extract from old 'input_format.tables' structure
-                  const oldFormatRows = (problem.input_format && typeof problem.input_format === 'object' && 
-                                        problem.input_format.tables && problem.input_format.tables.length > 0) 
-                                       ? problem.input_format.tables[0].rows || [] 
-                                       : []
-                  
-                  const fallbackPreview = getFallbackSqlPreview(
-                    typeof problem.input_format === 'string' ? problem.input_format : ''
-                  )
+            <div className="left-panel-content">
+              {leftTab === 'description' && (
+                <>
+                  <div className="problem-title-section">
+                    <h2>{problem.title}</h2>
+                    {problem.difficulty && (
+                      <span className={`difficulty-badge ${(problem.difficulty || 'medium').toLowerCase()}`}>
+                        {problem.difficulty}
+                      </span>
+                    )}
+                  </div>
 
-                  if (normalizedTables.length > 0) {
-                    return (
-                      <>
-                        {normalizedTables.map((table) => (
-                          <div key={table.key} className="sql-input-table-block">
-                            {table.tableName && <div className="table-name-header">{table.tableName}</div>}
-                            <div className="sample-table-container">
-                              <table className="sample-table">
-                                <thead>
-                                  <tr>
-                                    {table.columns.map((col, idx) => <th key={idx}>{col}</th>)}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {table.rows.map((row, ri) => (
-                                    <tr key={ri}>
-                                      {row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        ))}
-                      </>
-                    )
-                  }
-                  
-                  // Use full authored table data first so SQL questions show all rows.
-                  const previewColumns = tables.length > 0 && tables[0].columns
-                    ? tables[0].columns.map(c => c.name || c)
-                    : backendPreviewColumns.length > 0 
-                    ? backendPreviewColumns 
-                    : schemaData.columns.length > 0 
-                    ? schemaData.columns.map(c => c.name || c)
-                    : fallbackPreview.columns
-                  
-                  const previewRows = tablesFieldRows.length > 0 
-                    ? tablesFieldRows 
-                    : oldFormatRows.length > 0 
-                    ? oldFormatRows 
-                    : backendPreviewRows.length > 0 
-                    ? backendPreviewRows 
-                    : fallbackPreview.rows
+                  <div className="problem-statement">
+                    <pre>{problem.statement}</pre>
+                  </div>
 
-                  // Render table if we have columns AND rows
-                  if (previewColumns.length > 0 && previewRows.length > 0) {
-                    return (
+                  <h3 className="section-heading">Input Format</h3>
+                  {problem.language === 'sql' ? (
+                    <div className="sql-input-format">{renderSqlInputFormat()}</div>
+                  ) : (
+                    <pre className="format-text">{problem.input_format}</pre>
+                  )}
+
+                  {problem.language !== 'sql' && (
+                    <>
+                      <h3 className="section-heading">Output Format</h3>
+                      <pre className="format-text">{problem.output_format}</pre>
+                    </>
+                  )}
+
+                  {problem.language === 'sql' ? (
+                    renderSqlExpectedOutput()
+                  ) : (
+                    <>
+                      <h3 className="section-heading">Sample Input</h3>
+                      <pre className="sample-text">{problem.sample_input}</pre>
+                      <h3 className="section-heading">Sample Output</h3>
+                      <pre className="sample-text">{problem.sample_output}</pre>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {leftTab === 'editorial' && (
+                <div className="empty-tab-content">Editorial is locked or unavailable.</div>
+              )}
+              {leftTab === 'solutions' && (
+                <div className="empty-tab-content">Community solutions will be shown here.</div>
+              )}
+              {leftTab === 'submissions' && (
+                <div className="empty-tab-content">You have no previous submissions.</div>
+              )}
+            </div>
+
+            {/* LeetCode-style Footer in Left Panel */}
+            <div className="left-panel-footer">
+              <div className="footer-left">
+                <button className="footer-btn" aria-label="Upvote"><FiThumbsUp /> 19.4K</button>
+                <button className="footer-btn" aria-label="Downvote"><FiThumbsDown /></button>
+                <button className="footer-btn" aria-label="Comments"><FiMessageSquare /> 990</button>
+                <button className="footer-btn" aria-label="Favorite"><FiStar /></button>
+              </div>
+              <div className="footer-right">
+                <button className="footer-btn"><FiShare2 /> Share</button>
+                <button className="footer-btn">Feedback</button>
+              </div>
+            </div>
+          </div>
+
+          {/* ═══ Right Panel — Editor + Bottom Panel ═══ */}
+          <div className="right-panel">
+            {/* Code Header */}
+            <div className="code-header">
+              <div className="code-header-left">
+                <span className="code-label">
+                  <span className="code-label-icon"><FiCode /></span> Code
+                </span>
+                {problem.language === 'sql' ? (
+                  <div className="sql-dialect-selector">
+                    <select value={sqlDialect} onChange={(e) => setSqlDialect(e.target.value)} className="dialect-select" aria-label="SQL dialect">
+                      <option value="sql">Standard SQL</option>
+                      <option value="mysql">MySQL</option>
+                      <option value="postgresql">PostgreSQL</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div className="sql-dialect-selector">
+                    <select className="dialect-select" defaultValue="python3" aria-label="Language">
+                      <option value="python3">Python3</option>
+                      <option value="auto">Auto 🔒</option>
+                    </select>
+                  </div>
+                )}
+                {isExamMode && <span className="auto-save-indicator" aria-live="polite">Auto-saving...</span>}
+              </div>
+              <div className="code-header-right">
+                <button className="utility-btn" aria-label="Format"><FiAlignLeft /></button>
+                <button onClick={handleReset} disabled={loading} className="utility-btn" aria-label="Reset Code"><FiRefreshCw /></button>
+                <button className="utility-btn" aria-label="Fullscreen"><FiMaximize /></button>
+              </div>
+            </div>
+
+            {/* Editor */}
+            <div className="editor-area">
+              <Editor
+                height="100%"
+                defaultLanguage={problem.language === 'sql' ? sqlDialect : 'python'}
+                value={code}
+                onChange={(value) => setCode(value || '')}
+                theme="vs-dark"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  contextmenu: false,
+                  dragAndDrop: false,
+                  copyWithSyntaxHighlighting: false,
+                  fontFamily: "'JetBrains Mono', 'Consolas', 'Courier New', monospace",
+                }}
+              />
+            </div>
+
+            {/* ═══ Bottom Panel — Testcase / Test Result ═══ */}
+            <div className="bottom-panel">
+              <div className="bottom-panel-tabs">
+                <button className={`bottom-tab${bottomTab === 'testcase' ? ' active' : ''}`} onClick={() => setBottomTab('testcase')}>
+                  <span className="bottom-tab-icon"><FiCheckSquare /></span> Testcase
+                </button>
+                <button className={`bottom-tab${bottomTab === 'result' ? ' active' : ''}`} onClick={() => setBottomTab('result')}>
+                  <span className="bottom-tab-icon"><FiTerminal /></span> Test Result
+                  {submitResult && (
+                    <span className={`result-dot ${submitResult.verdict === 'Accepted' ? 'pass' : 'fail'}`}></span>
+                  )}
+                </button>
+              </div>
+
+              <div className="bottom-panel-content">
+                {/* ─── Testcase Tab ─── */}
+                {bottomTab === 'testcase' && (
+                  <>
+                    {problem.language === 'python' && displayTestCases.length > 0 && (
                       <>
-                        {schemaData.tableName && <div className="table-name-header">{schemaData.tableName}</div>}
-                        <div className="sample-table-container">
-                          <table className="sample-table">
-                            <thead>
-                              <tr>
-                                {previewColumns.map((col, idx) => <th key={idx}>{col}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {previewRows.map((row, ri) => (
-                                <tr key={ri}>
-                                  {row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                        <div className="testcase-pills">
+                          {displayTestCases.map((_, i) => (
+                            <button key={i} className={`case-pill${selectedTestCase === i ? ' active' : ''}`} onClick={() => setSelectedTestCase(i)}>
+                              Case {i + 1}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="testcase-detail">
+                          {displayTestCases[selectedTestCase] && (
+                            <>
+                              <div>
+                                <div className="testcase-field-label">input =</div>
+                                <div className="testcase-field-value">{displayTestCases[selectedTestCase].input}</div>
+                              </div>
+                              {displayTestCases[selectedTestCase].expected_output && (
+                                <div>
+                                  <div className="testcase-field-label">expected output =</div>
+                                  <div className="testcase-field-value">{displayTestCases[selectedTestCase].expected_output}</div>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </>
-                    )
-                  }
+                    )}
 
-                  // Fallback: show schema structure (column names and types)
-                  if (schemaData.columns.length > 0) {
-                    return (
-                      <div className="sample-table-container">
-                        <table className="sample-table">
+                    {problem.language === 'python' && (
+                      <div className="custom-input-section">
+                        <label htmlFor="custom-input">Custom Input</label>
+                        <textarea
+                          id="custom-input"
+                          value={customInput}
+                          onChange={(e) => setCustomInput(e.target.value)}
+                          placeholder="Enter custom input here..."
+                          rows={3}
+                        />
+                      </div>
+                    )}
+
+                    {problem.language === 'sql' && (
+                      <div className="empty-result">SQL problems use the table schema shown in the description.</div>
+                    )}
+                  </>
+                )}
+
+                {/* ─── Test Result Tab ─── */}
+                {bottomTab === 'result' && (
+                  <>
+                    {error && <div className="error-output" role="alert">{error}</div>}
+
+                    {showInputRequired && (
+                      <div className="input-required-message" role="alert">
+                        <p>Input is required to run the code.</p>
+                        <button onClick={handleUseSampleInput} className="btn-use-sample">
+                          Use Sample Input &amp; Run
+                        </button>
+                      </div>
+                    )}
+
+                    {outputType === 'submit' && submitResult ? (
+                      <>
+                        {/* Verdict Summary */}
+                        <div className="result-summary">
+                          <div className={`verdict-badge verdict-${(submitResult.verdict || 'failed').toLowerCase().replace(' ', '-')}`}>
+                            {submitResult.verdict === 'Accepted' ? '✓' : '✗'} {submitResult.verdict}
+                          </div>
+                          <div className="result-scores">
+                            <div className="score-item">
+                              <span className="score-label">Score</span>
+                              <span className="score-value">{submitResult.score?.toFixed(2)}%</span>
+                            </div>
+                            <div className="score-item">
+                              <span className="score-label">Best Score</span>
+                              <span className="score-value">{submitResult.best_score?.toFixed(2)}%</span>
+                            </div>
+                            <div className="score-item">
+                              <span className="score-label">Test Cases</span>
+                              <span className="score-value">{submitResult.passed_tests}/{submitResult.total_tests}</span>
+                            </div>
+                          </div>
+                          {submitResult.is_new_best && (
+                            <div className="new-best-badge">New Best Score!</div>
+                          )}
+                        </div>
+
+                        {/* Per-case pills */}
+                        <div className="result-case-pills">
+                          {Array.from({ length: submitResult.total_tests }, (_, i) => {
+                            const failed = submitResult.failed_details?.find(d => d.test_case === i + 1)
+                            const passed = !failed
+                            return (
+                              <button
+                                key={i}
+                                className={`result-case-pill${selectedResultCase === i ? ' active' : ''} ${passed ? 'pass' : 'fail'}`}
+                                onClick={() => setSelectedResultCase(i)}
+                              >
+                                Case {i + 1}
+                              </button>
+                            )
+                          })}
+                        </div>
+
+                        {/* Selected case detail */}
+                        {(() => {
+                          const caseIndex = selectedResultCase
+                          const failed = submitResult.failed_details?.find(d => d.test_case === caseIndex + 1)
+                          const passed = !failed
+                          return (
+                            <div className="result-case-detail">
+                              <div className={`result-status-line ${passed ? 'pass' : 'fail'}`}>
+                                {passed ? '✓ Accepted' : failed?.error ? '✗ Runtime Error' : '✗ Wrong Answer'}
+                              </div>
+                              {failed?.error && (
+                                <div className="result-error-msg">{failed.error}</div>
+                              )}
+                            </div>
+                          )
+                        })()}
+                      </>
+                    ) : outputType === 'table' ? (
+                      <div className="sql-table-output">
+                        <table className="sql-results-table">
                           <thead>
-                            <tr>
-                              <th>Column</th>
-                              <th>Type</th>
-                            </tr>
+                            <tr>{tableHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
                           </thead>
                           <tbody>
-                            {schemaData.columns.map((column, idx) => (
-                              <tr key={idx}>
-                                <td>{column.name || column}</td>
-                                <td>{column.type || '-'}</td>
-                              </tr>
+                            {tableRows.map((row, ri) => (
+                              <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
                             ))}
                           </tbody>
                         </table>
                       </div>
-                    )
-                  }
-
-                  // Last resort: show raw input_format
-                  return (
-                    <pre className="format-text">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
-                  )
-                })()}
-              </div>
-            ) : (
-              <pre className="format-text">{problem.input_format}</pre>
-            )}
-
-            {problem.language !== 'sql' && (
-              <>
-                <h3>Output Format</h3>
-                <pre className="format-text">{problem.output_format}</pre>
-              </>
-            )}
-
-            {problem.language === 'sql' ? (
-              <>
-                {(() => {
-                  // PRIORITY ORDER for Expected Output rendering:
-                  // 1. NEW FORMAT: problem.expected_output with columns and rows
-                  // 2. BACKEND GENERATED: output_preview_columns and output_preview_rows
-                  // 3. FALLBACK: Parse sample_output text (pipe-separated tables)
-                  
-                  // Check for NEW FORMAT: problem.expected_output structure
-                  const newFormatExpectedOutput = (problem.expected_output && 
-                                                   typeof problem.expected_output === 'object' && 
-                                                   problem.expected_output.columns && 
-                                                   problem.expected_output.rows)
-                                                  ? problem.expected_output
-                                                  : null
-                  
-                  // Use backend generated preview if no new format
-                  const backendOutputColumns = problem.output_preview_columns || []
-                  const backendOutputRows = problem.output_preview_rows || []
-                  
-                  // Render NEW FORMAT expected output (full table with columns and rows)
-                  if (newFormatExpectedOutput && newFormatExpectedOutput.columns.length > 0 && newFormatExpectedOutput.rows.length > 0) {
-                    return (
-                      <>
-                        <h3>Expected Output</h3>
-                        <div className="sample-table-container">
-                          <table className="sample-table">
-                            <thead>
-                              <tr>
-                                {newFormatExpectedOutput.columns.map((col, idx) => <th key={idx}>{col}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {newFormatExpectedOutput.rows.map((row, ri) => (
-                                <tr key={ri}>
-                                  {row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </>
-                    )
-                  }
-                  
-                  // Render BACKEND GENERATED preview (dynamically executed from starter_code)
-                  if (backendOutputColumns.length > 0 && backendOutputRows.length > 0) {
-                    return (
-                      <>
-                        <h3>Expected Output</h3>
-                        <div className="sample-table-container">
-                          <table className="sample-table">
-                            <thead>
-                              <tr>
-                                {backendOutputColumns.map((col, idx) => <th key={idx}>{col}</th>)}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {backendOutputRows.map((row, ri) => (
-                                <tr key={ri}>
-                                  {row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                      </>
-                    )
-                  }
-                  
-                  // FALLBACK: Parse sample_output text if structured data not available
-                  if (problem.sample_output) {
-                    const parsedTable = parsePipeTable(problem.sample_output)
-                    if (parsedTable.length > 0) {
-                      return (
-                        <>
-                          <h3>Expected Output</h3>
-                          <div className="sample-table-container">
-                            <table className="sample-table">
-                              <tbody>
-                                {parsedTable.map((row, i) => (
-                                  <tr key={i}>
-                                    {row.map((cell, ci) => <td key={ci}>{cell}</td>)}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </>
-                      )
-                    }
-                  }
-                  
-                  return null
-                })()}
-              </>
-            ) : (
-              <>
-                <h3>Sample Input</h3>
-                <pre className="sample-text">{problem.sample_input}</pre>
-                <h3>Sample Output</h3>
-                <pre className="sample-text">{problem.sample_output}</pre>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Editor Panel */}
-        <div className="editor-panel">
-          <div className="editor-header">
-            {problem.language === 'sql' ? (
-              <div className="sql-dialect-selector">
-                <span>Language:</span>
-                <select
-                  value={sqlDialect}
-                  onChange={(e) => setSqlDialect(e.target.value)}
-                  className="dialect-select"
-                  aria-label="SQL dialect"
-                >
-                  <option value="sql">Standard SQL</option>
-                  <option value="mysql">MySQL</option>
-                  <option value="postgresql">PostgreSQL</option>
-                </select>
-              </div>
-            ) : (
-              <span>Language: Python</span>
-            )}
-            {isExamMode && <span className="auto-save-indicator" aria-live="polite">Auto-saving...</span>}
-          </div>
-          <div className="editor-container">
-            <Editor
-              height="100%"
-              defaultLanguage={problem.language === 'sql' ? sqlDialect : 'python'}
-              value={code}
-              onChange={(value) => setCode(value || '')}
-              theme="vs-dark"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                contextmenu: false,
-                dragAndDrop: false,
-                copyWithSyntaxHighlighting: false,
-                fontFamily: "'JetBrains Mono', 'Consolas', 'Courier New', monospace",
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="bottom-section">
-        <div className="action-buttons">
-          <button onClick={handleRun} disabled={loading} className="btn-run">
-            {loading ? 'Running...' : '▶ Run'}
-          </button>
-          <button onClick={handleSubmit} disabled={loading} className="btn-submit">
-            {loading ? 'Submitting...' : '✓ Submit'}
-          </button>
-          <button onClick={handleReset} disabled={loading} className="btn-reset">
-            Reset Code
-          </button>
-        </div>
-
-        {problem.language === 'python' && (
-          <div className="custom-input-section">
-            <label htmlFor="custom-input">Custom Input</label>
-            <textarea
-              id="custom-input"
-              value={customInput}
-              onChange={(e) => setCustomInput(e.target.value)}
-              placeholder="Enter custom input here..."
-              rows={4}
-            />
-          </div>
-        )}
-
-        <div className="output-section">
-          <h3>Output</h3>
-          {error && <div className="error-output" role="alert">{error}</div>}
-          {showInputRequired && (
-            <div className="input-required-message" role="alert">
-              <p>Input is required to run the code.</p>
-              <button onClick={handleUseSampleInput} className="btn-use-sample">
-                Use Sample Input &amp; Run
-              </button>
-            </div>
-          )}
-          {outputType === 'submit' && submitResult ? (
-            <div className="submission-result">
-              <div className="submission-summary">
-                <div className={`verdict-badge verdict-${(submitResult.verdict || 'failed').toLowerCase().replace(' ', '-')}`}>
-                  {submitResult.verdict === 'Accepted' ? '✓' : '✗'} {submitResult.verdict}
-                </div>
-                <div className="submission-scores">
-                  <div className="score-item">
-                    <span className="score-label">Score</span>
-                    <span className="score-value">{submitResult.score?.toFixed(2)}%</span>
-                  </div>
-                  <div className="score-item">
-                    <span className="score-label">Best Score</span>
-                    <span className="score-value">{submitResult.best_score?.toFixed(2)}%</span>
-                  </div>
-                  <div className="score-item">
-                    <span className="score-label">Test Cases</span>
-                    <span className="score-value">{submitResult.passed_tests}/{submitResult.total_tests} Passed</span>
-                  </div>
-                </div>
-                {submitResult.is_new_best && (
-                  <div className="new-best-badge">New Best Score!</div>
+                    ) : (
+                      output ? (
+                        <pre className="output-content">{output}</pre>
+                      ) : !error && !showInputRequired ? (
+                        <div className="empty-result">Run or submit your code to see results here.</div>
+                      ) : null
+                    )}
+                  </>
                 )}
               </div>
-              <div className="test-cases-list">
-                {Array.from({ length: submitResult.total_tests }, (_, i) => {
-                  const failed = submitResult.failed_details?.find(d => d.test_case === i + 1)
-                  const passed = !failed
-                  return (
-                    <div key={i} className={`tc-row ${passed ? 'tc-passed' : 'tc-failed'}`}>
-                      <span className="tc-number">Test Case {i + 1}</span>
-                      <span className="tc-status-icon">{passed ? '✓' : '✗'}</span>
-                      <span className={`tc-verdict ${passed ? 'tv-accepted' : 'tv-wrong'}`}>
-                        {passed ? 'Accepted' : failed?.error ? 'Runtime Error' : 'Wrong Answer'}
-                      </span>
-                      {failed?.error && (
-                        <span className="tc-error-msg">{failed.error}</span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
             </div>
-          ) : outputType === 'table' ? (
-            <div className="sql-table-output">
-              <table className="sql-results-table">
-                <thead>
-                  <tr>{tableHeaders.map((h, i) => <th key={i}>{h}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {tableRows.map((row, ri) => (
-                    <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <pre className="output-content">{output || '// Output will appear here'}</pre>
-          )}
-        </div>
-
-        {problemList.length > 0 && (
-          <div className="problem-navigation">
-            <button
-              onClick={handlePrevious}
-              disabled={currentProblemIndex <= 0}
-              className={`btn-nav${currentProblemIndex <= 0 ? ' disabled' : ''}`}
-              aria-label="Previous problem"
-            >
-              ← Previous Problem
-            </button>
-            <span className="problem-counter">
-              Problem {currentProblemIndex + 1} of {problemList.length}
-            </span>
-            <button
-              onClick={handleNext}
-              disabled={currentProblemIndex >= problemList.length - 1}
-              className={`btn-nav${currentProblemIndex >= problemList.length - 1 ? ' disabled' : ''}`}
-              aria-label="Next problem"
-            >
-              Next Problem →
-            </button>
           </div>
-        )}
-      </div>
-        </>
+        </div>
       ) : null}
     </div>
   )
