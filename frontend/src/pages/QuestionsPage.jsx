@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import api from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
@@ -11,7 +11,7 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
+  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
     href: '/admin/otp',
@@ -432,6 +432,8 @@ function QuestionsPage() {
   const promptRef = useRef(null)
   const [jsonCopied, setJsonCopied] = useState(false)
 
+  const location = useLocation()
+
   useEffect(() => {
     const loggedIn = localStorage.getItem('admin_logged_in')
     const name = localStorage.getItem('admin_name')
@@ -444,13 +446,20 @@ function QuestionsPage() {
   }, [navigate])
 
   useEffect(() => {
-    const requestedTab = location.state?.activeTab
-    if (requestedTab === 'python' || requestedTab === 'sql') {
-      setActiveTab(requestedTab)
+    if (location.pathname.includes('sql')) {
+      setActiveTab('sql')
+      setShowAdd(false)
+      setError('')
+    } else if (location.pathname.includes('python')) {
+      setActiveTab('python')
+      setShowAdd(false)
+      setError('')
+    } else if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab)
       setShowAdd(false)
       setError('')
     }
-  }, [location.state])
+  }, [location.pathname, location.state])
 
   const loadProblems = async () => {
     try {
@@ -569,13 +578,18 @@ function QuestionsPage() {
 
   const handleTabChange = (nextTab) => {
     if (nextTab === 'mcq') {
-      navigate('/admin/questions/mcq')
+      navigate('/admin/questions/mcq_questions')
       return
     }
 
     setActiveTab(nextTab)
     setShowAdd(false)
     setError('')
+    if (nextTab === 'python') {
+      navigate('/admin/questions/python_questions')
+    } else if (nextTab === 'sql') {
+      navigate('/admin/questions/sql_questions')
+    }
   }
 
   const renderQuestionTypeTabs = (placement, collapsed = false) => (
@@ -628,7 +642,7 @@ function QuestionsPage() {
       className="questions-page"
       adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
-      sidebarExtraAfterHref="/admin/questions"
+      sidebarExtraAfterHref="/admin/questions/python_questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

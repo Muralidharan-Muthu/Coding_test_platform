@@ -1,13 +1,277 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "sqlite"
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  name          String
+  email         String        @unique
+  test_location String?
+  created_at    String
+
+  submissions   Submission[]
+  assessments   Assessment[]
+  admin_results AdminResult[]
+
+  @@map("users")
+}
+
+model Submission {
+  id                Int           @id @default(autoincrement())
+  user_id           Int
+  problem_id        String
+  code              String
+  passed_tests      Int
+  total_tests       Int
+  score             Float
+  verdict           String        @default("Pending")
+  execution_time_ms Float         @default(0.0)
+  time_taken        Int           @default(0)
+  created_at        String
+
+  user              User          @relation(fields: [user_id], references: [id])
+  admin_results     AdminResult[]
+
+  @@map("submissions")
+}
+
+model AdminResult {
+  id                 Int        @id @default(autoincrement())
+  user_id            Int
+  name               String
+  email              String
+  problem_id         String
+  best_score         Float
+  passed_tests       Int
+  total_tests        Int
+  best_submission_id Int
+  verdict            String     @default("Pending")
+  execution_time_ms  Float      @default(0.0)
+  time_taken         Int        @default(0)
+  updated_at         String
+
+  user            User       @relation(fields: [user_id], references: [id])
+  best_submission Submission @relation(fields: [best_submission_id], references: [id])
+
+  @@unique([user_id, problem_id], name: "uq_user_problem")
+  @@map("admin_results")
+}
+
+model Assessment {
+  id                     Int     @id @default(autoincrement())
+  user_id                Int
+  candidate_id           String
+  name                   String
+  email                  String
+  phone                  String?
+  test_location          String?
+  test_date              String
+  login_time             String
+  submit_time            String
+  submission_type        String
+  time_taken_min         Int
+  total_questions        Int
+  python_questions       Int
+  sql_questions          Int
+  mcq_questions          Int     @default(0)
+  python_score           Float
+  sql_score              Float
+  mcq_score              Float   @default(0.0)
+  overall_score          Float
+  max_possible_score     Float?
+  overall_percentage     Float
+  overall_verdict        String
+  problem_testcases_json String
+  problem_scores_json    String
+  created_at             String
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("assessments")
+}
+
+model CandidateOtp {
+  id         Int     @id @default(autoincrement())
+  username   String
+  email      String
+  otp_code   String?
+  expires_at String?
+  created_at String
+  sent       Int     @default(0)
+  status     String  @default("unused")
+  test_type  String  @default("both")
+
+  @@map("candidate_otp")
+}
+
+
+
+model PythonProblem {
+  id              String  @id
+  title           String
+  language        String  @default("python")
+  difficulty      String  @default("Medium")
+  marks           Int     @default(10)
+  time_limit      Int     @default(15)
+  statement       String?
+  description     String?
+  input_format    String?
+  output_format   String?
+  sample_input    String?
+  sample_output   String?
+  starter_code    String?
+  test_cases_json String?
+  is_active       Int     @default(1)
+  created_at      String
+
+  @@map("python_problems")
+}
+
+model SqlProblem {
+  id              String  @id
+  title           String
+  language        String  @default("sql")
+  difficulty      String  @default("Medium")
+  marks           Int     @default(10)
+  time_limit      Int     @default(15)
+  statement       String?
+  description     String?
+  input_format    String?
+  output_format   String?
+  sample_input    String?
+  sample_output   String?
+  starter_code    String?
+  test_cases_json String?
+  schema_sql      String?
+  seed_sql        String?
+  is_active       Int     @default(1)
+  created_at      String
+
+  @@map("sql_problems")
+}
+
+model CustomProblem {
+  id              String  @id
+  title           String
+  language        String
+  difficulty      String  @default("Medium")
+  marks           Int     @default(10)
+  time_limit      Int     @default(15)
+  statement       String?
+  description     String?
+  input_format    String?
+  output_format   String?
+  sample_input    String?
+  sample_output   String?
+  starter_code    String?
+  test_cases_json String?
+  schema_sql      String?
+  seed_sql        String?
+  created_at      String
+
+  @@map("custom_problems")
+}
+
+model SelectedExamProblem {
+  id         Int    @id @default(autoincrement())
+  problem_id String @unique
+  language   String
+  difficulty String @default("Medium")
+  marks      Int    @default(10)
+  time_limit Int    @default(15)
+  title      String
+  saved_at   String
+
+  @@map("selected_exam_problems")
+}
+
+model CandidateSelectedExamProblem {
+  id              Int    @id @default(autoincrement())
+  candidate_email String
+  problem_id      String
+  language        String
+  difficulty      String @default("Medium")
+  marks           Int    @default(10)
+  time_limit      Int    @default(15)
+  title           String
+  saved_at        String
+
+  @@map("candidate_selected_exam_problems")
+}
+
+model AuthUser {
+  id            String @id
+  email         String @unique
+  password_hash String
+  role          String
+  name          String
+  created_at    String
+
+  @@map("auth_users")
+}
+
+model MCQQuestion {
+  id             String  @id
+  title          String
+  question_text  String
+  option_a       String
+  option_b       String
+  option_c       String
+  option_d       String
+  correct_option String
+  question_title String?
+  question       String?
+  options_json   String?
+  correct_answer Int?
+  difficulty     String  @default("easy")
+  marks          Int     @default(10)
+  time           Int     @default(10)
+  topic          String  @default("Python")
+  explanation    String  @default("")
+  created_at     String
+
+  @@map("mcq_questions")
+}
+
+model ProctoringLog {
+  id             Int      @id @default(autoincrement())
+  exam_id        String
+  candidate_id   String?
+  violation_type String
+  message        String
+  timestamp      DateTime @default(now())
+
+  @@index([exam_id])
+  @@index([candidate_id])
+  @@map("proctoring_logs")
+}
+
+model ServerSession {
+  id              String   @id
+  candidate_email String?
+  user_id         String?
+  test_type       String?
+  start_time      DateTime @default(now())
+  expires_at      DateTime
+  is_active       Boolean  @default(true)
+
+  @@map("server_sessions")
+}
+
+model ServerExamSession {
+  id           String   @id
+  session_id   String   @unique
+  user_id      String
+  start_time   DateTime @default(now())
+  answers_json String   @default("{}")
+  is_completed Boolean  @default(false)
+
+  @@map("server_exam_sessions")
 }

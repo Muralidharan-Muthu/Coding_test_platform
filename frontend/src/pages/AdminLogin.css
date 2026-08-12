@@ -193,3 +193,35 @@
     background: transparent;
   }
 }
+
+/* ─── Password Toggle ─── */
+.admin-password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-password-wrapper input {
+  padding-right: 44px;
+}
+
+.admin-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary, #8899a6);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.admin-password-toggle:hover {
+  opacity: 1;
+}

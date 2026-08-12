@@ -11,7 +11,7 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
+  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
     href: '/admin/otp',
@@ -129,7 +129,11 @@ function MCQQuestionsPage() {
       return
     }
 
-    navigate('/admin/questions', { state: { activeTab: nextType } })
+    if (nextType === 'python') {
+      navigate('/admin/questions/python_questions')
+    } else if (nextType === 'sql') {
+      navigate('/admin/questions/sql_questions')
+    }
   }
 
   const toggleExpanded = (questionKey) => {
@@ -300,7 +304,7 @@ function MCQQuestionsPage() {
       className="mcq-questions-page"
       adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
-      sidebarExtraAfterHref="/admin/questions"
+      sidebarExtraAfterHref="/admin/questions/python_questions"
       sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}

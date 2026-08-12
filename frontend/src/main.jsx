@@ -61,8 +61,15 @@ function App() {
         <Route path="/admin/test-type" element={<ChooseTestTypePage />} />
         <Route path="/admin/send-mail" element={<SendMailPage />} />
         <Route path="/dashboard/assessment" element={<AssessmentDashboard />} />
-        <Route path="/admin/questions" element={<QuestionsPage />} />
+        <Route path="/admin/questions" element={<Navigate to="/admin/questions/python_questions" replace />} />
+        <Route path="/admin/questions/python" element={<Navigate to="/admin/questions/python_questions" replace />} />
+        <Route path="/admin/questions/python_questions" element={<QuestionsPage />} />
+        <Route path="/admin/questions/python_problems" element={<Navigate to="/admin/questions/python_questions" replace />} />
+        <Route path="/admin/questions/sql" element={<Navigate to="/admin/questions/sql_questions" replace />} />
+        <Route path="/admin/questions/sql_questions" element={<QuestionsPage />} />
+        <Route path="/admin/questions/sql_problems" element={<Navigate to="/admin/questions/sql_questions" replace />} />
         <Route path="/admin/questions/mcq" element={<MCQQuestionsPage />} />
+        <Route path="/admin/questions/mcq_questions" element={<MCQQuestionsPage />} />
       </Routes>
     </BrowserRouter>
   )

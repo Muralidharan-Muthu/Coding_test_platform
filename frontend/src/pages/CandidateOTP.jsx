@@ -12,7 +12,7 @@ const NAV_ITEMS = [
     href: '/dashboard/assessment',
     activePaths: ['/dashboard/assessment'],
   },
-  { label: 'Questions', href: '/admin/questions', activePaths: ['/admin/questions'] },
+  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
   {
     label: 'Manage Candidates',
     href: '/admin/otp',

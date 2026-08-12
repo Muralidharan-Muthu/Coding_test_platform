@@ -110,7 +110,66 @@ export const verifyCandidateOtp = async (email: string, otpCode: string) => {
 };
 
 export const getAllCandidates = async () => {
-    return prisma.candidateOtp.findMany();
+    return prisma.candidateOtp.findMany({
+        orderBy: { id: 'asc' }
+    });
+};
+
+export const clearAllCandidates = async () => {
+    await prisma.candidateOtp.deleteMany({});
+    return { status: 'cleared', message: 'All candidates cleared successfully' };
+};
+
+export const deleteCandidateByEmail = async (email: string) => {
+    const candidate = await prisma.candidateOtp.findFirst({ where: { email } });
+    if (candidate) {
+        await prisma.candidateOtp.delete({ where: { id: candidate.id } });
+    }
+    return { status: 'deleted', email };
+};
+
+export const updateCandidateDetails = async (currentEmail: string, username: string, newEmail: string) => {
+    const candidate = await prisma.candidateOtp.findFirst({ where: { email: currentEmail } });
+    if (!candidate) return null;
+
+    return prisma.candidateOtp.update({
+        where: { id: candidate.id },
+        data: {
+            username: username || candidate.username,
+            email: newEmail || candidate.email
+        }
+    });
+};
+
+export const importCandidatesList = async (candidatesList: Array<{ username: string; email: string }>) => {
+    const imported = [];
+    for (const c of candidatesList) {
+        if (!c.email || !c.username) continue;
+        const emailClean = c.email.trim().toLowerCase();
+        const usernameClean = c.username.trim();
+
+        const existing = await prisma.candidateOtp.findFirst({ where: { email: emailClean } });
+        if (existing) {
+            const updated = await prisma.candidateOtp.update({
+                where: { id: existing.id },
+                data: { username: usernameClean }
+            });
+            imported.push(updated);
+        } else {
+            const created = await prisma.candidateOtp.create({
+                data: {
+                    username: usernameClean,
+                    email: emailClean,
+                    created_at: new Date().toISOString(),
+                    sent: 0,
+                    status: 'unused',
+                    test_type: DEFAULT_TEST_TYPE
+                }
+            });
+            imported.push(created);
+        }
+    }
+    return imported;
 };
 
 export const getCandidateOtp = async (email: string) => {
@@ -128,4 +187,36 @@ export const updateCandidateTestType = async (email: string, testType: string) =
         return true;
     }
     return false;
+};
+
+export const sendOtpEmailToCandidate = async (username: string, email: string) => {
+    const otpCode = generateOtp();
+    const candidate = await saveCandidateOtp(username, email, otpCode);
+
+    // If SMTP environment variables exist, attempt email delivery via nodemailer
+    if (process.env.SMTP_HOST && process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST,
+                port: Number(process.env.SMTP_PORT) || 587,
+                secure: false,
+                auth: {
+                    user: process.env.SMTP_USERNAME,
+                    pass: process.env.SMTP_PASSWORD
+                }
+            });
+
+            await transporter.sendMail({
+                from: process.env.SMTP_USERNAME,
+                to: email,
+                subject: 'Coding Assessment Access OTP',
+                text: `Hello ${username},\n\nYour OTP for the coding assessment is: ${otpCode}\n\nThis OTP is valid for 24 hours.`
+            });
+            console.log(`[SMTP] Sent OTP email to ${email}`);
+        } catch (smtpErr) {
+            console.error(`[SMTP Warning] Failed to send email to ${email}:`, smtpErr);
+        }
+    }
+
+    return { status: 'success', message: `OTP sent to ${email}`, otp_code: otpCode, candidate };
 };

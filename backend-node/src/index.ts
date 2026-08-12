@@ -1,9 +1,9 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth';
-
-dotenv.config();
+import adminRoutes from './routes/admin';
+import problemsRoutes from './routes/problems';
 
 const app = express();
 
@@ -11,12 +11,9 @@ app.use(cors());
 app.use(express.json());
 
 // API Routes
-app.use('/api/auth', authRoutes);
-
-// Add remaining routes as they are migrated:
-// app.use('/api/admin', adminRoutes);
-// app.use('/api/problems', problemsRoutes);
-// ... etc.
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/', problemsRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', framework: 'Node.js/Express' });
@@ -30,4 +27,4 @@ if (require.main === module) {
   });
 }
 
-export default app; // Export for Vercel Serverless Function compatibility
+export default app;

@@ -8,7 +8,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { clearCandidateSession, clearAdminSession, clearPracticeSession } from '../utils/sessionStorage'
-import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode } from 'react-icons/fi'
+import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode, FiChevronUp, FiChevronDown } from 'react-icons/fi'
 import { FaLightbulb } from 'react-icons/fa'
 import './CodingPage.css'
 
@@ -250,6 +250,59 @@ function CodingPage() {
   const [bottomTab, setBottomTab] = useState('testcase')
   const [selectedTestCase, setSelectedTestCase] = useState(0)
   const [selectedResultCase, setSelectedResultCase] = useState(0)
+
+  // Resizer & Collapse State
+  const [leftWidth, setLeftWidth] = useState(42)
+  const [bottomHeight, setBottomHeight] = useState(260)
+  const [bottomCollapsed, setBottomCollapsed] = useState(false)
+
+  const handleHorizontalResizeStart = (e) => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = leftWidth
+    const mainSplit = document.querySelector('.main-split')
+    const containerWidth = mainSplit ? mainSplit.getBoundingClientRect().width : window.innerWidth
+
+    const onMouseMove = (moveEvent) => {
+      const deltaX = moveEvent.clientX - startX
+      const deltaPercent = (deltaX / containerWidth) * 100
+      const newWidth = Math.min(Math.max(startWidth + deltaPercent, 18), 75)
+      setLeftWidth(newWidth)
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
+
+  const handleVerticalResizeStart = (e) => {
+    e.preventDefault()
+    const startY = e.clientY
+    const startHeight = bottomHeight
+    const rightPanel = document.querySelector('.right-panel')
+    const containerHeight = rightPanel ? rightPanel.getBoundingClientRect().height : window.innerHeight
+
+    const onMouseMove = (moveEvent) => {
+      const deltaY = moveEvent.clientY - startY
+      const newHeight = Math.min(Math.max(startHeight - deltaY, 40), containerHeight - 120)
+      setBottomHeight(newHeight)
+      if (newHeight > 50 && bottomCollapsed) {
+        setBottomCollapsed(false)
+      }
+    }
+
+    const onMouseUp = () => {
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }
 
   const timerRef = useRef(null)
   const autoSaveRef = useRef(null)
@@ -1325,90 +1378,60 @@ function CodingPage() {
       ) : showExamWorkspace ? (
         <div className="main-split">
           {/* ═══ Left Panel — Description ═══ */}
-          <div className="left-panel">
+          <div className="left-panel" style={{ width: `${leftWidth}%` }}>
             <div className="left-panel-tabs">
-              <button className={`left-tab${leftTab === 'description' ? ' active' : ''}`} onClick={() => setLeftTab('description')}>
+              <button className="left-tab active">
                 <span className="tab-icon-svg"><FiFileText /></span> Description
-              </button>
-              <button className={`left-tab${leftTab === 'editorial' ? ' active' : ''}`} onClick={() => setLeftTab('editorial')}>
-                <span className="tab-icon-svg"><FiBookOpen /></span> Editorial
-              </button>
-              <button className={`left-tab${leftTab === 'solutions' ? ' active' : ''}`} onClick={() => setLeftTab('solutions')}>
-                <span className="tab-icon-svg"><FaLightbulb /></span> Solutions
-              </button>
-              <button className={`left-tab${leftTab === 'submissions' ? ' active' : ''}`} onClick={() => setLeftTab('submissions')}>
-                <span className="tab-icon-svg"><FiClock /></span> Submissions
               </button>
             </div>
 
             <div className="left-panel-content">
-              {leftTab === 'description' && (
+              <div className="problem-title-section">
+                <h2>{problem.title}</h2>
+                {problem.difficulty && (
+                  <span className={`difficulty-badge ${(problem.difficulty || 'medium').toLowerCase()}`}>
+                    {problem.difficulty}
+                  </span>
+                )}
+              </div>
+
+              <div className="problem-statement">
+                <pre>{problem.statement}</pre>
+              </div>
+
+              <h3 className="section-heading">Input Format</h3>
+              {problem.language === 'sql' ? (
+                <div className="sql-input-format">{renderSqlInputFormat()}</div>
+              ) : (
+                <pre className="format-text">{problem.input_format}</pre>
+              )}
+
+              {problem.language !== 'sql' && (
                 <>
-                  <div className="problem-title-section">
-                    <h2>{problem.title}</h2>
-                    {problem.difficulty && (
-                      <span className={`difficulty-badge ${(problem.difficulty || 'medium').toLowerCase()}`}>
-                        {problem.difficulty}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="problem-statement">
-                    <pre>{problem.statement}</pre>
-                  </div>
-
-                  <h3 className="section-heading">Input Format</h3>
-                  {problem.language === 'sql' ? (
-                    <div className="sql-input-format">{renderSqlInputFormat()}</div>
-                  ) : (
-                    <pre className="format-text">{problem.input_format}</pre>
-                  )}
-
-                  {problem.language !== 'sql' && (
-                    <>
-                      <h3 className="section-heading">Output Format</h3>
-                      <pre className="format-text">{problem.output_format}</pre>
-                    </>
-                  )}
-
-                  {problem.language === 'sql' ? (
-                    renderSqlExpectedOutput()
-                  ) : (
-                    <>
-                      <h3 className="section-heading">Sample Input</h3>
-                      <pre className="sample-text">{problem.sample_input}</pre>
-                      <h3 className="section-heading">Sample Output</h3>
-                      <pre className="sample-text">{problem.sample_output}</pre>
-                    </>
-                  )}
+                  <h3 className="section-heading">Output Format</h3>
+                  <pre className="format-text">{problem.output_format}</pre>
                 </>
               )}
-              
-              {leftTab === 'editorial' && (
-                <div className="empty-tab-content">Editorial is locked or unavailable.</div>
-              )}
-              {leftTab === 'solutions' && (
-                <div className="empty-tab-content">Community solutions will be shown here.</div>
-              )}
-              {leftTab === 'submissions' && (
-                <div className="empty-tab-content">You have no previous submissions.</div>
-              )}
-            </div>
 
-            {/* LeetCode-style Footer in Left Panel */}
-            <div className="left-panel-footer">
-              <div className="footer-left">
-                <button className="footer-btn" aria-label="Upvote"><FiThumbsUp /> 19.4K</button>
-                <button className="footer-btn" aria-label="Downvote"><FiThumbsDown /></button>
-                <button className="footer-btn" aria-label="Comments"><FiMessageSquare /> 990</button>
-                <button className="footer-btn" aria-label="Favorite"><FiStar /></button>
-              </div>
-              <div className="footer-right">
-                <button className="footer-btn"><FiShare2 /> Share</button>
-                <button className="footer-btn">Feedback</button>
-              </div>
+              {problem.language === 'sql' ? (
+                renderSqlExpectedOutput()
+              ) : (
+                <>
+                  <h3 className="section-heading">Sample Input</h3>
+                  <pre className="sample-text">{problem.sample_input}</pre>
+                  <h3 className="section-heading">Sample Output</h3>
+                  <pre className="sample-text">{problem.sample_output}</pre>
+                </>
+              )}
             </div>
           </div>
+
+          {/* ═══ Horizontal Resizer ═══ */}
+          <div
+            className="resizer-horizontal"
+            onMouseDown={handleHorizontalResizeStart}
+            title="Drag to resize description panel"
+          />
 
           {/* ═══ Right Panel — Editor + Bottom Panel ═══ */}
           <div className="right-panel">
@@ -1465,21 +1488,45 @@ function CodingPage() {
               />
             </div>
 
+            {/* ═══ Vertical Resizer ═══ */}
+            {!bottomCollapsed && (
+              <div
+                className="resizer-vertical"
+                onMouseDown={handleVerticalResizeStart}
+                title="Drag to resize testcase window"
+              />
+            )}
+
             {/* ═══ Bottom Panel — Testcase / Test Result ═══ */}
-            <div className="bottom-panel">
+            <div
+              className={`bottom-panel${bottomCollapsed ? ' is-collapsed' : ''}`}
+              style={{ height: bottomCollapsed ? '38px' : `${bottomHeight}px` }}
+            >
               <div className="bottom-panel-tabs">
-                <button className={`bottom-tab${bottomTab === 'testcase' ? ' active' : ''}`} onClick={() => setBottomTab('testcase')}>
-                  <span className="bottom-tab-icon"><FiCheckSquare /></span> Testcase
-                </button>
-                <button className={`bottom-tab${bottomTab === 'result' ? ' active' : ''}`} onClick={() => setBottomTab('result')}>
-                  <span className="bottom-tab-icon"><FiTerminal /></span> Test Result
-                  {submitResult && (
-                    <span className={`result-dot ${submitResult.verdict === 'Accepted' ? 'pass' : 'fail'}`}></span>
-                  )}
+                <div className="bottom-tabs-left">
+                  <button className={`bottom-tab${bottomTab === 'testcase' ? ' active' : ''}`} onClick={() => { setBottomTab('testcase'); setBottomCollapsed(false); }}>
+                    <span className="bottom-tab-icon"><FiCheckSquare /></span> Testcase
+                  </button>
+                  <button className={`bottom-tab${bottomTab === 'result' ? ' active' : ''}`} onClick={() => { setBottomTab('result'); setBottomCollapsed(false); }}>
+                    <span className="bottom-tab-icon"><FiTerminal /></span> Test Result
+                    {submitResult && (
+                      <span className={`result-dot ${submitResult.verdict === 'Accepted' ? 'pass' : 'fail'}`}></span>
+                    )}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="btn-toggle-collapse"
+                  onClick={() => setBottomCollapsed(prev => !prev)}
+                  title={bottomCollapsed ? "Expand Testcases" : "Collapse Testcases"}
+                  aria-label={bottomCollapsed ? "Expand Testcases" : "Collapse Testcases"}
+                >
+                  {bottomCollapsed ? <FiChevronUp /> : <FiChevronDown />}
                 </button>
               </div>
 
-              <div className="bottom-panel-content">
+              {!bottomCollapsed && (
+                <div className="bottom-panel-content">
                 {/* ─── Testcase Tab ─── */}
                 {bottomTab === 'testcase' && (
                   <>
@@ -1627,6 +1674,7 @@ function CodingPage() {
                   </>
                 )}
               </div>
+              )}
             </div>
           </div>
         </div>
