@@ -3,18 +3,10 @@
 echo "Installing dependencies for Coding Platform..."
 
 # ── Backend ──────────────────────────────────────────────────────────────────
-echo "[Backend] Setting up..."
-cd backend || exit 1
-if [ ! -d "venv" ]; then
-  echo "[Backend] Creating virtual environment..."
-  python -m venv venv
-fi
-
-# Activate venv (Git Bash on Windows uses Scripts/)
-source venv/Scripts/activate
-
+echo "[Backend] Setting up Node.js server..."
+cd backend-node || exit 1
 echo "[Backend] Installing dependencies..."
-pip install -r requirements.txt
+npm install
 cd ..
 
 # ── Frontend ─────────────────────────────────────────────────────────────────
