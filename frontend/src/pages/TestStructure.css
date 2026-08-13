@@ -111,7 +111,7 @@
 .btn-submit-exam:hover {
   background: #dc2626;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+  box-shadow: 0 4px 12px rgba(255, 55, 95, 0.35);
 }
 
 /* ─── Content ─── */
@@ -182,16 +182,16 @@
 
 .section-card.sql:hover {
   border-color: var(--color-warning);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(245, 158, 11, 0.15);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 192, 30, 0.15);
 }
 
 .section-card.mcq {
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: rgba(0, 175, 155, 0.35);
 }
 
 .section-card.mcq:hover {
   border-color: var(--color-success);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(16, 185, 129, 0.15);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 175, 155, 0.15);
 }
 
 .section-icon {
@@ -399,7 +399,7 @@
 .btn-confirm:hover:not(:disabled) {
   background: #059669;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 175, 155, 0.35);
 }
 
 .btn-cancel:disabled,

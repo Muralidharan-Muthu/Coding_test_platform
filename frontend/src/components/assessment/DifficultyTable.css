@@ -157,11 +157,11 @@
 [data-theme="dark"] .difficulty-table td {
   color: #e2e8f0;
   border-right-color: rgba(255,255,255,0.08);
-  border-bottom-color: #334155;
+  border-bottom-color: #3e3e3e;
 }
 
 [data-theme="dark"] .difficulty-table tbody tr:nth-child(even) td {
-  background: #1e293b;
+  background: #282828;
 }
 
 [data-theme="dark"] .difficulty-table tbody tr:hover td {
@@ -169,11 +169,11 @@
 }
 
 [data-theme="dark"] .difficulty-table .id-cell {
-  background: #1e293b !important;
+  background: #282828 !important;
 }
 
 [data-theme="dark"] .difficulty-table .name-cell {
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .score-green {

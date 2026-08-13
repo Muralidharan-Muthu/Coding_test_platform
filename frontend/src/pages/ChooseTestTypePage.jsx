@@ -1,78 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getCandidates, setCandidateTestType, shuffleCandidateQuestions } from '../api'
+import { FiCheck, FiRefreshCw, FiSave } from 'react-icons/fi'
+import {
+  getCandidates,
+  setCandidateTestType,
+  shuffleCandidateQuestions,
+  bulkSaveCandidateTestTypes,
+  bulkShuffleCandidateQuestions,
+} from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import Spinner from '../components/ui/Spinner'
+import { ADMIN_NAV_ITEMS as NAV_ITEMS, TEST_TYPES, normalizeTestType } from '../constants/data'
 import './CandidateOTP.css'
 import './ChooseTestTypePage.css'
-
-const NAV_ITEMS = [
-  {
-    label: 'Assessment Dashboard',
-    href: '/dashboard/assessment',
-    activePaths: ['/dashboard/assessment'],
-  },
-  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
-  {
-    label: 'Manage Candidates',
-    href: '/admin/otp',
-    activePaths: ['/admin/otp'],
-    children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
-    ],
-  },
-]
-
-const TEST_TYPES = {
-  both: {
-    label: 'Python + SQL',
-    description: 'Candidate gets both coding and SQL question sets.',
-  },
-  python: {
-    label: 'Python Only',
-    description: 'Candidate gets only Python coding questions.',
-  },
-  sql: {
-    label: 'SQL Only',
-    description: 'Candidate gets only SQL query questions.',
-  },
-  mcq: {
-    label: 'MCQ Only',
-    description: 'Candidate gets only multiple-choice questions.',
-  },
-  python_mcq: {
-    label: 'Python + MCQ',
-    description: 'Candidate gets Python coding questions and MCQ questions.',
-  },
-  sql_mcq: {
-    label: 'SQL + MCQ',
-    description: 'Candidate gets SQL query questions and MCQ questions.',
-  },
-  full: {
-    label: 'Python + SQL + MCQ',
-    description: 'Candidate gets Python, SQL, and MCQ question sets.',
-  },
-}
-
-function normalizeTestType(testType) {
-  const normalized = String(testType || 'both').trim().toLowerCase()
-  const aliasMap = {
-    'python + sql': 'both',
-    'mcq only': 'mcq',
-    'mcq_only': 'mcq',
-    'python + mcq': 'python_mcq',
-    'python+mcq': 'python_mcq',
-    'sql + mcq': 'sql_mcq',
-    'sql+mcq': 'sql_mcq',
-    'python + sql + mcq': 'full',
-    'python+sql+mcq': 'full',
-    'all': 'full',
-  }
-  const resolved = aliasMap[normalized] || normalized
-  if (!TEST_TYPES[resolved]) return 'both'
-  return resolved
-}
 
 function ChooseTestTypePage() {
   const navigate = useNavigate()
@@ -80,8 +21,11 @@ function ChooseTestTypePage() {
   const [adminName, setAdminName] = useState('')
   const [candidates, setCandidates] = useState([])
   const [selectedTypes, setSelectedTypes] = useState({})
+  const [shuffledState, setShuffledState] = useState({})
   const [saving, setSaving] = useState({})
   const [shuffling, setShuffling] = useState({})
+  const [bulkSaving, setBulkSaving] = useState(false)
+  const [bulkShuffling, setBulkShuffling] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -104,10 +48,13 @@ function ChooseTestTypePage() {
       setCandidates(candidateRows)
 
       const nextTypes = {}
+      const nextShuffled = {}
       candidateRows.forEach((candidate) => {
         nextTypes[candidate.email] = normalizeTestType(candidate.test_type)
+        nextShuffled[candidate.email] = Boolean(candidate.is_shuffled)
       })
       setSelectedTypes(nextTypes)
+      setShuffledState(nextShuffled)
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to load candidates')
     } finally {
@@ -148,9 +95,15 @@ function ChooseTestTypePage() {
   }, [dedupedCandidates.rows, selectedTypes])
 
   const handleTypeChange = (email, value) => {
+    const normalized = normalizeTestType(value)
     setSelectedTypes((prev) => ({
       ...prev,
-      [email]: normalizeTestType(value),
+      [email]: normalized,
+    }))
+    // Release the shuffle status for this candidate when test type is changed
+    setShuffledState((prev) => ({
+      ...prev,
+      [email]: false,
     }))
   }
 
@@ -184,11 +137,65 @@ function ChooseTestTypePage() {
           ? { ...row, test_type: nextType }
           : row
       )))
+      setShuffledState((prev) => ({ ...prev, [candidate.email]: true }))
       toast.success(`Shuffled ${response.saved} questions for ${candidate.username} (${TEST_TYPES[nextType].label}).`)
     } catch (err) {
       toast.error(err.response?.data?.detail || `Failed to shuffle questions for ${candidate.username}`)
     } finally {
       setShuffling((prev) => ({ ...prev, [candidate.email]: false }))
+    }
+  }
+
+  const handleShuffleAll = async () => {
+    if (dedupedCandidates.rows.length === 0) return
+    setBulkShuffling(true)
+
+    try {
+      const payload = dedupedCandidates.rows.map((c) => ({
+        email: c.email,
+        test_type: normalizeTestType(selectedTypes[c.email] || c.test_type),
+      }))
+      const response = await bulkShuffleCandidateQuestions(payload)
+
+      const updatedShuffled = {}
+      dedupedCandidates.rows.forEach((c) => {
+        updatedShuffled[c.email] = true
+      })
+      setShuffledState((prev) => ({ ...prev, ...updatedShuffled }))
+
+      toast.success(`Successfully shuffled questions for all ${dedupedCandidates.rows.length} candidates!`, {
+        title: 'Bulk Shuffle Complete',
+      })
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to shuffle questions for all candidates')
+    } finally {
+      setBulkShuffling(false)
+    }
+  }
+
+  const handleSaveAll = async () => {
+    if (dedupedCandidates.rows.length === 0) return
+    setBulkSaving(true)
+
+    try {
+      const assignments = dedupedCandidates.rows.map((c) => ({
+        email: c.email,
+        test_type: normalizeTestType(selectedTypes[c.email] || c.test_type),
+      }))
+      await bulkSaveCandidateTestTypes(assignments)
+
+      setCandidates((prev) => prev.map((row) => ({
+        ...row,
+        test_type: normalizeTestType(selectedTypes[row.email] || row.test_type),
+      })))
+
+      toast.success(`Saved test types for all ${dedupedCandidates.rows.length} candidates!`, {
+        title: 'Bulk Save Complete',
+      })
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to save test types for candidates')
+    } finally {
+      setBulkSaving(false)
     }
   }
 
@@ -238,11 +245,36 @@ function ChooseTestTypePage() {
 
         <section className="otp-table-section">
           <div className="ctt-table-header">
-            <h3>Candidate Test Type Assignment ({dedupedCandidates.rows.length})</h3>
+            <div>
+              <h3 style={{ margin: 0 }}>Candidate Test Type Assignment ({dedupedCandidates.rows.length})</h3>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-text-muted)' }}>
+                Configure test formats, shuffle questions, or save changes for all candidates.
+              </p>
+            </div>
+            <div className="ctt-bulk-actions">
+              <button
+                type="button"
+                className="ctt-btn-shuffle-all"
+                disabled={bulkShuffling || bulkSaving || dedupedCandidates.rows.length === 0}
+                onClick={handleShuffleAll}
+              >
+                <FiRefreshCw style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                {bulkShuffling ? 'Shuffling All...' : 'Shuffle All Candidates'}
+              </button>
+              <button
+                type="button"
+                className="ctt-btn-save-all"
+                disabled={bulkSaving || bulkShuffling || dedupedCandidates.rows.length === 0}
+                onClick={handleSaveAll}
+              >
+                <FiSave style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                {bulkSaving ? 'Saving All...' : 'Save All Changes'}
+              </button>
+            </div>
           </div>
 
           {loading ? (
-            <p>Loading candidates...</p>
+            <Spinner label="Loading candidates…" size={40} />
           ) : dedupedCandidates.rows.length === 0 ? (
             <p className="otp-no-data">No candidates found. Add candidates first in Manage Candidates.</p>
           ) : (
@@ -261,6 +293,7 @@ function ChooseTestTypePage() {
                 <tbody>
                   {dedupedCandidates.rows.map((candidate) => {
                     const selectedType = normalizeTestType(selectedTypes[candidate.email] || candidate.test_type)
+                    const isCandidateShuffled = Boolean(shuffledState[candidate.email])
                     return (
                       <tr key={candidate.email}>
                         <td>{candidate.username}</td>
@@ -270,7 +303,7 @@ function ChooseTestTypePage() {
                             className="ctt-select"
                             value={selectedType}
                             onChange={(e) => handleTypeChange(candidate.email, e.target.value)}
-                            disabled={Boolean(saving[candidate.email])}
+                            disabled={Boolean(saving[candidate.email]) || bulkSaving || bulkShuffling}
                           >
                             {Object.entries(TEST_TYPES).map(([key, config]) => (
                               <option key={key} value={key}>{config.label}</option>
@@ -281,18 +314,27 @@ function ChooseTestTypePage() {
                         <td>
                           <button
                             type="button"
-                            className="otp-btn-shuffle"
-                            disabled={Boolean(shuffling[candidate.email]) || Boolean(saving[candidate.email])}
+                            className={`otp-btn-shuffle ${isCandidateShuffled ? 'otp-btn-shuffled' : ''}`}
+                            disabled={Boolean(shuffling[candidate.email]) || Boolean(saving[candidate.email]) || bulkShuffling || bulkSaving}
                             onClick={() => handleShuffleCandidate(candidate)}
                           >
-                            {shuffling[candidate.email] ? 'Shuffling...' : 'Shuffle'}
+                            {shuffling[candidate.email] ? (
+                              'Shuffling...'
+                            ) : isCandidateShuffled ? (
+                              <>
+                                <FiCheck style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                                Shuffled
+                              </>
+                            ) : (
+                              'Shuffle'
+                            )}
                           </button>
                         </td>
                         <td>
                           <button
                             type="button"
                             className="ctt-save-btn"
-                            disabled={Boolean(saving[candidate.email]) || Boolean(shuffling[candidate.email])}
+                            disabled={Boolean(saving[candidate.email]) || Boolean(shuffling[candidate.email]) || bulkSaving || bulkShuffling}
                             onClick={() => handleSaveCandidate(candidate)}
                           >
                             {saving[candidate.email] ? 'Saving...' : 'Save'}
@@ -312,3 +354,4 @@ function ChooseTestTypePage() {
 }
 
 export default ChooseTestTypePage
+

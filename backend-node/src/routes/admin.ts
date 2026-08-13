@@ -7,7 +7,11 @@ import {
   getPythonProblems,
   getSqlProblems,
   createProblem,
-  deleteProblem
+  deleteProblem,
+  getRandomProblems,
+  replaceRandomProblem,
+  getSelectedExamProblems,
+  publishSelectedExamProblems
 } from '../services/problemService';
 import {
   getAllCandidates,
@@ -18,7 +22,9 @@ import {
   generateOtp,
   saveCandidateOtp,
   sendOtpEmailToCandidate,
-  updateCandidateTestType
+  updateCandidateTestType,
+  updateCandidateTestTypeBulk,
+  shuffleCandidateQuestions
 } from '../services/otpService';
 
 const router = Router();
@@ -130,15 +136,92 @@ router.post('/candidate-test-type', async (req: Request, res: Response) => {
 router.post('/candidate-shuffle', async (req: Request, res: Response) => {
   try {
     const { email = '', test_type = 'both' } = req.body;
-    return res.json({ status: 'success', message: 'Shuffled question set for candidate', email, test_type });
+    if (!email) {
+      return res.status(400).json({ detail: 'Candidate email is required.' });
+    }
+    const result = await shuffleCandidateQuestions(email, test_type);
+    return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
   }
 });
 
-// ------------------------------------------------------------------
-// PROBLEM & MCQ MANAGEMENT ENDPOINTS
-// ------------------------------------------------------------------
+// POST /admin/candidate-test-type-bulk
+router.post('/candidate-test-type-bulk', async (req: Request, res: Response) => {
+  try {
+    const { assignments = [] } = req.body;
+    const result = await updateCandidateTestTypeBulk(assignments);
+    return res.json({ status: 'success', count: result.length, message: 'Saved test types for all candidates' });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /admin/candidate-shuffle-bulk
+router.post('/candidate-shuffle-bulk', async (req: Request, res: Response) => {
+  try {
+    const { candidates = [] } = req.body; // [{ email: string, test_type: string }]
+    let totalSaved = 0;
+    for (const cand of candidates) {
+      if (!cand.email) continue;
+      const res = await shuffleCandidateQuestions(cand.email, cand.test_type);
+      totalSaved += res.saved;
+    }
+    return res.json({
+      status: 'success',
+      candidateCount: candidates.length,
+      totalSavedQuestions: totalSaved,
+      message: `Successfully shuffled questions for all ${candidates.length} candidates`
+    });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /admin/exam/selected
+router.get('/exam/selected', async (req: Request, res: Response) => {
+  try {
+    const email = req.query.email ? String(req.query.email) : undefined;
+    const result = await getSelectedExamProblems(email);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /admin/exam/publish
+router.post('/exam/publish', async (req: Request, res: Response) => {
+  try {
+    const { problems = [] } = req.body;
+    const result = await publishSelectedExamProblems(problems);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /admin/problems/random/replace
+router.get('/problems/random/replace', async (req: Request, res: Response) => {
+  try {
+    const problemId = String(req.query.problem_id || '');
+    const language = String(req.query.language || 'python');
+    const result = await replaceRandomProblem(problemId, language);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /admin/problems/random
+router.get('/problems/random', async (req: Request, res: Response) => {
+  try {
+    const language = String(req.query.language || 'python');
+    const problems = await getRandomProblems(language, 5);
+    return res.json({ status: 'success', problems });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
 
 // GET /admin/problems/python & /admin/problems/python_questions
 router.get(['/problems/python', '/problems/python_questions', '/problems/python_problems'], async (req: Request, res: Response) => {

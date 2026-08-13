@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
+import { FiArrowRight, FiDatabase } from 'react-icons/fi'
+import { SiPython } from 'react-icons/si'
 import './ProblemList.css'
 
 function ProblemList() {
@@ -78,7 +80,7 @@ function ProblemList() {
                 <div className="problem-header">
                   <h3>{problem.title}</h3>
                   <span className={`language-badge ${problem.language.toLowerCase()}`}>
-                    {problem.language === 'python' ? '🐍' : '🗄️'} {problem.language}
+                    {problem.language === 'python' ? <SiPython /> : <FiDatabase />} {problem.language}
                   </span>
                 </div>
                 <div className="problem-footer">
@@ -88,7 +90,7 @@ function ProblemList() {
                   >
                     {problem.difficulty}
                   </span>
-                  <span className="problem-arrow" aria-hidden="true">→</span>
+                  <span className="problem-arrow" aria-hidden="true"><FiArrowRight /></span>
                 </div>
               </div>
             )

@@ -56,11 +56,12 @@ function App() {
         <Route path="/submission-complete" element={<SubmissionComplete />} />
 
         {/* Admin flow */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/dashboard" element={<AssessmentDashboard />} />
+        <Route path="/admin/dashboard/assessment" element={<AssessmentDashboard />} />
+        <Route path="/dashboard/assessment" element={<Navigate to="/admin/dashboard/assessment" replace />} />
         <Route path="/admin/otp" element={<CandidateOTP />} />
         <Route path="/admin/test-type" element={<ChooseTestTypePage />} />
         <Route path="/admin/send-mail" element={<SendMailPage />} />
-        <Route path="/dashboard/assessment" element={<AssessmentDashboard />} />
         <Route path="/admin/questions" element={<Navigate to="/admin/questions/python_questions" replace />} />
         <Route path="/admin/questions/python" element={<Navigate to="/admin/questions/python_questions" replace />} />
         <Route path="/admin/questions/python_questions" element={<QuestionsPage />} />

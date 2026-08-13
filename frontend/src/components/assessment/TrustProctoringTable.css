@@ -93,11 +93,11 @@
 }
 
 .trust-proctoring-table tbody tr:nth-child(even) .trust-col {
-  background: rgba(8, 86, 144, 0.12) !important;
+  background: rgba(10, 132, 255, 0.12) !important;
 }
 
 .trust-proctoring-table tbody tr:nth-child(even) .logs-col {
-  background: rgba(16, 185, 129, 0.10) !important;
+  background: rgba(0, 175, 155, 0.10) !important;
 }
 
 .trust-proctoring-table tbody tr:nth-child(even) .total-logs-col {
@@ -115,9 +115,9 @@
   min-width: 44px;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(8, 86, 144, 0.12);
+  background: rgba(10, 132, 255, 0.12);
   color: var(--color-secondary);
-  border: 1px solid rgba(8, 86, 144, 0.25);
+  border: 1px solid rgba(10, 132, 255, 0.25);
   font-size: 12px;
   font-weight: 800;
 }
@@ -133,9 +133,9 @@
 }
 
 [data-theme="dark"] .trust-proctoring-table th {
-  background: #1e293b;
-  color: #f1f5f9;
-  border-bottom-color: #334155;
+  background: #282828;
+  color: #eff1f6;
+  border-bottom-color: #3e3e3e;
   border-right-color: rgba(255, 255, 255, 0.08);
 }
 
@@ -162,24 +162,24 @@
 [data-theme="dark"] .trust-proctoring-table td {
   color: #e2e8f0;
   border-right-color: rgba(255, 255, 255, 0.08);
-  border-bottom-color: #334155;
+  border-bottom-color: #3e3e3e;
 }
 
 [data-theme="dark"] .trust-proctoring-table tbody tr:nth-child(even) td {
-  background: #1e293b;
+  background: #282828;
 }
 
 [data-theme="dark"] .trust-proctoring-table tbody tr:hover td {
   background: rgba(14, 116, 144, 0.15) !important;
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .trust-col {
-  background: rgba(8, 86, 144, 0.16) !important;
+  background: rgba(10, 132, 255, 0.16) !important;
 }
 
 [data-theme="dark"] .logs-col {
-  background: rgba(16, 185, 129, 0.14) !important;
+  background: rgba(0, 175, 155, 0.14) !important;
 }
 
 [data-theme="dark"] .total-logs-col {
@@ -191,13 +191,13 @@
 }
 
 [data-theme="dark"] .log-count-pill {
-  background: rgba(8, 86, 144, 0.20);
+  background: rgba(10, 132, 255, 0.20);
   color: #dbeafe;
   border-color: rgba(59, 130, 246, 0.30);
 }
 
 [data-theme="dark"] .trust-no-data {
-  background: #1e293b;
-  color: #cbd5e1;
-  border-color: #334155;
+  background: #282828;
+  color: #b0b0b0;
+  border-color: #3e3e3e;
 }

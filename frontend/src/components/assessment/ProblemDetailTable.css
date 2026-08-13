@@ -1,7 +1,7 @@
 /* ─── Problem Detail Table ─── */
 .test-case-note {
   background: var(--color-secondary-light);
-  border: 1px solid rgba(8, 86, 144, 0.25);
+  border: 1px solid rgba(10, 132, 255, 0.25);
   border-radius: var(--radius-sm);
   padding: 8px 14px;
   margin: 0 0 12px;
@@ -84,7 +84,7 @@
 }
 
 .problem-detail-table tbody tr:nth-child(even) .python-col {
-  background: rgba(8, 86, 144, 0.12) !important;
+  background: rgba(10, 132, 255, 0.12) !important;
 }
 
 .problem-detail-table .sql-col {
@@ -93,7 +93,7 @@
 }
 
 .problem-detail-table tbody tr:nth-child(even) .sql-col {
-  background: rgba(245, 158, 11, 0.12) !important;
+  background: rgba(255, 192, 30, 0.12) !important;
 }
 
 .problem-detail-table .id-cell {
@@ -130,9 +130,9 @@
 
 .chip-green  { background: #22c55e; color: #fff; }
 .chip-blue   { background: #3b82f6; color: #fff; }
-.chip-yellow { background: #f59e0b; color: #fff; }
+.chip-yellow { background: #ffc01e; color: #fff; }
 .chip-orange { background: #f97316; color: #fff; }
-.chip-red    { background: #ef4444; color: #fff; }
+.chip-red    { background: #ff375f; color: #fff; }
 .chip-gray   { background: var(--color-surface-3); color: var(--color-text-muted); border: 1px solid var(--color-border); }
 
 /* ── Dark Mode ── */
@@ -156,11 +156,11 @@
 [data-theme="dark"] .problem-detail-table td {
   color: #e2e8f0;
   border-right-color: rgba(255,255,255,0.08);
-  border-bottom-color: #334155;
+  border-bottom-color: #3e3e3e;
 }
 
 [data-theme="dark"] .problem-detail-table tbody tr:nth-child(even) td {
-  background: #1e293b;
+  background: #282828;
 }
 
 [data-theme="dark"] .problem-detail-table tbody tr:hover td {
@@ -168,16 +168,16 @@
 }
 
 [data-theme="dark"] .problem-detail-table .id-cell {
-  background: #1e293b !important;
+  background: #282828 !important;
   color: #e2e8f0;
 }
 
 [data-theme="dark"] .problem-detail-table .name-cell {
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .test-case-note {
-  background: rgba(8, 86, 144, 0.2);
-  border-color: rgba(8, 86, 144, 0.35);
+  background: rgba(10, 132, 255, 0.2);
+  border-color: rgba(10, 132, 255, 0.35);
   color: #93c5fd;
 }

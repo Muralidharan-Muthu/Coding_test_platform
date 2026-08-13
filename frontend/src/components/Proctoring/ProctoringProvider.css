@@ -1,0 +1,215 @@
+/* ProctoringProvider.css — Styles for proctoring UI components */
+
+/* ═══ Proctoring Status Bar ═══ */
+.proctoring-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.9);
+  white-space: nowrap;
+}
+
+.proctoring-status-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.proctoring-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.proctoring-status-dot.active {
+  background-color: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.6);
+  animation: proctoringPulse 2s ease-in-out infinite;
+}
+
+.proctoring-status-dot.loading {
+  background-color: #ffc01e;
+  animation: proctoringPulse 1s ease-in-out infinite;
+}
+
+.proctoring-status-dot.error {
+  background-color: #ff375f;
+  box-shadow: 0 0 6px rgba(255, 55, 95, 0.5);
+}
+
+.proctoring-status-label {
+  color: rgba(226, 232, 240, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.proctoring-status-label.ok {
+  color: #86efac;
+}
+
+.proctoring-status-label.warn {
+  color: #fbbf24;
+}
+
+.proctoring-status-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* ═══ Camera Preview Overlay ═══ */
+.proctoring-overlay {
+  position: fixed;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 160px;
+  user-select: none;
+}
+
+.proctoring-hud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.proctoring-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.proctoring-dot.ready {
+  background-color: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+  animation: proctoringPulse 2s ease-in-out infinite;
+}
+
+.proctoring-dot.loading {
+  background-color: #ffc01e;
+  animation: proctoringPulse 1s ease-in-out infinite;
+}
+
+.proctoring-dot.error {
+  background-color: #ff375f;
+}
+
+.proctoring-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(248, 250, 252, 0.88);
+  letter-spacing: 0.03em;
+}
+
+.proctoring-status-error {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(127, 29, 29, 0.9);
+  color: #fecaca;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.webcam-preview {
+  position: relative;
+  width: 160px;
+  height: 120px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid rgba(34, 197, 94, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  background: #0f172a;
+}
+
+.webcam-video-container {
+  width: 100%;
+  height: 100%;
+}
+
+.webcam-drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 4px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent);
+  cursor: grab;
+  z-index: 2;
+  user-select: none;
+}
+
+.webcam-drag-handle:active {
+  cursor: grabbing;
+}
+
+/* ═══ Violation Toast ═══ */
+.proctoring-violation-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 8px 32px rgba(127, 29, 29, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 380px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+.proctoring-violation-toast .toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.proctoring-violation-toast .toast-message {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* ═══ Animations ═══ */
+@keyframes proctoringPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

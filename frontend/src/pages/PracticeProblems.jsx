@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getPracticeProblems } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { DatabaseIcon, PythonIcon } from '../components/ui/Branding'
+import Spinner from '../components/ui/Spinner'
 import { clearPracticeSession } from '../utils/sessionStorage'
 import './SectionProblems.css'
 import './PracticeProblems.css'
@@ -60,12 +61,7 @@ function PracticeProblems() {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <span className="loading-spinner" aria-hidden="true"></span>
-        Loading practice questions...
-      </div>
-    )
+    return <Spinner label="Loading practice questions…" size={40} fullPage />
   }
 
   const activeProblems = problems[activeTab] || []

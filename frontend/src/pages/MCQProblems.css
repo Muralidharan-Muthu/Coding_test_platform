@@ -36,8 +36,8 @@
 }
 
 .mcq-question-card.answered {
-  border-color: rgba(16, 185, 129, 0.55);
-  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.08);
+  border-color: rgba(0, 175, 155, 0.55);
+  box-shadow: 0 12px 30px rgba(0, 175, 155, 0.08);
 }
 
 .mcq-question-top {
@@ -62,8 +62,8 @@
 }
 
 .mcq-question-card.answered .mcq-question-number {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.45);
+  background: rgba(0, 175, 155, 0.12);
+  border-color: rgba(0, 175, 155, 0.45);
   color: var(--color-success);
 }
 

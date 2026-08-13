@@ -471,7 +471,7 @@
 }
 
 .otp-btn-generate {
-  background: #f59e0b;
+  background: #ffc01e;
   color: #1a1a1a;
 }
 
@@ -502,7 +502,7 @@
 }
 
 .otp-btn-view {
-  background: #10b981;
+  background: #00af9b;
   color: white;
 }
 
@@ -513,7 +513,7 @@
 
 /* ── Dark Mode ─────────────────────────────────────────── */
 [data-theme="dark"] .table-responsive {
-  border-color: #334155;
+  border-color: #3e3e3e;
   box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
 
@@ -526,7 +526,7 @@
 
 [data-theme="dark"] .otp-table td {
   color: #e2e8f0;
-  border-bottom-color: #334155;
+  border-bottom-color: #3e3e3e;
   border-right-color: rgba(255,255,255,0.12);
 }
 
@@ -540,7 +540,7 @@
 }
 
 [data-theme="dark"] .email-cell {
-  color: #cbd5e1;
+  color: #b0b0b0;
 }
 
 [data-theme="dark"] .otp-code {
@@ -550,12 +550,12 @@
 
 /* Status badges — dark mode */
 [data-theme="dark"] .status-no-otp {
-  background: #334155;
-  color: #94a3b8;
+  background: #3e3e3e;
+  color: #8a8a8a;
 }
 
 [data-theme="dark"] .status-expired {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(255, 55, 95, 0.15);
   color: #fca5a5;
 }
 
@@ -565,7 +565,7 @@
 }
 
 [data-theme="dark"] .status-sent {
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(44, 187, 93, 0.15);
   color: #6ee7b7;
 }
 
@@ -633,7 +633,7 @@
 }
 
 [data-theme="dark"] .otp-btn-cancel:disabled {
-  background: #334155;
+  background: #3e3e3e;
 }
 
 [data-theme="dark"] .otp-btn-clear {

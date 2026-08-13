@@ -275,3 +275,48 @@ model ServerExamSession {
 
   @@map("server_exam_sessions")
 }
+
+// ──────────────────────────────────────────────────────────────────
+// NEW: AI Proctoring System Tables
+// ──────────────────────────────────────────────────────────────────
+
+model ProctoringSession {
+  id           String  @id
+  test_id      String
+  candidate_id String
+  started_at   String
+  ended_at     String?
+  status       String  @default("active")
+  risk_score   Int     @default(0)
+  risk_level   String  @default("NORMAL")
+  total_events Int     @default(0)
+  metadata     String  @default("{}")
+  created_at   String
+  updated_at   String
+
+  events ProctoringEventRecord[]
+
+  @@index([test_id])
+  @@index([candidate_id])
+  @@index([status])
+  @@map("proctoring_sessions")
+}
+
+model ProctoringEventRecord {
+  id         Int     @id @default(autoincrement())
+  session_id String
+  type       String
+  severity   String
+  timestamp  String
+  duration   Int?
+  metadata   String  @default("{}")
+  created_at String
+
+  session ProctoringSession @relation(fields: [session_id], references: [id])
+
+  @@index([session_id])
+  @@index([type])
+  @@index([timestamp])
+  @@map("proctoring_events")
+}
+

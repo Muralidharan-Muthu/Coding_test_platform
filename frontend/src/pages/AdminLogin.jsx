@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { adminLogin } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
+import Spinner from '../components/ui/Spinner'
 import './AdminLogin.css'
 
 function AdminLogin() {
@@ -40,7 +41,7 @@ function AdminLogin() {
       const response = await adminLogin(emailValue, passwordValue)
       localStorage.setItem('admin_name', response.name)
       localStorage.setItem('admin_logged_in', 'true')
-      navigate('/dashboard/assessment')
+      navigate('/admin/dashboard/assessment')
     } catch (err) {
       console.error('Admin login error:', err)
       if (err.response?.status === 401) {
@@ -125,7 +126,7 @@ function AdminLogin() {
             <button type="submit" disabled={loading} className="admin-login-btn">
               {loading ? (
                 <>
-                  <span className="admin-btn-spinner" aria-hidden="true"></span>
+                  <Spinner size={16} />
                   Signing in...
                 </>
               ) : (

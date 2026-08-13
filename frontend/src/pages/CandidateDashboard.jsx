@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon } from '../components/ui/Branding'
+import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import './CandidateDashboard.css'
 
@@ -98,12 +99,7 @@ function CandidateDashboard() {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        <span className="loading-spinner" aria-hidden="true"></span>
-        Loading exam details...
-      </div>
-    )
+    return <Spinner label="Loading exam details…" size={40} fullPage />
   }
 
   return (

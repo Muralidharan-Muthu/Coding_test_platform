@@ -1,31 +1,20 @@
-import '@mediapipe/face_mesh'
 import Editor from '@monaco-editor/react'
 import api, { getExamStatus, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
-import * as faceLandmarksDetection from '@tensorflow-models/face-landmarks-detection'
-import * as tf from '@tensorflow/tfjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import Webcam from 'react-webcam'
 import ThemeToggle from '../components/ui/ThemeToggle'
+import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession, clearAdminSession, clearPracticeSession } from '../utils/sessionStorage'
-import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode, FiChevronUp, FiChevronDown } from 'react-icons/fi'
+import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode, FiChevronUp, FiChevronDown, FiAlertTriangle, FiArrowLeft, FiCheck, FiX } from 'react-icons/fi'
 import { FaLightbulb } from 'react-icons/fa'
+import { ProctoringProvider } from '../components/Proctoring/ProctoringProvider'
+import { useProctoring } from '../components/Proctoring/useProctoring'
+import { CameraPreview } from '../components/Proctoring/CameraPreview'
+import { ProctoringStatus } from '../components/Proctoring/ProctoringStatus'
 import './CodingPage.css'
 
-const PROCTORING_EXAM_ID = 1
-const PROCTORING_SCAN_INTERVAL_MS = 2000
-const VIOLATION_COOLDOWN_MS = 5000
-const VIOLATION_ALERT_MS = 4000
-const VIOLATION_AUDIO_URL = 'https://www.soundjay.com/buttons/sounds/beep-01a.mp3'
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
-const DEFAULT_CAMERA_POSITION = { x: 16, y: 16 }
-const SUSTAINED_HEAD_TURN_MS = 5000
-const EXTREME_HEAD_TURN_RATIO_MIN = 0.2
-const EXTREME_HEAD_TURN_RATIO_MAX = 5
-const MEDIAPIPE_FACE_MESH_SOLUTION_PATH = 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh'
-const NOSE_TIP_INDEX = 1
-const LEFT_FACE_EDGE_INDEX = 234
-const RIGHT_FACE_EDGE_INDEX = 454
+const VIOLATION_ALERT_MS = 4000
 
 const examGateContainerStyle = {
   minHeight: 'calc(100vh - 48px)',
@@ -108,103 +97,6 @@ const toastStyle = {
   gap: '12px',
   maxWidth: '360px',
   animation: 'slideInRight 0.3s ease-out',
-}
-
-const recordingIndicatorStyle = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  position: 'fixed',
-  top: '16px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 1000,
-  padding: '8px 16px',
-  borderRadius: '999px',
-  background: 'rgba(15, 23, 42, 0.9)',
-  backdropFilter: 'blur(8px)',
-  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.3)',
-}
-
-const pulsatingDotStyle = {
-  width: '12px',
-  height: '12px',
-  borderRadius: '50%',
-  backgroundColor: '#22c55e',
-  boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.7)',
-  animation: 'pulse 2s infinite',
-}
-
-const webcamFeedStyle = {
-  display: 'block',
-  width: '100%',
-  height: '100%',
-  objectFit: 'cover',
-}
-
-const VIOLATION_ALERT_COPY = {
-  head_turn: {
-    title: 'Face Turn Detected',
-    guidance: 'Please keep your face oriented toward the exam screen.',
-  },
-  external_screen: {
-    title: 'External Screen Suspected',
-    guidance: 'Keep your eyes on the primary exam window only.',
-  },
-}
-
-const getKeypoint = (keypoints, index) => keypoints?.[index] || null
-const hasKeypointCoordinates = (point) => Boolean(
-  point
-  && Number.isFinite(point.x)
-  && Number.isFinite(point.y)
-)
-
-const getViolationAlertContent = (violation) => {
-  if (!violation) return null
-
-  const alertCopy = VIOLATION_ALERT_COPY[violation.type]
-  if (!alertCopy) {
-    return {
-      title: 'Proctoring Violation',
-      message: violation.message,
-      guidance: '',
-    }
-  }
-
-  return {
-    title: alertCopy.title,
-    message: violation.message,
-    guidance: alertCopy.guidance,
-  }
-}
-
-const getHeadTurnRatio = (keypoints) => {
-  const nose = getKeypoint(keypoints, NOSE_TIP_INDEX)
-  const leftEdge = getKeypoint(keypoints, LEFT_FACE_EDGE_INDEX)
-  const rightEdge = getKeypoint(keypoints, RIGHT_FACE_EDGE_INDEX)
-
-  if (
-    !hasKeypointCoordinates(nose)
-    || !hasKeypointCoordinates(leftEdge)
-    || !hasKeypointCoordinates(rightEdge)
-  )
-  {
-    return null
-  }
-
-  const leftDistance = nose.x - leftEdge.x
-  const rightDistance = rightEdge.x - nose.x
-  if (Math.abs(rightDistance) < 0.0001) return null
-
-  return leftDistance / rightDistance
-}
-
-const getExtremeHeadTurnDirection = (headTurnRatio) => {
-  if (!Number.isFinite(headTurnRatio)) return null
-  if (headTurnRatio <= EXTREME_HEAD_TURN_RATIO_MIN) return 'extreme'
-  if (headTurnRatio >= EXTREME_HEAD_TURN_RATIO_MAX) return 'extreme'
-  return null
 }
 
 function CodingPage() {
@@ -306,27 +198,10 @@ function CodingPage() {
 
   const timerRef = useRef(null)
   const autoSaveRef = useRef(null)
-  const webcamRef = useRef(null)
-  const proctoringFrameCanvasRef = useRef(null)
-  const proctoringBusyRef = useRef(false)
-  const faceDetectorRef = useRef(null)
-  const faceDetectorLoadPromiseRef = useRef(null)
-  const headTurnStateRef = useRef({
-    direction: null,
-    startedAt: 0,
-  })
-  const violationTimeoutRef = useRef(null)
-  const lastViolationRef = useRef({})
-  const [proctoringReady, setProctoringReady] = useState(false)
-  const [webcamReady, setWebcamReady] = useState(false)
-  const [proctoringError, setProctoringError] = useState('')
-  const [violationBanner, setViolationBanner] = useState(null)
   const [examGateError, setExamGateError] = useState('')
   const [toastMessage, setToastMessage] = useState('')
   const [showToast, setShowToast] = useState(false)
   const toastTimeoutRef = useRef(null)
-  const [cameraPosition, setCameraPosition] = useState(DEFAULT_CAMERA_POSITION)
-  const dragStateRef = useRef(null)
 
   const handleAutoSubmit = useCallback(async () => {
     const sessionId = localStorage.getItem('session_id')
@@ -349,189 +224,9 @@ function CodingPage() {
     }
   }, [navigate])
 
-  const logViolation = useCallback((type, message) => {
-    if (!isExamMode) return
-
-    if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    setToastMessage(message)
-    setShowToast(true)
-    toastTimeoutRef.current = setTimeout(() => setShowToast(false), 3500)
-
-    setViolationBanner({ type, message })
-    if (violationTimeoutRef.current) clearTimeout(violationTimeoutRef.current)
-    violationTimeoutRef.current = setTimeout(() => setViolationBanner(null), VIOLATION_ALERT_MS)
-
-    const audio = new Audio(VIOLATION_AUDIO_URL)
-    const playback = audio.play()
-    if (playback && typeof playback.catch === 'function') {
-      playback.catch(() => {})
-    }
-
-    const now = Date.now()
-    const lastLogged = lastViolationRef.current[type] || 0
-    if (now - lastLogged < VIOLATION_COOLDOWN_MS) return
-    lastViolationRef.current[type] = now
-
-    const sessionId = localStorage.getItem('session_id') || ''
-    const candidateId = localStorage.getItem('user_id') || ''
-
-    fetch(`/api/exam/${PROCTORING_EXAM_ID}/logs`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Session-Id': sessionId,
-        'X-Candidate-Id': candidateId,
-      },
-      keepalive: true,
-      body: JSON.stringify({ violation_type: type, message })
-    }).then((response) => {
-      if (!response.ok) {
-        throw new Error(`Log failed: ${response.status}`)
-      }
-    }).catch((err) => {
-      console.error('Failed to log proctoring violation', err)
-    })
-  }, [isExamMode])
-
   const handleReturnToExamHub = useCallback(() => {
     navigate('/test-structure')
   }, [navigate])
-
-  const startCameraDrag = useCallback((event) => {
-    const isTouchEvent = 'touches' in event
-    const point = isTouchEvent ? event.touches[0] : event
-    dragStateRef.current = {
-      startX: point.clientX,
-      startY: point.clientY,
-      originX: cameraPosition.x,
-      originY: cameraPosition.y,
-    }
-  }, [cameraPosition.x, cameraPosition.y])
-
-  const handleWebcamReady = useCallback(() => {
-    setWebcamReady(true)
-    setProctoringError('')
-  }, [])
-
-  const handleWebcamError = useCallback((err) => {
-    console.error('Webcam access failed', err)
-    setWebcamReady(false)
-    setProctoringError('Webcam access is blocked. Enable camera permissions to continue the exam.')
-    logViolation('webcam_unavailable', 'Webcam access failed during the exam.')
-  }, [logViolation])
-
-  const resetAdaptiveTracking = useCallback(() => {
-    headTurnStateRef.current = {
-      direction: null,
-      startedAt: 0,
-    }
-  }, [])
-
-  const initializeFaceDetector = useCallback(async () => {
-    if (faceDetectorRef.current) return faceDetectorRef.current
-    if (faceDetectorLoadPromiseRef.current) return faceDetectorLoadPromiseRef.current
-
-    const detectorConfig = {
-      runtime: 'mediapipe',
-      refineLandmarks: true,
-      maxFaces: 2,
-      solutionPath: MEDIAPIPE_FACE_MESH_SOLUTION_PATH,
-    }
-
-    const detectorPromise = faceLandmarksDetection.createDetector(
-      faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh,
-      detectorConfig
-    ).then((detector) => {
-      faceDetectorRef.current = detector
-      faceDetectorLoadPromiseRef.current = Promise.resolve(detector)
-      return detector
-    }).catch((err) => {
-      faceDetectorLoadPromiseRef.current = null
-      throw err
-    })
-
-    faceDetectorLoadPromiseRef.current = detectorPromise
-    return detectorPromise
-  }, [])
-
-  const getProctoringFrameSource = useCallback(() => {
-    const video = webcamRef.current?.video
-    if (!video || video.readyState !== 4) return null
-
-    const frameWidth = video.videoWidth || video.width || 0
-    const frameHeight = video.videoHeight || video.height || 0
-    if (!frameWidth || !frameHeight) return null
-
-    let canvas = proctoringFrameCanvasRef.current
-    if (!canvas) {
-      canvas = document.createElement('canvas')
-      proctoringFrameCanvasRef.current = canvas
-    }
-
-    if (canvas.width !== frameWidth) canvas.width = frameWidth
-    if (canvas.height !== frameHeight) canvas.height = frameHeight
-
-    const context = canvas.getContext('2d', { willReadFrequently: true })
-    if (!context) return null
-
-    context.drawImage(video, 0, 0, frameWidth, frameHeight)
-    return canvas
-  }, [])
-
-  const runProctoringAI = useCallback(async () => {
-    if (document.hidden) return
-
-    const video = webcamRef.current?.video
-    if (!webcamReady || !video || video.readyState !== 4) return
-
-    const frameSource = getProctoringFrameSource()
-    if (!frameSource) return
-
-    const detector = faceDetectorRef.current || await initializeFaceDetector()
-    if (!detector) return
-
-    const faces = await detector.estimateFaces(frameSource, { flipHorizontal: true, staticImageMode: false })
-
-    if (!faces || faces.length === 0) {
-      resetAdaptiveTracking()
-      logViolation('face_missing', 'No face detected. Please stay in view.')
-      return
-    }
-
-    if (faces.length > 1) {
-      resetAdaptiveTracking()
-      logViolation('multiple_faces', 'Multiple faces detected. Only one candidate is allowed.')
-      return
-    }
-
-    const keypoints = faces[0]?.keypoints || []
-    const headTurnRatio = getHeadTurnRatio(keypoints)
-    const headTurnDirection = getExtremeHeadTurnDirection(headTurnRatio)
-
-    if (!headTurnDirection) {
-      resetAdaptiveTracking()
-      return
-    }
-
-    const now = Date.now()
-    const trackingState = headTurnStateRef.current
-
-    if (trackingState.direction !== headTurnDirection) {
-      headTurnStateRef.current = {
-        direction: headTurnDirection,
-        startedAt: now,
-      }
-      return
-    }
-
-    if (now - trackingState.startedAt >= SUSTAINED_HEAD_TURN_MS) {
-      logViolation('head_turn', 'Candidate turned completely away from the screen for more than 5 seconds.')
-      headTurnStateRef.current = {
-        direction: headTurnDirection,
-        startedAt: now,
-      }
-    }
-  }, [getProctoringFrameSource, initializeFaceDetector, logViolation, resetAdaptiveTracking, webcamReady])
 
   // ─── Effects ───────────────────────────────────────────────────────────────
 
@@ -566,13 +261,6 @@ function CodingPage() {
   }, [isExamMode])
 
   useEffect(() => {
-    return () => {
-      if (violationTimeoutRef.current) clearTimeout(violationTimeoutRef.current)
-      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
     if (!isExamMode) return
     const handleFullscreenChange = () => {
       const fullscreenActive = Boolean(document.fullscreenElement)
@@ -586,9 +274,7 @@ function CodingPage() {
       if (isExamActive) {
         localStorage.removeItem(EXAM_SECURE_MODE_KEY)
         setIsExamActive(false)
-        setWebcamReady(false)
         setExamGateError('Fullscreen mode was exited. Return to the assessment hub to re-enable secure exam mode.')
-        logViolation('fullscreen_exit', 'Fullscreen mode was exited during the exam.')
       }
     }
 
@@ -596,7 +282,7 @@ function CodingPage() {
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
     }
-  }, [isExamMode, isExamActive, logViolation])
+  }, [isExamMode, isExamActive])
 
   useEffect(() => {
     if (isExamMode && remainingTime > 0) {
@@ -612,117 +298,6 @@ function CodingPage() {
   }, [isExamMode, remainingTime, handleAutoSubmit])
 
   useEffect(() => {
-    if (!isExamMode || !isExamActive) return
-    const handleVisibilityChange = () => {
-      if (document.hidden) {
-        logViolation('tab_switch', 'Tab switch detected. Please stay on the exam page.')
-      }
-    }
-    const handleWindowBlur = () => {
-      logViolation('tab_switch', 'Window lost focus. Please return to the exam window.')
-    }
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('blur', handleWindowBlur)
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('blur', handleWindowBlur)
-    }
-  }, [isExamMode, isExamActive, logViolation])
-
-  useEffect(() => {
-    if (!isExamMode || !isExamActive) return
-
-    const preventAction = (event, type, message) => {
-      event.preventDefault()
-      event.stopPropagation()
-      logViolation(type, message)
-    }
-
-    const handleKeyDown = (event) => {
-      const key = event.key?.toLowerCase()
-      const isModifierPressed = event.ctrlKey || event.metaKey
-      if (!isModifierPressed) return
-
-      if (key === 'c') {
-        preventAction(event, 'copy_attempt', 'Copy is disabled during the exam.')
-      } else if (key === 'x') {
-        preventAction(event, 'cut_attempt', 'Cut is disabled during the exam.')
-      } else if (key === 'v') {
-        preventAction(event, 'paste_attempt', 'Paste is disabled during the exam.')
-      }
-    }
-
-    const handleCopy = (event) => preventAction(event, 'copy_attempt', 'Copy is disabled during the exam.')
-    const handleCut = (event) => preventAction(event, 'cut_attempt', 'Cut is disabled during the exam.')
-    const handlePaste = (event) => preventAction(event, 'paste_attempt', 'Paste is disabled during the exam.')
-    const handleContextMenu = (event) => preventAction(event, 'context_menu', 'Right-click is disabled during the exam.')
-    const handleDragStart = (event) => preventAction(event, 'drag_attempt', 'Dragging content is disabled during the exam.')
-    const handleDrop = (event) => preventAction(event, 'drop_attempt', 'Dropping content is disabled during the exam.')
-
-    document.addEventListener('keydown', handleKeyDown, true)
-    document.addEventListener('copy', handleCopy, true)
-    document.addEventListener('cut', handleCut, true)
-    document.addEventListener('paste', handlePaste, true)
-    document.addEventListener('contextmenu', handleContextMenu, true)
-    document.addEventListener('dragstart', handleDragStart, true)
-    document.addEventListener('drop', handleDrop, true)
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true)
-      document.removeEventListener('copy', handleCopy, true)
-      document.removeEventListener('cut', handleCut, true)
-      document.removeEventListener('paste', handlePaste, true)
-      document.removeEventListener('contextmenu', handleContextMenu, true)
-      document.removeEventListener('dragstart', handleDragStart, true)
-      document.removeEventListener('drop', handleDrop, true)
-    }
-  }, [isExamMode, isExamActive, logViolation])
-
-  useEffect(() => {
-    if (!isExamMode || !isExamActive) return
-
-    const clampCameraPosition = (nextX, nextY) => {
-      const maxX = Math.max(16, window.innerWidth - 176)
-      const maxY = Math.max(16, window.innerHeight - 136)
-      return {
-        x: Math.min(Math.max(16, nextX), maxX),
-        y: Math.min(Math.max(16, nextY), maxY),
-      }
-    }
-
-    const handlePointerMove = (event) => {
-      if (!dragStateRef.current) return
-      const isTouchEvent = 'touches' in event
-      const point = isTouchEvent ? event.touches[0] : event
-      const nextX = dragStateRef.current.originX + (point.clientX - dragStateRef.current.startX)
-      const nextY = dragStateRef.current.originY + (point.clientY - dragStateRef.current.startY)
-      setCameraPosition(clampCameraPosition(nextX, nextY))
-    }
-
-    const stopDragging = () => {
-      dragStateRef.current = null
-    }
-
-    const handleResize = () => {
-      setCameraPosition((prev) => clampCameraPosition(prev.x, prev.y))
-    }
-
-    window.addEventListener('mousemove', handlePointerMove)
-    window.addEventListener('mouseup', stopDragging)
-    window.addEventListener('touchmove', handlePointerMove, { passive: true })
-    window.addEventListener('touchend', stopDragging)
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      window.removeEventListener('mousemove', handlePointerMove)
-      window.removeEventListener('mouseup', stopDragging)
-      window.removeEventListener('touchmove', handlePointerMove)
-      window.removeEventListener('touchend', stopDragging)
-      window.removeEventListener('resize', handleResize)
-    }
-  }, [isExamMode, isExamActive])
-
-  useEffect(() => {
     if (isExamMode && problem && code !== starterCode) {
       if (autoSaveRef.current) clearTimeout(autoSaveRef.current)
       autoSaveRef.current = setTimeout(() => {
@@ -733,68 +308,6 @@ function CodingPage() {
     }
     return () => { if (autoSaveRef.current) clearTimeout(autoSaveRef.current) }
   }, [code, isExamMode, problemId, problem, starterCode])
-
-  useEffect(() => {
-    if (!isExamMode || !isExamActive) return
-    let cancelled = false
-    const loadModels = async () => {
-      setProctoringReady(false)
-      setProctoringError('')
-      try {
-        if (faceDetectorRef.current) {
-          setProctoringReady(true)
-          return
-        }
-        try {
-          await tf.setBackend('webgl')
-        } catch (err) {
-          console.warn('WebGL backend not available, falling back to default backend', err)
-        }
-        await tf.ready()
-        const detector = await initializeFaceDetector()
-        if (cancelled) return
-        faceDetectorRef.current = detector
-        setProctoringReady(true)
-      } catch (err) {
-        console.error('Failed to initialize proctoring models', err)
-        setProctoringError('AI proctoring could not start. Refresh the page or check browser compatibility.')
-      }
-    }
-    loadModels()
-    return () => {
-      cancelled = true
-    }
-  }, [initializeFaceDetector, isExamMode, isExamActive])
-
-  useEffect(() => {
-    if (!isExamMode || !isExamActive) return
-    const intervalId = setInterval(async () => {
-      if (proctoringBusyRef.current) return
-      proctoringBusyRef.current = true
-      try {
-        await runProctoringAI()
-      } catch (err) {
-        console.error('Proctoring detection failed', err)
-      } finally {
-        proctoringBusyRef.current = false
-      }
-    }, PROCTORING_SCAN_INTERVAL_MS)
-    return () => clearInterval(intervalId)
-  }, [isExamMode, isExamActive, runProctoringAI])
-
-  useEffect(() => {
-    if (isExamMode && isExamActive) return
-    setWebcamReady(false)
-    setProctoringReady(false)
-    setProctoringError('')
-    setCameraPosition(DEFAULT_CAMERA_POSITION)
-    dragStateRef.current = null
-    resetAdaptiveTracking()
-    if (!isExamMode) {
-      setViolationBanner(null)
-      setExamGateError('')
-    }
-  }, [isExamMode, isExamActive, resetAdaptiveTracking])
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -846,8 +359,18 @@ function CodingPage() {
       const answers = isPracticeMode
         ? {}
         : JSON.parse(localStorage.getItem('exam_answers') || '{}')
-      setCode(answers[problemId] ? answers[problemId].code : data.starter_code)
-      setStarterCode(data.starter_code)
+      
+      const stripDriver = (codeStr) => {
+        if (!codeStr || typeof codeStr !== 'string') return ''
+        const idx = codeStr.search(/\n\s*(import sys|lines\s*=|line\s*=|if\s+__name__)/i)
+        return idx !== -1 ? codeStr.substring(0, idx).trimEnd() : codeStr
+      }
+
+      const rawStarter = data.starter_code || ''
+      const cleanStarter = data.language === 'python' ? stripDriver(rawStarter) : rawStarter
+      const savedCode = answers[problemId] ? answers[problemId].code : null
+      setCode(savedCode ? (data.language === 'python' ? stripDriver(savedCode) : savedCode) : cleanStarter)
+      setStarterCode(cleanStarter)
       if (data.language === 'python') setCustomInput(data.sample_input)
       await loadProblemList(data.language)
     } catch (err) {
@@ -1095,15 +618,8 @@ function CodingPage() {
     : (problem?.sample_input ? [{ input: problem.sample_input, expected_output: problem.sample_output }] : [])
 
   if (!problem) {
-    return (
-      <div className="loading">
-        <span className="loading-spinner" aria-hidden="true"></span>
-        Loading problem...
-      </div>
-    )
+    return <Spinner label="Loading problem…" size={40} fullPage />
   }
-
-  const violationAlertContent = getViolationAlertContent(violationBanner)
 
   // ─── Render Helpers ────────────────────────────────────────────────────────
 
@@ -1248,108 +764,68 @@ function CodingPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
+  const proctoringSessionId = localStorage.getItem('session_id') || 'session_default'
+  const proctoringCandidateId = localStorage.getItem('user_id') || userName || 'candidate_default'
+
   return (
-    <div className="coding-page">
-      {/* Recording Indicator */}
-      {isExamMode && isExamActive && (
-        <div style={recordingIndicatorStyle}>
-          <div style={pulsatingDotStyle}></div>
-          <span style={{ color: '#f8fafc', fontSize: '13px', fontWeight: 600 }}>Proctoring Active</span>
-        </div>
-      )}
-
-      {/* ═══ Top Toolbar ═══ */}
-      <div className="coding-toolbar">
-        <div className="toolbar-left">
-          {(isExamMode || isStatelessMode) && (
-            <button onClick={handleBack} className="btn-back-coding" aria-label="Go back">← Back</button>
-          )}
-          <span className="toolbar-title" title={problem.title}>{problem.title}</span>
-          {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
-          {problemList.length > 0 && (
-            <div className="toolbar-nav-arrows">
-              <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">‹</button>
-              <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">›</button>
-              <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
-            </div>
-          )}
-        </div>
-
-        <div className="toolbar-center">
-          <button onClick={handleRun} disabled={loading} className="btn-run-toolbar">
-            <span className="toolbar-btn-icon"><FiPlay /></span> {loading ? 'Running...' : 'Run'}
-          </button>
-          <button onClick={handleSubmit} disabled={loading} className="btn-submit-toolbar">
-            <span className="toolbar-btn-icon"><FiUploadCloud /></span> {loading ? 'Submitting...' : 'Submit'}
-          </button>
-        </div>
-
-        <div className="toolbar-right">
-          {isExamMode && (
-            <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
-              <span className="timer-icon" aria-hidden="true"><FiClock /></span>
-              <span className="timer-value">{formatTime(remainingTime)}</span>
-            </div>
-          )}
-          <ThemeToggle />
-          <span className="user-display">{userName}</span>
-          {!isExamMode && (
-            <button onClick={handleLogout} className="btn-logout">Logout</button>
-          )}
-        </div>
-      </div>
-
-      {/* Toast Notification */}
-      {showToast && (
-        <div style={toastStyle} role="alert" aria-live="polite">
-          <span style={{ fontSize: '18px' }}>⚠️</span>
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      {/* Proctoring Camera Overlay */}
-      {isExamMode && isExamActive && (
-        <div
-          className="proctoring-overlay"
-          aria-live="polite"
-          style={{ left: `${cameraPosition.x}px`, top: `${cameraPosition.y}px` }}
-        >
-          <div className="proctoring-hud">
-            <span className={`proctoring-dot ${proctoringReady ? 'ready' : 'loading'}`} aria-hidden="true"></span>
-            <span className="proctoring-text">
-              {proctoringReady ? 'Proctoring active' : 'Proctoring starting...'}
-            </span>
+    <ProctoringProvider
+      testId={proctoringSessionId}
+      candidateId={proctoringCandidateId}
+      enabled={isExamMode && isExamActive}
+    >
+      <div className="coding-page">
+        {/* ═══ Top Toolbar ═══ */}
+        <div className="coding-toolbar">
+          <div className="toolbar-left">
+            {(isExamMode || isStatelessMode) && (
+              <button onClick={handleBack} className="btn-back-coding" aria-label="Go back"><FiArrowLeft /> Back</button>
+            )}
+            <span className="toolbar-title" title={problem.title}>{problem.title}</span>
+            {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
+            {problemList.length > 0 && (
+              <div className="toolbar-nav-arrows">
+                <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">‹</button>
+                <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">›</button>
+                <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
+              </div>
+            )}
           </div>
-          {proctoringError && (
-            <div className="proctoring-status-error" role="status">{proctoringError}</div>
-          )}
-          <div className="webcam-preview" aria-label="Candidate webcam feed">
-            <div
-              className="webcam-drag-handle"
-              onMouseDown={startCameraDrag}
-              onTouchStart={startCameraDrag}
-              role="button"
-              tabIndex={0}
-              aria-label="Move camera preview"
-            >
-              Move Camera
-            </div>
-            <Webcam
-              ref={webcamRef}
-              className="webcam-feed"
-              audio={false}
-              width={320}
-              height={240}
-              mirrored
-              onUserMedia={handleWebcamReady}
-              onUserMediaError={handleWebcamError}
-              screenshotFormat="image/jpeg"
-              videoConstraints={{ width: 320, height: 240, facingMode: 'user' }}
-              style={webcamFeedStyle}
-            />
+
+          <div className="toolbar-center">
+            <button onClick={handleRun} disabled={loading} className="btn-run-toolbar">
+              <span className="toolbar-btn-icon"><FiPlay /></span> {loading ? 'Running...' : 'Run'}
+            </button>
+            <button onClick={handleSubmit} disabled={loading} className="btn-submit-toolbar">
+              <span className="toolbar-btn-icon"><FiUploadCloud /></span> {loading ? 'Submitting...' : 'Submit'}
+            </button>
+          </div>
+
+          <div className="toolbar-right">
+            {isExamMode && isExamActive && <ProctoringStatus />}
+            {isExamMode && (
+              <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
+                <span className="timer-icon" aria-hidden="true"><FiClock /></span>
+                <span className="timer-value">{formatTime(remainingTime)}</span>
+              </div>
+            )}
+            <ThemeToggle />
+            <span className="user-display">{userName}</span>
+            {!isExamMode && (
+              <button onClick={handleLogout} className="btn-logout">Logout</button>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Toast Notification */}
+        {showToast && (
+          <div style={toastStyle} role="alert" aria-live="polite">
+            <FiAlertTriangle style={{ fontSize: '18px', color: '#f59e0b' }} />
+            <span>{toastMessage}</span>
+          </div>
+        )}
+
+        {/* Modular Camera Preview Overlay */}
+        <CameraPreview />
 
       {/* ═══ Main Content ═══ */}
       {showExamGate ? (
@@ -1453,7 +929,7 @@ function CodingPage() {
                   <div className="sql-dialect-selector">
                     <select className="dialect-select" defaultValue="python3" aria-label="Language">
                       <option value="python3">Python3</option>
-                      <option value="auto">Auto 🔒</option>
+                      <option value="auto">Auto</option>
                     </select>
                   </div>
                 )}
@@ -1596,7 +1072,7 @@ function CodingPage() {
                         {/* Verdict Summary */}
                         <div className="result-summary">
                           <div className={`verdict-badge verdict-${(submitResult.verdict || 'failed').toLowerCase().replace(' ', '-')}`}>
-                            {submitResult.verdict === 'Accepted' ? '✓' : '✗'} {submitResult.verdict}
+                            {submitResult.verdict === 'Accepted' ? <FiCheck /> : <FiX />} {submitResult.verdict}
                           </div>
                           <div className="result-scores">
                             <div className="score-item">
@@ -1642,7 +1118,7 @@ function CodingPage() {
                           return (
                             <div className="result-case-detail">
                               <div className={`result-status-line ${passed ? 'pass' : 'fail'}`}>
-                                {passed ? '✓ Accepted' : failed?.error ? '✗ Runtime Error' : '✗ Wrong Answer'}
+                                {passed ? <><FiCheck /> Accepted</> : failed?.error ? <><FiX /> Runtime Error</> : <><FiX /> Wrong Answer</>}
                               </div>
                               {failed?.error && (
                                 <div className="result-error-msg">{failed.error}</div>
@@ -1680,6 +1156,7 @@ function CodingPage() {
         </div>
       ) : null}
     </div>
+    </ProctoringProvider>
   )
 }
 

@@ -17,15 +17,7 @@ const pythonProblemsData = [
     sample_output: '[0, 1]',
     starter_code: `def two_sum(nums, target):
     # Write your solution here
-    pass
-
-import sys
-lines = sys.stdin.read().splitlines()
-if lines:
-    nums = list(map(int, lines[0].strip().split()))
-    target = int(lines[1].strip())
-    print(two_sum(nums, target))
-`,
+    pass`,
     test_cases_json: JSON.stringify([
       { input: '2 7 11 15\n9', expected_output: '[0, 1]' },
       { input: '3 2 4\n6', expected_output: '[1, 2]' },
@@ -48,23 +40,8 @@ if lines:
     sample_input: '1 8 6 2 5 4 8 3 7',
     sample_output: '49',
     starter_code: `def max_area(height):
-    left, right = 0, len(height) - 1
-    max_w = 0
-    while left < right:
-        w = (right - left) * min(height[left], height[right])
-        max_w = max(max_w, w)
-        if height[left] < height[right]:
-            left += 1
-        else:
-            right -= 1
-    return max_w
-
-import sys
-line = sys.stdin.read().strip()
-if line:
-    heights = list(map(int, line.split()))
-    print(max_area(heights))
-`,
+    # Write your solution here
+    pass`,
     test_cases_json: JSON.stringify([
       { input: '1 8 6 2 5 4 8 3 7', expected_output: '49' },
       { input: '1 1', expected_output: '1' },
@@ -87,28 +64,8 @@ if line:
     sample_input: '0 1 0 2 1 0 1 3 2 1 2 1',
     sample_output: '6',
     starter_code: `def trap(height):
-    if not height:
-        return 0
-    l, r = 0, len(height) - 1
-    left_max, right_max = height[l], height[r]
-    water = 0
-    while l < r:
-        if left_max < right_max:
-            l += 1
-            left_max = max(left_max, height[l])
-            water += left_max - height[l]
-        else:
-            r -= 1
-            right_max = max(right_max, height[r])
-            water += right_max - height[r]
-    return water
-
-import sys
-line = sys.stdin.read().strip()
-if line:
-    heights = list(map(int, line.split()))
-    print(trap(heights))
-`,
+    # Write your solution here
+    pass`,
     test_cases_json: JSON.stringify([
       { input: '0 1 0 2 1 0 1 3 2 1 2 1', expected_output: '6' },
       { input: '4 2 0 3 2 5', expected_output: '9' }

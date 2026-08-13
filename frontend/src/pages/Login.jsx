@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { login } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
+import Spinner from '../components/ui/Spinner'
+import { FiArrowRight } from 'react-icons/fi'
 import './Login.css'
 
 function Login() {
@@ -154,7 +156,7 @@ function Login() {
             <button type="submit" disabled={loading} className="login-btn">
               {loading ? (
                 <>
-                  <span className="btn-spinner" aria-hidden="true"></span>
+                  <Spinner size={16} />
                   Verifying...
                 </>
               ) : (
@@ -164,7 +166,7 @@ function Login() {
           </form>
 
           <p className="login-footer-note">
-            Just want to practice? <a href="/practice">Go to Practice →</a>
+            Just want to practice? <a href="/practice">Go to Practice <FiArrowRight /></a>
           </p>
         </div>
       </main>

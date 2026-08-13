@@ -1,7 +1,71 @@
 import { Router, Request, Response } from 'express';
+import crypto from 'crypto';
 import { authenticateUser, createUser, updateUserPassword, listUsers, deleteUser } from '../services/authService';
+import { getCandidateOtp, verifyCandidateOtp } from '../services/otpService';
+import prisma from '../db/prisma';
 
 const router = Router();
+
+// POST /auth/login
+// Candidate OTP login (username + email + OTP from the invitation email).
+// Frontend Login.jsx posts here via api.js's `login()` helper.
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { name = '', email = '', otp = '', test_location = 'home' } = req.body;
+    const usernameClean = String(name).trim();
+    const emailClean = String(email).trim().toLowerCase();
+    const otpClean = String(otp).trim();
+
+    if (!usernameClean || !emailClean || !otpClean) {
+      return res.status(400).json({ detail: 'Username, email and OTP are required.' });
+    }
+
+    const candidate = await getCandidateOtp(emailClean);
+    if (!candidate || candidate.username.trim().toLowerCase() !== usernameClean.toLowerCase()) {
+      return res.status(404).json({ detail: 'Candidate not found. Check your username and email.' });
+    }
+
+    const verified = await verifyCandidateOtp(emailClean, otpClean);
+    if (!verified) {
+      return res.status(401).json({ detail: 'Invalid or expired OTP. Please request a new one.' });
+    }
+
+    // Ensure a User record exists so downstream features (submissions,
+    // assessment results) have something to attach to.
+    const now = new Date().toISOString();
+    let user = await prisma.user.findUnique({ where: { email: emailClean } });
+    if (!user) {
+      user = await prisma.user.create({
+        data: { name: candidate.username, email: emailClean, test_location, created_at: now },
+      });
+    }
+
+    const sessionId = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 6); // 6-hour exam session
+    await prisma.serverSession.create({
+      data: {
+        id: sessionId,
+        candidate_email: emailClean,
+        user_id: String(user.id),
+        test_type: candidate.test_type,
+        expires_at: expiresAt,
+        is_active: true,
+      },
+    });
+
+    return res.json({
+      status: 'success',
+      session_id: sessionId,
+      user_id: user.id,
+      name: candidate.username,
+      email: emailClean,
+      test_location,
+    });
+  } catch (err: any) {
+    console.error('[Auth] Candidate OTP login failed:', err);
+    return res.status(500).json({ detail: err.message });
+  }
+});
 
 router.post('/candidate-login', async (req: Request, res: Response) => {
   try {
@@ -92,7 +156,7 @@ router.post('/users', async (req: Request, res: Response) => {
 
 router.put('/users/:email/password', async (req: Request, res: Response) => {
   try {
-    const email = req.params.email;
+    const email = String(req.params.email || '');
     const password = (req.body.password || "").trim();
     if (!password) {
       return res.status(400).json({ detail: "New password is required." });
@@ -106,7 +170,7 @@ router.put('/users/:email/password', async (req: Request, res: Response) => {
 
 router.delete('/users/:email', async (req: Request, res: Response) => {
   try {
-    const email = req.params.email;
+    const email = String(req.params.email || '');
     await deleteUser(email);
     return res.json({ status: "deleted" });
   } catch (err: any) {

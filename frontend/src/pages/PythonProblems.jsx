@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { getPythonProblems, getExamStatus, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PythonIcon, TimerIcon } from '../components/ui/Branding'
+import Spinner from '../components/ui/Spinner'
+import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 import './SectionProblems.css'
 
 function PythonProblems() {
@@ -134,11 +136,7 @@ function PythonProblems() {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        Loading problems...
-      </div>
-    )
+    return <Spinner label="Loading problems…" size={40} fullPage />
   }
 
   return (
@@ -146,7 +144,7 @@ function PythonProblems() {
       <header className="header">
         <div className="header-left">
           <button onClick={() => navigate('/test-structure')} className="btn-back" aria-label="Back to sections">
-            ← Back
+            <FiArrowLeft /> Back
           </button>
           <h1><PythonIcon size={20} /> Python Problems</h1>
         </div>
@@ -188,7 +186,7 @@ function PythonProblems() {
               </div>
               <div className="problem-status">
                 {isAnswered(problem.id) ? (
-                  <span className="status-answered">✓ Answered</span>
+                  <span className="status-answered"><FiCheck /> Answered</span>
                 ) : (
                   <span className="status-pending">Not answered</span>
                 )}

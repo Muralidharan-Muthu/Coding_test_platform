@@ -55,7 +55,7 @@
   width: 36px;
   height: 36px;
   border: none;
-  background: var(--color-surface-2, #f1f5f9);
+  background: var(--color-surface-2, #f7f7f8);
   border-radius: 8px;
   cursor: pointer;
   color: var(--color-text-secondary, #64748b);
@@ -365,42 +365,42 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .code-review-modal {
-    background: #1e293b;
+    background: #282828;
   }
-  
+
   .code-review-header {
-    background: #1e293b;
-    border-color: #334155;
+    background: #282828;
+    border-color: #3e3e3e;
   }
-  
+
   .code-review-title h2 {
-    color: #f1f5f9;
+    color: #eff1f6;
   }
-  
+
   .code-review-sidebar {
-    background: #0f172a;
-    border-color: #334155;
+    background: #1a1a1a;
+    border-color: #3e3e3e;
   }
-  
+
   .code-review-sidebar h3 {
-    color: #94a3b8;
-    border-color: #334155;
+    color: #8a8a8a;
+    border-color: #3e3e3e;
   }
-  
+
   .submission-item {
-    background: #1e293b;
+    background: #282828;
   }
-  
+
   .submission-problem {
-    color: #f1f5f9;
+    color: #eff1f6;
   }
-  
+
   .code-review-problem-header {
-    background: #1e293b;
-    border-color: #334155;
+    background: #282828;
+    border-color: #3e3e3e;
   }
-  
+
   .code-review-problem-header h3 {
-    color: #f1f5f9;
+    color: #eff1f6;
   }
 }

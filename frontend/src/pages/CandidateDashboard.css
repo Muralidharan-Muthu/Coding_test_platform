@@ -359,9 +359,9 @@
 }
 
 .lang-badge.mcq {
-  background: rgba(16, 185, 129, 0.12);
+  background: rgba(0, 175, 155, 0.12);
   color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(0, 175, 155, 0.25);
 }
 
 .difficulty-badge {
@@ -397,7 +397,7 @@
 .btn-take-test:hover {
   background: var(--color-accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(236, 98, 37, 0.35);
+  box-shadow: 0 8px 24px rgba(255, 161, 22, 0.35);
 }
 
 .btn-take-test:active {
@@ -417,7 +417,7 @@
 
 .btn-take-test.continue:hover {
   background: #d97706;
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 8px 24px rgba(255, 192, 30, 0.35);
 }
 
 .exam-action-error {
@@ -487,12 +487,12 @@
   border-color: rgba(96, 165, 250, 0.35);
 }
 [data-theme="dark"] .lang-badge.sql {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.35);
+  background: rgba(255, 184, 0, 0.15);
+  color: #ffb800;
+  border-color: rgba(255, 184, 0, 0.35);
 }
 [data-theme="dark"] .lang-badge.mcq {
-  background: rgba(16, 185, 129, 0.15);
-  color: #34d399;
-  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(0, 175, 155, 0.15);
+  color: #2cbb5d;
+  border-color: rgba(0, 175, 155, 0.35);
 }

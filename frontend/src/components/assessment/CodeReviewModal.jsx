@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getCandidateSubmissions } from '../../services/assessmentApi'
+import Spinner from '../ui/Spinner'
 import './CodeReviewModal.css'
 
 function CodeReviewModal({ isOpen, onClose, candidate }) {
@@ -68,8 +69,7 @@ function CodeReviewModal({ isOpen, onClose, candidate }) {
         <div className="code-review-content">
           {loading && (
             <div className="code-review-loading">
-              <div className="spinner"></div>
-              <p>Loading submissions...</p>
+              <Spinner label="Loading submissions…" size={36} />
             </div>
           )}
 

@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import api from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import { FiZap, FiCopy, FiCheck, FiPlus } from 'react-icons/fi'
+import Spinner from '../components/ui/Spinner'
 import './QuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -418,6 +420,7 @@ function QuestionsPage() {
   const toast = useToast()
   const [adminName, setAdminName] = useState('')
   const [problems, setProblems] = useState([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('python')
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
@@ -462,11 +465,15 @@ function QuestionsPage() {
   }, [location.pathname, location.state])
 
   const loadProblems = async () => {
+    setLoading(true)
     try {
       const response = await api.get('/admin/problems')
       setProblems(response.data)
     } catch (err) {
       console.error('Failed to load problems', err)
+      toast.error('Failed to load questions.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -744,14 +751,14 @@ function QuestionsPage() {
               {/* Buttons */}
               <div className="pb-actions">
                 <button className="btn-generate-prompt" onClick={handleGeneratePrompt}>
-                  ⚡ Generate AI Prompt
+                  <FiZap /> Generate AI Prompt
                 </button>
                 {generatedPrompt && (
                   <button
                     className={`btn-copy-prompt ${promptCopied ? 'copied' : ''}`}
                     onClick={handleCopyPrompt}
                   >
-                    {promptCopied ? '✓ Copied!' : '📋 Copy Prompt'}
+                    {promptCopied ? <><FiCheck /> Copied!</> : <><FiCopy /> Copy Prompt</>}
                   </button>
                 )}
               </div>
@@ -760,7 +767,7 @@ function QuestionsPage() {
               {generatedPrompt && (
                 <div className="pb-prompt-output">
                   {hasQuestion && questionText.trim() && (
-                    <div className="pb-question-badge">✓ Your pasted question is included at the top of this prompt</div>
+                    <div className="pb-question-badge"><FiCheck /> Your pasted question is included at the top of this prompt</div>
                   )}
                   <div className="pb-prompt-header">
                     <span>Generated Prompt — Copy and paste into any AI</span>
@@ -785,7 +792,7 @@ function QuestionsPage() {
                   className={`btn-copy-json ${jsonCopied ? 'copied' : ''}`}
                   onClick={handleCopyJson}
                 >
-                  {jsonCopied ? '✓ Copied!' : 'Copy Template'}
+                  {jsonCopied ? <><FiCheck /> Copied!</> : 'Copy Template'}
                 </button>
               </div>
               <pre className="template-code">{currentTemplate}</pre>
@@ -806,7 +813,7 @@ function QuestionsPage() {
                   className="json-input"
                 />
                 {error && <div className="error-msg">{error}</div>}
-                <button onClick={handleAdd} className="btn-submit">✓ Add Question</button>
+                <button onClick={handleAdd} className="btn-submit"><FiPlus /> Add Question</button>
               </div>
             </div>
 
@@ -814,7 +821,9 @@ function QuestionsPage() {
         )}
 
         {/* Question Groups */}
-        {filtered.length === 0 && !showAdd ? (
+        {loading ? (
+          <Spinner label="Loading questions…" size={44} />
+        ) : filtered.length === 0 && !showAdd ? (
           <p className="no-questions">No {activeTab.toUpperCase()} questions found.</p>
         ) : (
           <div className="questions-groups">
@@ -872,5 +881,9 @@ function QuestionsPage() {
 }
 
 export default QuestionsPage
+
+
+
+
 
 

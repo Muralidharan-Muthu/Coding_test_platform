@@ -37,7 +37,7 @@
 .blob-1 {
   width: 520px;
   height: 520px;
-  background: #EC6225;
+  background: #ffa116;
   top: -120px;
   left: -160px;
   animation-delay: 0s;
@@ -94,8 +94,8 @@
 }
 
 .landing-badge {
-  background: rgba(236, 98, 37, 0.15);
-  border: 1px solid rgba(236, 98, 37, 0.4);
+  background: rgba(255, 161, 22, 0.15);
+  border: 1px solid rgba(255, 161, 22, 0.4);
   color: #f58a4e;
   font-size: 0.72rem;
   font-weight: 700;
@@ -116,12 +116,12 @@
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 800;
   line-height: 1.15;
-  color: #f1f5f9;
+  color: #eff1f6;
   letter-spacing: -0.02em;
 }
 
 .landing-title-accent {
-  background: linear-gradient(135deg, #EC6225, #f58a4e);
+  background: linear-gradient(135deg, #ffa116, #f58a4e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -130,7 +130,7 @@
 .landing-subtitle {
   margin: 0;
   font-size: 1rem;
-  color: #94a3b8;
+  color: #8a8a8a;
   line-height: 1.7;
 }
 
@@ -169,7 +169,7 @@
   position: absolute;
   width: 1px;
   height: 100%;
-  background: linear-gradient(to bottom, transparent, #334155 30%, #334155 70%, transparent);
+  background: linear-gradient(to bottom, transparent, #3e3e3e 30%, #3e3e3e 70%, transparent);
 }
 
 /* Base card */
@@ -198,7 +198,7 @@
 }
 
 .portal-card:focus-visible {
-  outline: 2px solid #EC6225;
+  outline: 2px solid #ffa116;
   outline-offset: 3px;
 }
 
@@ -225,13 +225,13 @@
 
 /* Candidate card */
 .portal-candidate {
-  border-color: rgba(236, 98, 37, 0.25);
-  box-shadow: 0 4px 32px rgba(236, 98, 37, 0.08), 0 1px 0 rgba(255,255,255,0.04) inset;
+  border-color: rgba(255, 161, 22, 0.25);
+  box-shadow: 0 4px 32px rgba(255, 161, 22, 0.08), 0 1px 0 rgba(255,255,255,0.04) inset;
 }
 
 .portal-candidate:hover {
-  border-color: rgba(236, 98, 37, 0.55);
-  box-shadow: 0 16px 48px rgba(236, 98, 37, 0.2), 0 1px 0 rgba(255,255,255,0.06) inset;
+  border-color: rgba(255, 161, 22, 0.55);
+  box-shadow: 0 16px 48px rgba(255, 161, 22, 0.2), 0 1px 0 rgba(255,255,255,0.06) inset;
 }
 
 /* Admin card */
@@ -258,9 +258,9 @@
 }
 
 .portal-candidate .portal-icon-wrap {
-  background: rgba(236, 98, 37, 0.15);
+  background: rgba(255, 161, 22, 0.15);
   color: #f58a4e;
-  box-shadow: 0 0 0 1px rgba(236, 98, 37, 0.3);
+  box-shadow: 0 0 0 1px rgba(255, 161, 22, 0.3);
 }
 
 .portal-admin .portal-icon-wrap {
@@ -285,14 +285,14 @@
   margin: 0;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #eff1f6;
   letter-spacing: -0.01em;
 }
 
 .portal-desc {
   margin: 0;
   font-size: 0.88rem;
-  color: #94a3b8;
+  color: #8a8a8a;
   line-height: 1.6;
 }
 
@@ -310,9 +310,9 @@
   letter-spacing: 0.6px;
   padding: 3px 10px;
   border-radius: 20px;
-  background: rgba(236, 98, 37, 0.12);
+  background: rgba(255, 161, 22, 0.12);
   color: #f58a4e;
-  border: 1px solid rgba(236, 98, 37, 0.25);
+  border: 1px solid rgba(255, 161, 22, 0.25);
 }
 
 .pf-tag-admin {
@@ -402,7 +402,7 @@
     height: 1px;
     top: 50%;
     left: 0;
-    background: linear-gradient(to right, transparent, #334155 30%, #334155 70%, transparent);
+    background: linear-gradient(to right, transparent, #3e3e3e 30%, #3e3e3e 70%, transparent);
   }
 
   .landing-content {

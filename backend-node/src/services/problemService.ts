@@ -176,3 +176,80 @@ export const deleteProblem = async (id: string) => {
   await prisma.sqlProblem.delete({ where: { id } }).catch(() => {});
   return { status: 'deleted', id };
 };
+
+export const getRandomProblems = async (language: string, count: number = 5) => {
+  const lang = (language || 'python').toLowerCase();
+  const problems = lang === 'sql'
+    ? await prisma.sqlProblem.findMany({ where: { is_active: 1 } })
+    : await prisma.pythonProblem.findMany({ where: { is_active: 1 } });
+
+  const shuffled = [...problems];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = shuffled[i]!;
+    shuffled[i] = shuffled[j]!;
+    shuffled[j] = temp;
+  }
+  return shuffled.slice(0, count);
+};
+
+export const replaceRandomProblem = async (problemId: string, language: string) => {
+  const lang = (language || 'python').toLowerCase();
+  const problems = lang === 'sql'
+    ? await prisma.sqlProblem.findMany({ where: { is_active: 1 } })
+    : await prisma.pythonProblem.findMany({ where: { is_active: 1 } });
+
+  const current = problems.find(p => p.id === problemId);
+  const remaining = problems.filter(p => p.id !== problemId);
+
+  if (remaining.length === 0) {
+    return { replaced: current || null, new: current || null };
+  }
+
+  const randomIndex = Math.floor(Math.random() * remaining.length);
+  const newProblem = remaining[randomIndex];
+
+  return { replaced: current || null, new: newProblem };
+};
+
+export const getSelectedExamProblems = async (candidateEmail?: string) => {
+  if (candidateEmail) {
+    const candidateClean = candidateEmail.trim().toLowerCase();
+    const candidate = await prisma.candidateOtp.findFirst({ where: { email: candidateClean } });
+    const selected = await prisma.candidateSelectedExamProblem.findMany({
+      where: { candidate_email: candidateClean }
+    });
+    return {
+      candidate: candidate ? {
+        username: candidate.username,
+        email: candidate.email,
+        test_type: candidate.test_type,
+        test_type_label: candidate.test_type,
+        source: 'candidate_shuffle'
+      } : null,
+      problems: selected
+    };
+  }
+
+  const globalSelected = await prisma.selectedExamProblem.findMany({});
+  return { candidate: null, problems: globalSelected };
+};
+
+export const publishSelectedExamProblems = async (problems: any[]) => {
+  await prisma.selectedExamProblem.deleteMany({});
+  const now = new Date().toISOString();
+  for (const p of problems) {
+    await prisma.selectedExamProblem.create({
+      data: {
+        problem_id: p.id,
+        language: p.language || 'python',
+        difficulty: p.difficulty || 'Medium',
+        marks: Number(p.marks) || 10,
+        time_limit: Number(p.time_limit) || 15,
+        title: p.title || 'Untitled Problem',
+        saved_at: now
+      }
+    });
+  }
+  return { status: 'published', count: problems.length };
+};

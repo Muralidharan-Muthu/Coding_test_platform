@@ -9,8 +9,10 @@ import StatCards from '../components/assessment/StatCards'
 import TestSummaryTable from '../components/assessment/TestSummaryTable'
 import TrustProctoringTable from '../components/assessment/TrustProctoringTable'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/ToastProvider'
 import { exportAssessmentResults, getProctoringReports } from '../services/assessmentApi'
+import { FiBarChart2, FiX } from 'react-icons/fi'
 import './AssessmentDashboard.css'
 
 /* ─── Nav Items (matches AdminDashboard) ─── */
@@ -370,13 +372,10 @@ function AssessmentDashboard() {
         </div>
 
         {loading ? (
-          <div className="asd-loading" aria-live="polite">
-            <div className="asd-spinner" aria-hidden="true" />
-            <p>Loading assessment data…</p>
-          </div>
+          <Spinner label="Loading assessment data…" size={44} />
         ) : results.length === 0 ? (
           <div className="asd-empty">
-            <div className="asd-empty-icon" aria-hidden="true">📊</div>
+            <div className="asd-empty-icon" aria-hidden="true"><FiBarChart2 /></div>
             <h2>No Assessments Yet</h2>
             <p>Candidates who complete the assessment will appear here automatically.</p>
           </div>
@@ -437,7 +436,7 @@ function AssessmentDashboard() {
               aria-label="Close proctoring logs"
               title="Close"
             >
-              X
+              <FiX />
             </button>
             <div style={modalHeaderSectionStyle}>
               <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'flex-start' }}>
@@ -540,6 +539,7 @@ function AssessmentDashboard() {
 }
 
 export default AssessmentDashboard
+
 
 
 

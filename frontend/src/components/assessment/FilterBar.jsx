@@ -78,8 +78,8 @@ function FilterBar({
             className="filter-select"
           >
             <option value="All">All</option>
-            <option value="home">🏠 From Home</option>
-            <option value="office">🏢 From Office</option>
+            <option value="home">From Home</option>
+            <option value="office">From Office</option>
           </select>
         </div>
 

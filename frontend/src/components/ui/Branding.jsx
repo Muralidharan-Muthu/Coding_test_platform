@@ -5,17 +5,26 @@ import { useTheme } from '../../context/ThemeContext'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faBuilding } from '@fortawesome/free-solid-svg-icons'
 
+// The logo artwork is dark navy/teal on a transparent background, so it
+// disappears against any dark surface. Give it a white chip behind it
+// whenever the surrounding theme is dark so it stays legible.
+
 // Large logo — used on landing / auth pages
 export const PlatformLogoOnly = ({ className = '', size = 'large' }) => {
+  const { theme } = useTheme()
   const height = size === 'large' ? '80px' : '60px'
   return (
     <div className={`dm-logo-only ${className}`} style={{
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
       borderRadius: '12px',
       padding: '12px 20px',
       width: 'fit-content',
+      boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
+      border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
+      transition: 'background-color 0.3s ease',
     }}>
       <img
         src="/assets/meptrasoft-logo.png"
@@ -37,16 +46,18 @@ export const PlatformLogo = ({ className = '', onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.92)' : 'transparent',
+        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
         borderRadius: theme === 'dark' ? '8px' : '0',
-        padding: theme === 'dark' ? '4px 10px' : '0',
+        padding: theme === 'dark' ? '5px 12px' : '0',
+        boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
+        border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
         transition: 'background-color 0.3s ease',
       }}
     >
       <img
         src="/assets/meptrasoft-logo.png"
         alt="Meptrasoft AI Technologies"
-        style={{ height: '32px', width: 'auto' }}
+        style={{ height: '30px', width: 'auto' }}
       />
     </div>
   )
@@ -63,16 +74,20 @@ export const PlatformLogoSmall = ({ className = '', onClick }) => {
         display: 'inline-flex',
         alignItems: 'center',
         cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.92)' : 'transparent',
-        borderRadius: theme === 'dark' ? '6px' : '0',
-        padding: theme === 'dark' ? '3px 8px' : '0',
+        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
+        borderRadius: theme === 'dark' ? '8px' : '0',
+        padding: theme === 'dark' ? '5px 10px' : '0',
+        boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
+        border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
         transition: 'background-color 0.3s ease',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <img
         src="/assets/meptrasoft-logo.png"
         alt="Meptrasoft AI Technologies"
-        style={{ height: '26px', width: 'auto' }}
+        style={{ height: '24px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
       />
     </div>
   )
@@ -138,3 +153,4 @@ export const TimerIcon = ({ size = 16 }) => (
 )
 
 export default { PlatformLogo, PlatformLogoSmall, PythonIcon, DatabaseIcon, ClockIcon, ChecklistIcon, HouseIcon, BuildingIcon, TimerIcon }
+

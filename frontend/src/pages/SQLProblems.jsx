@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { getSqlProblems, getExamStatus, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { DatabaseIcon, TimerIcon } from '../components/ui/Branding'
+import Spinner from '../components/ui/Spinner'
+import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 import './SectionProblems.css'
 
 function SQLProblems() {
@@ -100,14 +102,14 @@ function SQLProblems() {
     return !!answers[problemId]
   }
 
-  if (loading) return <div className="loading">Loading problems...</div>
+  if (loading) return <Spinner label="Loading problems…" size={40} fullPage />
 
   return (
     <div className="section-problems-page sql-section">
       <header className="header">
         <div className="header-left">
           <button onClick={() => navigate('/test-structure')} className="btn-back" aria-label="Back to sections">
-            ← Back
+            <FiArrowLeft /> Back
           </button>
           <h1><DatabaseIcon size={20} /> SQL Problems</h1>
         </div>
@@ -146,7 +148,7 @@ function SQLProblems() {
               </div>
               <div className="problem-status">
                 {isAnswered(problem.id)
-                  ? <span className="status-answered">✓ Answered</span>
+                  ? <span className="status-answered"><FiCheck /> Answered</span>
                   : <span className="status-pending">Not answered</span>}
               </div>
               {isAnswered(problem.id) ? (
@@ -163,3 +165,4 @@ function SQLProblems() {
 }
 
 export default SQLProblems
+

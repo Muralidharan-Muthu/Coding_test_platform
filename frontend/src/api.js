@@ -10,7 +10,7 @@ const api = axios.create({
 })
 
 export const login = async (name, email, otp, testLocation) => {
-  const response = await api.post('/login', { 
+  const response = await api.post('/auth/login', {
     name, 
     email, 
     otp,
@@ -192,6 +192,16 @@ export const shuffleCandidateQuestions = async (email, testType) => {
     email,
     test_type: testType,
   })
+  return response.data
+}
+
+export const bulkSaveCandidateTestTypes = async (assignments) => {
+  const response = await api.post('/admin/candidate-test-type-bulk', { assignments })
+  return response.data
+}
+
+export const bulkShuffleCandidateQuestions = async (candidates) => {
+  const response = await api.post('/admin/candidate-shuffle-bulk', { candidates })
   return response.data
 }
 

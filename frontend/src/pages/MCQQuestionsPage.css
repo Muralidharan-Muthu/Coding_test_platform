@@ -164,15 +164,15 @@
 }
 
 .mcq-questions-page .summary-easy {
-  border-top: 3px solid #10b981;
+  border-top: 3px solid #00af9b;
 }
 
 .mcq-questions-page .summary-medium {
-  border-top: 3px solid #f59e0b;
+  border-top: 3px solid #ffc01e;
 }
 
 .mcq-questions-page .summary-hard {
-  border-top: 3px solid #ef4444;
+  border-top: 3px solid #ff375f;
 }
 
 .mcq-questions-page .summary-total {
@@ -182,7 +182,7 @@
 
 .mcq-questions-page .btn-add {
   padding: 10px 24px;
-  background-color: #10b981;
+  background-color: #00af9b;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -301,7 +301,7 @@
 
 .mcq-questions-page .btn-submit {
   padding: 10px 24px;
-  background-color: #10b981;
+  background-color: #00af9b;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -349,17 +349,17 @@
 
 .mcq-questions-page .dot-easy {
   background-color: #34d399;
-  box-shadow: 0 0 6px #10b981;
+  box-shadow: 0 0 6px #00af9b;
 }
 
 .mcq-questions-page .dot-medium {
   background-color: #fbbf24;
-  box-shadow: 0 0 6px #f59e0b;
+  box-shadow: 0 0 6px #ffc01e;
 }
 
 .mcq-questions-page .dot-hard {
   background-color: #f87171;
-  box-shadow: 0 0 6px #ef4444;
+  box-shadow: 0 0 6px #ff375f;
 }
 
 .mcq-questions-page .group-title {
@@ -472,21 +472,21 @@
 }
 
 .mcq-questions-page .difficulty-easy {
-  background-color: rgba(16, 185, 129, 0.2);
+  background-color: rgba(0, 175, 155, 0.2);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.4);
+  border: 1px solid rgba(0, 175, 155, 0.4);
 }
 
 .mcq-questions-page .difficulty-medium {
-  background-color: rgba(245, 158, 11, 0.2);
+  background-color: rgba(255, 192, 30, 0.2);
   color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.4);
+  border: 1px solid rgba(255, 192, 30, 0.4);
 }
 
 .mcq-questions-page .difficulty-hard {
-  background-color: rgba(239, 68, 68, 0.2);
+  background-color: rgba(255, 55, 95, 0.2);
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  border: 1px solid rgba(255, 55, 95, 0.4);
 }
 
 .mcq-questions-page .marks,
@@ -494,7 +494,7 @@
 .mcq-questions-page .topic-pill {
   font-size: 12px;
   color: #374151;
-  background-color: #e5e7eb;
+  background-color: #e5e5e6;
   padding: 2px 8px;
   border-radius: 4px;
 }
@@ -505,7 +505,7 @@
 
 .mcq-questions-page .added-at {
   font-size: 11px;
-  color: #6b7280;
+  color: #545455;
   font-style: italic;
   margin-left: 4px;
 }
@@ -533,7 +533,7 @@
 
 .mcq-questions-page .btn-delete {
   padding: 7px 18px;
-  background-color: #ef4444;
+  background-color: #ff375f;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -580,8 +580,8 @@
 }
 
 .mcq-questions-page .mcq-option-item.is-correct {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(0, 175, 155, 0.45);
+  background: rgba(0, 175, 155, 0.14);
   color: #047857;
   font-weight: 700;
 }
@@ -601,7 +601,7 @@
 }
 
 .mcq-questions-page .mcq-option-item.is-correct .mcq-option-key {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(0, 175, 155, 0.2);
   color: #047857;
 }
 
@@ -613,7 +613,7 @@
   margin-top: 18px;
   padding: 16px 18px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(16, 185, 129, 0.08));
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(0, 175, 155, 0.08));
   border: 1px solid rgba(99, 102, 241, 0.12);
 }
 

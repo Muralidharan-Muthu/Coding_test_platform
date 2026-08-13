@@ -237,3 +237,41 @@ CREATE INDEX "proctoring_logs_candidate_id_idx" ON "proctoring_logs"("candidate_
 
 -- CreateIndex
 CREATE UNIQUE INDEX "server_exam_sessions_session_id_key" ON "server_exam_sessions"("session_id");
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "proctoring_sessions" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "test_id" TEXT NOT NULL,
+    "candidate_id" TEXT NOT NULL,
+    "started_at" TEXT NOT NULL,
+    "ended_at" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "risk_score" INTEGER NOT NULL DEFAULT 0,
+    "risk_level" TEXT NOT NULL DEFAULT 'NORMAL',
+    "total_events" INTEGER NOT NULL DEFAULT 0,
+    "metadata" TEXT NOT NULL DEFAULT '{}',
+    "created_at" TEXT NOT NULL,
+    "updated_at" TEXT NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE IF NOT EXISTS "proctoring_events" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "session_id" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "severity" TEXT NOT NULL,
+    "timestamp" TEXT NOT NULL,
+    "duration" INTEGER,
+    "metadata" TEXT NOT NULL DEFAULT '{}',
+    "created_at" TEXT NOT NULL,
+    CONSTRAINT "proctoring_events_session_id_fkey" FOREIGN KEY ("session_id") REFERENCES "proctoring_sessions" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- CreateIndex
+CREATE INDEX IF NOT EXISTS "proctoring_sessions_test_id_idx" ON "proctoring_sessions"("test_id");
+CREATE INDEX IF NOT EXISTS "proctoring_sessions_candidate_id_idx" ON "proctoring_sessions"("candidate_id");
+CREATE INDEX IF NOT EXISTS "proctoring_sessions_status_idx" ON "proctoring_sessions"("status");
+CREATE INDEX IF NOT EXISTS "proctoring_events_session_id_idx" ON "proctoring_events"("session_id");
+CREATE INDEX IF NOT EXISTS "proctoring_events_type_idx" ON "proctoring_events"("type");
+CREATE INDEX IF NOT EXISTS "proctoring_events_timestamp_idx" ON "proctoring_events"("timestamp");
+

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { clearCandidateSession } from '../utils/sessionStorage'
+import { FiClock, FiCheckCircle, FiCheck, FiAward } from 'react-icons/fi'
 import './SubmissionComplete.css'
 
 function SubmissionComplete() {
@@ -27,7 +28,7 @@ function SubmissionComplete() {
       </div>
       <div className="submission-content">
         <div className={`success-icon${isAutoSubmit ? ' auto' : ''}`} aria-hidden="true">
-          {isAutoSubmit ? '⏰' : '✓'}
+          {isAutoSubmit ? <FiClock /> : <FiCheckCircle />}
         </div>
 
         <h1>{isAutoSubmit ? "Time's Up!" : 'Exam Submitted!'}</h1>
@@ -48,15 +49,15 @@ function SubmissionComplete() {
           <h3>What's Next?</h3>
           <ul>
             <li>
-              <span aria-hidden="true">✓</span>
+              <span aria-hidden="true"><FiCheck /></span>
               Your submission has been recorded
             </li>
             <li>
-              <span aria-hidden="true">✓</span>
+              <span aria-hidden="true"><FiCheck /></span>
               The Admin team will review your answers
             </li>
             <li>
-              <span aria-hidden="true">✓</span>
+              <span aria-hidden="true"><FiCheck /></span>
               Results will be communicated via email
             </li>
           </ul>
@@ -77,7 +78,7 @@ function SubmissionComplete() {
 
         <div className="thank-you-message">
           <p>Thank you for completing the assessment!</p>
-          <p className="good-luck">Best of luck! 🎉</p>
+          <p className="good-luck">Best of luck! <FiAward /></p>
         </div>
 
         <button onClick={handleBackToLogin} className="btn-finish">
@@ -89,3 +90,4 @@ function SubmissionComplete() {
 }
 
 export default SubmissionComplete
+

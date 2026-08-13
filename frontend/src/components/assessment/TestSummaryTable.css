@@ -117,11 +117,11 @@
 }
 
 .test-summary-table tbody tr:nth-child(even) .python-col {
-  background: rgba(8, 86, 144, 0.12) !important;
+  background: rgba(10, 132, 255, 0.12) !important;
 }
 
 .test-summary-table tbody tr:nth-child(even) .sql-col {
-  background: rgba(245, 158, 11, 0.12) !important;
+  background: rgba(255, 192, 30, 0.12) !important;
 }
 
 .test-summary-table tbody tr:nth-child(even) .mcq-col {
@@ -238,9 +238,9 @@
 }
 
 .manual-type {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(0, 175, 155, 0.15);
   color: #065f46;
-  border-color: rgba(16, 185, 129, 0.35);
+  border-color: rgba(0, 175, 155, 0.35);
 }
 
 .auto-warning {
@@ -287,24 +287,24 @@
 [data-theme="dark"] .test-summary-table td {
   color: #e2e8f0;
   border-right-color: rgba(255,255,255,0.08);
-  border-bottom-color: #334155;
+  border-bottom-color: #3e3e3e;
 }
 
 [data-theme="dark"] .test-summary-table tbody tr:nth-child(even) td {
-  background: #1e293b;
+  background: #282828;
 }
 
 [data-theme="dark"] .test-summary-table tbody tr:hover td {
   background: rgba(14, 116, 144, 0.15) !important;
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .test-summary-table .id-cell {
-  background: #1e293b !important;
+  background: #282828 !important;
 }
 
 [data-theme="dark"] .test-summary-table .name-cell {
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .test-summary-table .score-value {
@@ -312,19 +312,19 @@
 }
 
 [data-theme="dark"] .test-summary-table .score-bar-container {
-  background: #334155;
+  background: #3e3e3e;
 }
 
 [data-theme="dark"] .manual-type {
-  background: rgba(52, 211, 153, 0.15);
+  background: rgba(44, 187, 93, 0.15);
   color: #6ee7b7;
-  border-color: rgba(52, 211, 153, 0.3);
+  border-color: rgba(44, 187, 93, 0.3);
 }
 
 [data-theme="dark"] .auto-warning {
-  background: rgba(248, 113, 113, 0.15);
+  background: rgba(255, 55, 95, 0.15);
   color: #fca5a5;
-  border-color: rgba(248, 113, 113, 0.3);
+  border-color: rgba(255, 55, 95, 0.3);
 }
 
 [data-theme="dark"] .overall-col {
@@ -378,11 +378,11 @@
 }
 
 [data-theme="dark"] .trust-score-value {
-  color: #f1f5f9;
+  color: #eff1f6;
 }
 
 [data-theme="dark"] .trust-score-critical {
-  color: #f87171;
+  color: #ff375f;
 }
 
 [data-theme="dark"] .view-logs-button {

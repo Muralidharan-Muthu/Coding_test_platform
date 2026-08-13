@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import api, { createMcqQuestion, deleteMcqQuestion } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import Spinner from '../components/ui/Spinner'
 import './MCQQuestionsPage.css'
 
 const NAV_ITEMS = [
@@ -383,7 +384,7 @@ function MCQQuestionsPage() {
         )}
 
         {loading ? (
-          <div className="mcq-empty-state">Loading questions...</div>
+          <Spinner label="Loading questions…" size={40} />
         ) : questions.length === 0 && !showAdd ? (
           <p className="no-questions">No MCQ questions found.</p>
         ) : (

@@ -1,49 +1,49 @@
-/* ─── CodeFlow Design System ─── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+/* ─── LeetCode Design System ─── */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* ─── Light Mode Tokens (default) ─── */
+/* ─── Light Mode Tokens (default) — LeetCode Light ─── */
 :root {
   /* Background & Surface */
-  --color-bg: #f8f9fb;
+  --color-bg: #f7f7f8;
   --color-surface: #ffffff;
-  --color-surface-2: #f1f5f9;
-  --color-surface-3: #e8edf3;
+  --color-surface-2: #f7f7f8;
+  --color-surface-3: #eff1f6;
 
   /* Text */
-  --color-text: #1f2937;
-  --color-text-muted: #6b7280;
-  --color-text-subtle: #9ca3af;
+  --color-text: #262626;
+  --color-text-muted: #545455;
+  --color-text-subtle: #969696;
 
   /* Borders */
-  --color-border: #e5e7eb;
-  --color-border-strong: #d1d5db;
+  --color-border: #e5e5e6;
+  --color-border-strong: #d0d0d1;
 
-  /* Brand */
-  --color-accent: #ec6225;
-  --color-accent-hover: #d4551e;
-  --color-accent-light: rgba(236, 98, 37, 0.10);
-  --color-accent-light-hover: rgba(236, 98, 37, 0.16);
-  --color-secondary: #085690;
-  --color-secondary-light: rgba(8, 86, 144, 0.10);
+  /* Brand — LeetCode orange */
+  --color-accent: #ffa116;
+  --color-accent-hover: #e88f0a;
+  --color-accent-light: rgba(255, 161, 22, 0.10);
+  --color-accent-light-hover: rgba(255, 161, 22, 0.18);
+  --color-secondary: #0a84ff;
+  --color-secondary-light: rgba(10, 132, 255, 0.10);
 
   /* Status */
-  --color-success: #10b981;
-  --color-success-bg: rgba(16, 185, 129, 0.10);
-  --color-success-border: rgba(16, 185, 129, 0.25);
-  --color-warning: #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.10);
-  --color-warning-border: rgba(245, 158, 11, 0.25);
-  --color-error: #ef4444;
-  --color-error-bg: rgba(239, 68, 68, 0.10);
-  --color-error-border: rgba(239, 68, 68, 0.25);
+  --color-success: #00af9b;
+  --color-success-bg: rgba(0, 175, 155, 0.10);
+  --color-success-border: rgba(0, 175, 155, 0.25);
+  --color-warning: #ffc01e;
+  --color-warning-bg: rgba(255, 192, 30, 0.12);
+  --color-warning-border: rgba(255, 192, 30, 0.28);
+  --color-error: #ff375f;
+  --color-error-bg: rgba(255, 55, 95, 0.10);
+  --color-error-border: rgba(255, 55, 95, 0.25);
 
-  /* Difficulty */
-  --color-easy: #10b981;
-  --color-easy-bg: rgba(16, 185, 129, 0.12);
-  --color-medium: #f59e0b;
-  --color-medium-bg: rgba(245, 158, 11, 0.12);
-  --color-hard: #ef4444;
-  --color-hard-bg: rgba(239, 68, 68, 0.12);
+  /* Difficulty — LeetCode Easy/Medium/Hard */
+  --color-easy: #00af9b;
+  --color-easy-bg: rgba(0, 175, 155, 0.12);
+  --color-medium: #ffc01e;
+  --color-medium-bg: rgba(255, 192, 30, 0.12);
+  --color-hard: #ff375f;
+  --color-hard-bg: rgba(255, 55, 95, 0.12);
 
   /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -79,50 +79,50 @@
   --space-16: 64px;
 }
 
-/* ─── Dark Mode Tokens ─── */
+/* ─── Dark Mode Tokens — LeetCode Dark ─── */
 [data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-surface: #1e293b;
-  --color-surface-2: #1a2744;
-  --color-surface-3: #131e30;
+  --color-bg: #1a1a1a;
+  --color-surface: #282828;
+  --color-surface-2: #2a2a2a;
+  --color-surface-3: #333333;
 
   /* Text — high contrast whites */
-  --color-text: #f1f5f9;
-  --color-text-muted: #cbd5e1;
-  --color-text-subtle: #94a3b8;
+  --color-text: #eff1f6;
+  --color-text-muted: #b0b0b0;
+  --color-text-subtle: #8a8a8a;
 
-  --color-border: #334155;
-  --color-border-strong: #4b5a6e;
+  --color-border: #3e3e3e;
+  --color-border-strong: #4d4d4d;
 
   /* Status — brighter for dark bg */
-  --color-success: #34d399;
-  --color-warning: #fbbf24;
-  --color-error: #f87171;
+  --color-success: #2cbb5d;
+  --color-warning: #ffb800;
+  --color-error: #ff375f;
 
-  --color-accent-light: rgba(236, 98, 37, 0.18);
-  --color-accent-light-hover: rgba(236, 98, 37, 0.26);
-  --color-secondary-light: rgba(8, 86, 144, 0.22);
+  --color-accent-light: rgba(255, 161, 22, 0.16);
+  --color-accent-light-hover: rgba(255, 161, 22, 0.26);
+  --color-secondary-light: rgba(10, 132, 255, 0.20);
 
-  --color-success-bg: rgba(52, 211, 153, 0.12);
-  --color-success-border: rgba(52, 211, 153, 0.28);
-  --color-warning-bg: rgba(251, 191, 36, 0.12);
-  --color-warning-border: rgba(251, 191, 36, 0.28);
-  --color-error-bg: rgba(248, 113, 113, 0.12);
-  --color-error-border: rgba(248, 113, 113, 0.28);
+  --color-success-bg: rgba(44, 187, 93, 0.14);
+  --color-success-border: rgba(44, 187, 93, 0.30);
+  --color-warning-bg: rgba(255, 184, 0, 0.14);
+  --color-warning-border: rgba(255, 184, 0, 0.30);
+  --color-error-bg: rgba(255, 55, 95, 0.14);
+  --color-error-border: rgba(255, 55, 95, 0.30);
 
   /* Difficulty — brighter for dark bg */
-  --color-easy: #34d399;
-  --color-easy-bg: rgba(52, 211, 153, 0.15);
-  --color-medium: #fbbf24;
-  --color-medium-bg: rgba(251, 191, 36, 0.15);
-  --color-hard: #f87171;
-  --color-hard-bg: rgba(248, 113, 113, 0.15);
+  --color-easy: #2cbb5d;
+  --color-easy-bg: rgba(44, 187, 93, 0.16);
+  --color-medium: #ffb800;
+  --color-medium-bg: rgba(255, 184, 0, 0.16);
+  --color-hard: #ff375f;
+  --color-hard-bg: rgba(255, 55, 95, 0.16);
 
-  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.40), 0 2px 4px rgba(0, 0, 0, 0.25);
-  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.50), 0 4px 8px rgba(0, 0, 0, 0.30);
-  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.60), 0 8px 16px rgba(0, 0, 0, 0.40);
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40), 0 1px 2px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.50), 0 2px 4px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.60), 0 4px 8px rgba(0, 0, 0, 0.40);
+  --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.70), 0 8px 16px rgba(0, 0, 0, 0.50);
 }
 
 /* ─── Global Reset & Base ─── */
@@ -137,7 +137,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-bg);
@@ -147,7 +147,7 @@ body {
 }
 
 code, pre, kbd {
-  font-family: 'JetBrains Mono', 'Consolas', 'Courier New', monospace;
+  font-family: 'JetBrains Mono', Menlo, 'Consolas', 'Courier New', monospace;
 }
 
 a {

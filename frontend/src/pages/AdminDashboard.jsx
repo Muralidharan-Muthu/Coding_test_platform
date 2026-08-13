@@ -166,6 +166,18 @@ function AdminDashboard() {
         params: previewCandidateEmail ? { email: previewCandidateEmail } : {},
       })
       const allProblems = response.data.problems || []
+
+      if (allProblems.length === 0 && !previewCandidateEmail) {
+        const [pythonRes, sqlRes] = await Promise.all([
+          api.get('/admin/problems/random?language=python'),
+          api.get('/admin/problems/random?language=sql'),
+        ])
+        setGeneratedPythonProblems(pythonRes.data.problems || [])
+        setGeneratedSqlProblems(sqlRes.data.problems || [])
+        setPreviewCandidate(null)
+        return
+      }
+
       setGeneratedPythonProblems(allProblems.filter((problem) => problem.language === 'python'))
       setGeneratedSqlProblems(allProblems.filter((problem) => problem.language === 'sql'))
       setPreviewCandidate(response.data.candidate || null)

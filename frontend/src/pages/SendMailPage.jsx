@@ -3,26 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { generateOTP, getCandidates, sendOTPEmail } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import Spinner from '../components/ui/Spinner'
+import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import './CandidateOTP.css'
 import './SendMailPage.css'
-
-const NAV_ITEMS = [
-  {
-    label: 'Assessment Dashboard',
-    href: '/dashboard/assessment',
-    activePaths: ['/dashboard/assessment'],
-  },
-  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
-  {
-    label: 'Manage Candidates',
-    href: '/admin/otp',
-    activePaths: ['/admin/otp'],
-    children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
-    ],
-  },
-]
 
 function SendMailPage() {
   const navigate = useNavigate()
@@ -96,7 +80,7 @@ function SendMailPage() {
     try {
       const response = await generateOTP(candidate.username, candidate.email)
       // Carries a code the admin may need to transcribe — stays until dismissed.
-      toast.success(`OTP generated for ${candidate.email}: ${response.otp}`, {
+      toast.success(`OTP generated for ${candidate.email}: ${response.otp_code}`, {
         title: 'OTP generated',
         duration: Infinity,
       })
@@ -171,7 +155,7 @@ function SendMailPage() {
           </div>
 
           {loading ? (
-            <p>Loading...</p>
+            <Spinner label="Loading candidates…" size={40} />
           ) : dedupedCandidates.rows.length === 0 ? (
             <p className="otp-no-data">No candidates found.</p>
           ) : (
@@ -213,7 +197,7 @@ function SendMailPage() {
                         <button
                           type="button"
                           className="otp-btn-send"
-                          disabled={candidate.sent || Boolean(sending[candidate.email]) || Boolean(generating[candidate.email])}
+                          disabled={Boolean(sending[candidate.email]) || Boolean(generating[candidate.email])}
                           onClick={() => handleSendEmail(candidate)}
                         >
                           {sending[candidate.email] ? 'Sending...' : 'Send Mail'}

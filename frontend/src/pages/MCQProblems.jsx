@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getMcqProblems, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { ChecklistIcon, TimerIcon } from '../components/ui/Branding'
+import Spinner from '../components/ui/Spinner'
+import { FiArrowLeft } from 'react-icons/fi'
 import './SectionProblems.css'
 import './MCQProblems.css'
 
@@ -153,11 +155,7 @@ function MCQProblems() {
   }
 
   if (loading) {
-    return (
-      <div className="loading">
-        Loading MCQ questions...
-      </div>
-    )
+    return <Spinner label="Loading MCQ questions…" size={40} fullPage />
   }
 
   return (
@@ -165,7 +163,7 @@ function MCQProblems() {
       <header className="header">
         <div className="header-left">
           <button onClick={() => navigate('/test-structure')} className="btn-back" aria-label="Back to sections">
-            ← Back
+            <FiArrowLeft /> Back
           </button>
           <h1><ChecklistIcon size={20} /> MCQ Questions</h1>
         </div>

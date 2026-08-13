@@ -41,12 +41,12 @@
   font-size: 40px;
   color: #fff;
   margin: 0 auto 28px;
-  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 175, 155, 0.35);
 }
 
 .success-icon.auto {
   background: linear-gradient(135deg, var(--color-warning) 0%, #d97706 100%);
-  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 8px 24px rgba(255, 192, 30, 0.35);
 }
 
 .submission-content h1 {
@@ -209,7 +209,7 @@
 .btn-finish:hover {
   background: var(--color-accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(236, 98, 37, 0.35);
+  box-shadow: 0 6px 20px rgba(255, 161, 22, 0.35);
 }
 
 .btn-finish:active { transform: translateY(0); }

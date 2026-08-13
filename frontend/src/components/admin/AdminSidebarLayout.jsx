@@ -194,7 +194,7 @@ function AdminSidebarLayout({
             <button
               type="button"
               className="admin-shell-brand"
-              onClick={() => onNavigate(navItems[0]?.href || '/dashboard/assessment')}
+              onClick={() => onNavigate(navItems[0]?.href || '/admin/dashboard/assessment')}
               aria-label="Go to assessment dashboard"
             >
               <PlatformLogoSmall />

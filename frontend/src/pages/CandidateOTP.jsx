@@ -3,26 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import Spinner from '../components/ui/Spinner'
+import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import * as XLSX from 'xlsx'
+import { FiDownload, FiPlus, FiUploadCloud } from 'react-icons/fi'
 import './CandidateOTP.css'
-
-const NAV_ITEMS = [
-  {
-    label: 'Assessment Dashboard',
-    href: '/dashboard/assessment',
-    activePaths: ['/dashboard/assessment'],
-  },
-  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
-  {
-    label: 'Manage Candidates',
-    href: '/admin/otp',
-    activePaths: ['/admin/otp'],
-    children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
-    ],
-  },
-]
 
 const EMPTY_EDIT_FORM = { username: '', email: '' }
 
@@ -146,10 +131,11 @@ function CandidateOTP() {
 
     try {
       const response = await importCandidates([{ username: validation.username, email: validation.email }])
+      const importedList = response.candidates || response.imported || []
 
       if (response.duplicates && response.duplicates.length > 0) {
         toast.warning(`Duplicate candidate skipped: ${validation.username} (${validation.email}) already exists`)
-      } else if (response.imported && response.imported.length > 0) {
+      } else if (importedList.length > 0) {
         toast.success(`Candidate ${validation.username} added successfully`)
         setNewUsername('')
         setNewEmail('')
@@ -167,20 +153,81 @@ function CandidateOTP() {
     }
   }
 
+  const extractCandidateRow = (row) => {
+    if (!row || typeof row !== 'object') return null
+
+    let username = ''
+    let email = ''
+
+    const keys = Object.keys(row)
+
+    // 1. Try exact/fuzzy header matching
+    for (const k of keys) {
+      const normKey = String(k).trim().toLowerCase().replace(/[^a-z0-9]/g, '')
+      const val = String(row[k] || '').trim()
+      if (!val) continue
+
+      if (!email && (normKey.includes('email') || normKey.includes('mail'))) {
+        email = val
+      } else if (!username && (normKey.includes('user') || normKey.includes('name') || normKey.includes('candidate') || normKey.includes('student'))) {
+        username = val
+      }
+    }
+
+    // 2. Fallback: if email wasn't found by header name, find any property containing '@'
+    if (!email) {
+      for (const k of keys) {
+        const val = String(row[k] || '').trim()
+        if (val.includes('@') && val.includes('.')) {
+          email = val
+          break
+        }
+      }
+    }
+
+    // 3. Fallback: if username is still empty, pick first non-email text value
+    if (!username) {
+      for (const k of keys) {
+        const val = String(row[k] || '').trim()
+        if (val && val !== email && !val.includes('@')) {
+          username = val
+          break
+        }
+      }
+    }
+
+    // 4. Final fallback: if username is empty but email exists, derive username from email prefix
+    if (!username && email) {
+      username = email.split('@')[0]
+    }
+
+    return { username, email }
+  }
+
+  const handleDownloadSampleExcel = () => {
+    const sampleData = [
+      { username: 'aarav.sharma', email: 'aarav.sharma@example.com' },
+      { username: 'bhavna.patel', email: 'bhavna.patel@example.com' },
+      { username: 'chetan.kumar', email: 'chetan.kumar@example.com' },
+    ]
+    const worksheet = XLSX.utils.json_to_sheet(sampleData)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidates')
+    XLSX.writeFile(workbook, 'candidate_import_template.xlsx')
+    toast.success('Downloaded sample candidate import template!')
+  }
+
   const handleImportExcel = () => {
     const input = document.createElement('input')
     input.type = 'file'
-    input.accept = '.xlsx, .xls'
+    input.accept = '.xlsx, .xls, .csv'
 
     input.onchange = (e) => {
       const file = e.target.files?.[0]
-      if (!file) {
-        toast.error('No file selected')
-        return
-      }
+      if (!file) return
 
-      if (file.size > 5 * 1024 * 1024) {
-        toast.error('File size must be less than 5MB')
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error('File size must be less than 10MB')
         return
       }
 
@@ -198,14 +245,14 @@ function CandidateOTP() {
 
           const sheetName = workbook.SheetNames[0]
           const worksheet = workbook.Sheets[sheetName]
-          const json = XLSX.utils.sheet_to_json(worksheet)
+          const json = XLSX.utils.sheet_to_json(worksheet, { defval: '' })
 
           const parsedCandidates = json
             .map((row) => {
-              const validation = validateCandidateInput(row.username, row.email)
-              if (!validation.valid) {
-                return null
-              }
+              const extracted = extractCandidateRow(row)
+              if (!extracted) return null
+              const validation = validateCandidateInput(extracted.username, extracted.email)
+              if (!validation.valid) return null
               return {
                 username: validation.username,
                 email: validation.email,
@@ -214,33 +261,24 @@ function CandidateOTP() {
             .filter(Boolean)
 
           if (parsedCandidates.length === 0) {
-            toast.error('No valid candidates found in Excel file. Ensure columns are named "username" and "email".')
+            toast.error('No valid candidates found in file. Use "Download Sample Template" to download a valid Excel format.')
             setImporting(false)
             return
           }
 
           const response = await importCandidates(parsedCandidates)
-          let message = `Successfully imported ${response.imported ? response.imported.length : 0} candidates`
+          const importedList = response.candidates || response.imported || []
+          let message = `Successfully imported ${importedList.length} candidate(s)`
 
           if (response.duplicates && response.duplicates.length > 0) {
-            message += `, skipped ${response.duplicates.length} duplicates`
-            if (response.duplicates.length <= 3) {
-              const dupNames = response.duplicates.map((candidate) => candidate.username).join(', ')
-              message += ` (${dupNames})`
-            }
+            message += ` (${response.duplicates.length} duplicate candidate(s) skipped)`
           }
 
           toast.success(message)
           await loadCandidates()
         } catch (err) {
           console.error('Excel import error:', err)
-          let errorMsg = 'Failed to parse Excel file. '
-          if (err.message) {
-            errorMsg += err.message
-          } else {
-            errorMsg += 'Make sure columns are named "username" and "email".'
-          }
-          toast.error(errorMsg)
+          toast.error(err.message || 'Failed to parse uploaded Excel/CSV file')
         } finally {
           setImporting(false)
           input.value = ''
@@ -358,6 +396,7 @@ function CandidateOTP() {
               disabled={importing}
               className="otp-btn-add"
             >
+              <FiPlus style={{ marginRight: '6px', verticalAlign: 'middle' }} />
               {importing ? 'Adding...' : 'Add Candidate'}
             </button>
             <button
@@ -365,7 +404,29 @@ function CandidateOTP() {
               disabled={importing}
               className="otp-btn-import"
             >
-              {importing ? 'Importing...' : 'Import from Excel'}
+              <FiUploadCloud style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+              {importing ? 'Importing...' : 'Import from Excel / CSV'}
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadSampleExcel}
+              disabled={importing}
+              style={{
+                padding: '10px 16px',
+                background: 'var(--color-surface-2)',
+                color: 'var(--color-text)',
+                border: '1px solid var(--color-border-strong)',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <FiDownload style={{ verticalAlign: 'middle' }} />
+              Sample Template
             </button>
           </div>
         </div>
@@ -376,7 +437,7 @@ function CandidateOTP() {
           </div>
 
           {loading ? (
-            <p>Loading...</p>
+            <Spinner label="Loading candidates…" size={40} />
           ) : candidates.length === 0 ? (
             <p className="otp-no-data">No candidates found. Add or import candidates above.</p>
           ) : (

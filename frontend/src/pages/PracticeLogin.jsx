@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { candidateLogin } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
+import Spinner from '../components/ui/Spinner'
 import './Login.css'
 
 function PracticeLogin() {
@@ -124,7 +125,7 @@ function PracticeLogin() {
             <button type="submit" disabled={loading} className="login-btn">
               {loading ? (
                 <>
-                  <span className="btn-spinner" aria-hidden="true"></span>
+                  <Spinner size={16} />
                   Signing in...
                 </>
               ) : (
