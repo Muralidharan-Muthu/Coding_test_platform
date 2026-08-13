@@ -66,7 +66,7 @@ export async function addProctoringEvents(
   });
 
   // Update session with latest risk score and event count
-  await prisma.proctoringSession.update({
+  const session = await prisma.proctoringSession.update({
     where: { id: sessionId },
     data: {
       risk_score: riskScore,
@@ -74,6 +74,27 @@ export async function addProctoringEvents(
       updated_at: now,
     },
   });
+
+  if (session && session.candidate_id) {
+    for (const evt of events) {
+      if (evt.type === 'FACE_DETECTED' || evt.type === 'WINDOW_FOCUS') continue;
+      const meta = evt.metadata || {};
+      const msg = (meta as any).message || `${evt.type.replace(/_/g, ' ')} detected`;
+      const eventDate = typeof evt.timestamp === 'number'
+        ? new Date(evt.timestamp)
+        : (evt.timestamp ? new Date(evt.timestamp) : new Date());
+
+      await prisma.proctoringLog.create({
+        data: {
+          exam_id: session.test_id || session.id,
+          candidate_id: session.candidate_id,
+          violation_type: evt.type,
+          message: msg,
+          timestamp: isNaN(eventDate.getTime()) ? new Date() : eventDate,
+        }
+      }).catch(() => {});
+    }
+  }
 
   return result.count;
 }
@@ -163,3 +184,4 @@ export async function getProctoringReports(filters: {
     };
   });
 }
+

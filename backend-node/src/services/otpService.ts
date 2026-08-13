@@ -90,8 +90,9 @@ export const saveCandidateOtp = async (username: string, email: string, otpCode:
 };
 
 export const verifyCandidateOtp = async (email: string, otpCode: string) => {
+    const emailClean = (email || '').trim().toLowerCase();
     const candidate = await prisma.candidateOtp.findFirst({
-        where: { email, otp_code: otpCode, status: 'unused' }
+        where: { email: emailClean, otp_code: otpCode.trim() }
     });
 
     if (!candidate) return false;
@@ -101,10 +102,12 @@ export const verifyCandidateOtp = async (email: string, otpCode: string) => {
         return false;
     }
 
-    await prisma.candidateOtp.update({
-        where: { id: candidate.id },
-        data: { status: 'used' }
-    });
+    if (candidate.status !== 'used') {
+        await prisma.candidateOtp.update({
+            where: { id: candidate.id },
+            data: { status: 'used' }
+        });
+    }
 
     return true;
 };
@@ -137,6 +140,7 @@ export const updateCandidateTestTypeBulk = async (assignments: Array<{ email: st
                 where: { id: candidate.id },
                 data: { test_type: normalized }
             });
+            await shuffleCandidateQuestions(a.email, normalized);
             updated.push(res);
         }
     }
@@ -206,12 +210,14 @@ export const getCandidateOtp = async (email: string) => {
 
 export const updateCandidateTestType = async (email: string, testType: string) => {
     const normalized = normalizeTestType(testType);
-    const candidate = await prisma.candidateOtp.findFirst({ where: { email } });
+    const emailClean = email.trim().toLowerCase();
+    const candidate = await prisma.candidateOtp.findFirst({ where: { email: emailClean } });
     if (candidate) {
         await prisma.candidateOtp.update({
             where: { id: candidate.id },
             data: { test_type: normalized }
         });
+        await shuffleCandidateQuestions(emailClean, normalized);
         return true;
     }
     return false;
@@ -541,6 +547,8 @@ export const shuffleCandidateQuestions = async (email: string, testType?: string
         message: `Shuffled and assigned ${totalSaved} difficulty-balanced questions for ${emailClean}`
     };
 };
+
+
 
 
 

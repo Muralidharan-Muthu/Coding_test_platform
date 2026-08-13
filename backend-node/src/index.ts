@@ -17,6 +17,7 @@ app.use(express.json());
 
 // API Routes
 app.use('/auth', authRoutes);
+app.use('/', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/proctoring', proctoringRoutes);
 app.use('/admin/proctoring', proctoringRoutes);
@@ -40,3 +41,4 @@ if (require.main === module) {
 }
 
 export default app;
+

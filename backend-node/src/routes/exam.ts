@@ -12,7 +12,9 @@ const router = Router();
 // GET /exam/summary?session_id=...
 router.get('/summary', async (req: Request, res: Response) => {
   try {
-    const summary = await getExamSummary(String(req.query.session_id || ''));
+    const sessionId = String(req.query.session_id || '');
+    const email = String(req.query.email || '');
+    const summary = await getExamSummary(sessionId, email);
     return res.json(summary);
   } catch (err: any) {
     console.error('[Exam] Failed to get summary:', err);
@@ -78,3 +80,4 @@ router.post('/submit', async (req: Request, res: Response) => {
 });
 
 export default router;
+

@@ -1,4 +1,5 @@
 import prisma from '../db/prisma';
+import { shuffleCandidateQuestions } from './otpService';
 import crypto from 'crypto';
 
 /** Total exam duration, mirroring EXAM_DURATION_SECONDS in the frontend. */
@@ -18,28 +19,84 @@ export async function getSession(sessionId: string) {
  * "Shuffle Question Set" selection), for the candidate dashboard
  * (GET /exam/summary?session_id=...).
  */
-export async function getExamSummary(sessionId: string) {
+export async function getExamSummary(sessionId: string, candidateEmail?: string) {
   const session = await getSession(sessionId);
-  const email = session?.candidate_email;
+  let email = session?.candidate_email || candidateEmail;
+
+  if (!email && sessionId) {
+    const candidateSession = await prisma.serverSession.findFirst({
+      where: { id: sessionId }
+    });
+    if (candidateSession) email = candidateSession.candidate_email;
+  }
+
+  if (!email) {
+    const latestCandidate = await prisma.candidateOtp.findFirst({
+      orderBy: { id: 'desc' }
+    });
+    if (latestCandidate) email = latestCandidate.email;
+  }
+
   if (!email) {
     return { total_questions: 0, python_questions: 0, sql_questions: 0, mcq_questions: 0, total_marks: 0, problems: [] };
   }
 
-  const problems = await prisma.candidateSelectedExamProblem.findMany({
-    where: { candidate_email: email },
+  const emailClean = email.trim().toLowerCase();
+
+  let problems = await prisma.candidateSelectedExamProblem.findMany({
+    where: { candidate_email: emailClean },
     orderBy: { saved_at: 'asc' },
   });
 
+  const candidate = await prisma.candidateOtp.findFirst({
+    where: { email: emailClean }
+  });
+  const currentTestType = candidate?.test_type || session.test_type || 'both';
+
+  const hasPython = problems.some(p => (p.language || '').toLowerCase() === 'python');
+  const hasSql = problems.some(p => (p.language || '').toLowerCase() === 'sql');
+  const hasMcq = problems.some(p => (p.language || '').toLowerCase() === 'mcq');
+
+  let needsReshuffle = problems.length === 0;
+
+  if (currentTestType === 'both' && (!hasPython || !hasSql)) {
+    needsReshuffle = true;
+  } else if (currentTestType === 'python' && !hasPython) {
+    needsReshuffle = true;
+  } else if (currentTestType === 'sql' && !hasSql) {
+    needsReshuffle = true;
+  } else if (currentTestType === 'mcq' && !hasMcq) {
+    needsReshuffle = true;
+  } else if ((currentTestType === 'python_mcq' || currentTestType === 'python+mcq') && (!hasPython || !hasMcq)) {
+    needsReshuffle = true;
+  } else if ((currentTestType === 'sql_mcq' || currentTestType === 'sql+mcq') && (!hasSql || !hasMcq)) {
+    needsReshuffle = true;
+  } else if (currentTestType === 'full' && (!hasPython || !hasSql || !hasMcq)) {
+    needsReshuffle = true;
+  }
+
+  if (needsReshuffle) {
+    try {
+      await shuffleCandidateQuestions(emailClean, currentTestType);
+      problems = await prisma.candidateSelectedExamProblem.findMany({
+        where: { candidate_email: emailClean },
+        orderBy: { saved_at: 'asc' },
+      });
+    } catch (e) {
+      console.error('[ExamService] Auto-shuffle on getExamSummary failed:', e);
+    }
+  }
+
   return {
     total_questions: problems.length,
-    python_questions: problems.filter((p) => p.language === 'python').length,
-    sql_questions: problems.filter((p) => p.language === 'sql').length,
-    mcq_questions: problems.filter((p) => p.language === 'mcq').length,
+    python_questions: problems.filter((p) => (p.language || '').toLowerCase() === 'python').length,
+    sql_questions: problems.filter((p) => (p.language || '').toLowerCase() === 'sql').length,
+    mcq_questions: problems.filter((p) => (p.language || '').toLowerCase() === 'mcq').length,
     total_marks: problems.reduce((sum, p) => sum + (p.marks || 0), 0),
     problems: problems.map((p) => ({
       id: p.problem_id,
       title: p.title,
-      language: p.language,
+      language: (p.language || 'python').toLowerCase(),
       difficulty: p.difficulty,
       marks: p.marks,
       time_limit: p.time_limit,
@@ -226,3 +283,6 @@ export async function submitExam(
 
   return { status: 'submitted', auto_submit: autoSubmit, overall_score: overallScore, verdict };
 }
+
+
+

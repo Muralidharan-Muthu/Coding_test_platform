@@ -99,7 +99,8 @@ function MCQProblems() {
 
       setRemainingTime(status.remaining_seconds)
       const questionsData = await getMcqProblems(sessionId)
-      setQuestions(Array.isArray(questionsData) ? questionsData : [])
+      const list = Array.isArray(questionsData) ? questionsData : (Array.isArray(questionsData?.questions) ? questionsData.questions : [])
+      setQuestions(list)
     } catch (err) {
       console.error('Failed to load MCQ questions', err)
     } finally {
