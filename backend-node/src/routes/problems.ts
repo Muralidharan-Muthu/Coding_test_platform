@@ -4,7 +4,9 @@ import {
   getMcqQuestions,
   getProblemsByLanguage,
   getAllProblems,
-  getProblemById
+  getProblemById,
+  getPythonProblems,
+  getSqlProblems
 } from '../services/problemService';
 
 const router = Router();
@@ -106,8 +108,16 @@ router.get('/problems/mcq', async (req: Request, res: Response) => {
 router.get('/practice/problems', async (req: Request, res: Response) => {
   try {
     const language = req.query.language as string | undefined;
-    const problems = await getAllProblems(language);
-    return res.json(problems);
+    if (language) {
+      const problems = await getAllProblems(language);
+      return res.json(problems);
+    }
+    const [python, sql, mcq] = await Promise.all([
+      getPythonProblems(),
+      getSqlProblems(),
+      getMcqQuestions()
+    ]);
+    return res.json({ python, sql, mcq });
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
   }

@@ -54,6 +54,15 @@ function PythonProblems() {
     }
   }, [navigate])
 
+    useEffect(() => {
+    const handlePenalty = (e) => {
+      const penaltySeconds = e.detail?.penaltySeconds || 60
+      setRemainingTime(prev => Math.max(0, prev - penaltySeconds))
+    }
+    window.addEventListener('exam_time_penalty', handlePenalty)
+    return () => window.removeEventListener('exam_time_penalty', handlePenalty)
+  }, [])
+
   useEffect(() => {
     if (remainingTime > 0) {
       timerRef.current = setInterval(() => {

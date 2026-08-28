@@ -1,101 +1,184 @@
-.exam-proctoring-shell {
+/* ─── Exam Proctoring Shell ─── */
+.eps-shell {
   position: relative;
   min-height: 100vh;
 }
 
-.eps-top-bar {
-  position: fixed;
-  top: 12px;
-  right: 180px;
-  z-index: 9999;
-}
-
+/* ─── Fullscreen Lock Overlay ─── */
 .eps-lock-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.96);
-  backdrop-filter: blur(12px);
-  z-index: 999999;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  backdrop-filter: blur(8px);
 }
 
 .eps-lock-modal {
-  background: #1e293b;
-  border: 1px solid #334155;
-  border-radius: 20px;
-  max-width: 480px;
-  width: 100%;
-  padding: 40px 32px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 36px;
   text-align: center;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  color: #f8fafc;
+  max-width: 380px;
+  width: 90%;
+  color: var(--color-text);
 }
 
-.eps-lock-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+.eps-lock-modal svg { color: var(--color-accent); margin-bottom: 12px; }
+.eps-lock-modal h2 { margin: 0 0 8px; font-size: 20px; font-weight: 800; }
+.eps-lock-modal p { margin: 0 0 20px; font-size: 14px; color: var(--color-text-muted); line-height: 1.5; }
+
+.eps-disqualified svg { color: #ef4444; }
+.eps-disqualified h2 { color: #ef4444; }
+
+.eps-btn-reenter {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.eps-lock-modal h2 {
-  font-size: 22px;
-  font-weight: 700;
-  margin: 0 0 12px 0;
-  color: #ffffff;
-}
-
-.eps-lock-modal p {
-  font-size: 14px;
-  color: #94a3b8;
-  line-height: 1.6;
-  margin: 0 0 20px 0;
-}
-
-.eps-warning-box {
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
   border-radius: 10px;
-  padding: 12px 16px;
-  color: #f59e0b;
-  font-size: 13px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: filter 0.15s ease;
+}
+.eps-btn-reenter:hover { filter: brightness(1.1); }
+
+/* ─── Face Absence Warning ─── */
+.eps-face-warn {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 24px;
-  text-align: left;
+  padding: 10px 20px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.95);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+  animation: slideDown 0.3s ease;
 }
 
-.eps-btn-reenter {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 28px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
+.eps-lives-pill {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* ─── Penalty Toast ─── */
+.eps-penalty-toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.95);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+  animation: slideUp 0.3s ease;
+}
+
+/* ─── Lives HUD ─── */
+.eps-lives-hud {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 800;
+  display: flex;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.eps-heart-active { color: #ef4444; fill: #ef4444; }
+.eps-heart-lost { color: var(--color-border); }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+/* --- Instant Anti-Screenshot Blackout Shield --- */
+.eps-screenshot-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #090d16;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  width: 100%;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+  cursor: pointer;
+  user-select: none;
+  animation: fadeInCurtain 0.05s ease-out;
 }
 
-.eps-btn-reenter:hover {
-  background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
-  transform: translateY(-1px);
+.eps-screenshot-curtain-card {
+  text-align: center;
+  max-width: 480px;
+  width: 90%;
+  padding: 40px 32px;
+  background: #111827;
+  border: 2px solid #ef4444;
+  border-radius: 20px;
+  box-shadow: 0 0 80px rgba(239, 68, 68, 0.35);
+  color: #fff;
+}
+
+.eps-screenshot-curtain-card h2 {
+  font-size: 24px;
+  font-weight: 800;
+  margin: 0 0 12px;
+  color: #f87171;
+  letter-spacing: -0.02em;
+}
+
+.eps-screenshot-curtain-card p {
+  font-size: 15px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0 0 24px;
+}
+
+.eps-curtain-resume-hint {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@keyframes fadeInCurtain {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

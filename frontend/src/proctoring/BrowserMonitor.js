@@ -5,9 +5,11 @@
  * - Tab visibility changes
  * - Window blur/focus
  * - Fullscreen exit
- * - Clipboard operations (copy/cut/paste)
- * - Context menu
- * - Suspicious keyboard shortcuts (DevTools, Alt+Tab)
+ * - Clipboard operations (copy/cut/paste blocked)
+ * - Text selection / Drag & drop blocked
+ * - Context menu blocked
+ * - Screenshot shortcuts (PrintScreen, Snipping tool, Alt+PrtScn, Win+Shift+S, Ctrl+P, Ctrl+S)
+ * - DevTools blocked (F12, Ctrl+Shift+I/J/C)
  */
 
 import { EVENT_SEVERITY_MAP } from './ProctoringConfig'
@@ -32,7 +34,7 @@ export class BrowserMonitor {
    * @param {string} [options.editorSelector] - CSS selector for Monaco editor container
    */
   constructor(options = {}) {
-    this.#editorSelector = options.editorSelector || '.monaco-editor'
+    this.#editorSelector = options.editorSelector || '.monaco-editor, .custom-input-textarea, textarea, input'
   }
 
   /**
@@ -56,23 +58,28 @@ export class BrowserMonitor {
     // Tab visibility
     document.addEventListener('visibilitychange', this.#handleVisibility, { signal })
 
-    // Window focus
+    // Window focus / blur (Anti-Snip shield)
     window.addEventListener('blur', this.#handleWindowBlur, { signal })
     window.addEventListener('focus', this.#handleWindowFocus, { signal })
 
     // Fullscreen
     document.addEventListener('fullscreenchange', this.#handleFullscreen, { signal })
 
-    // Clipboard (capture phase to intercept before editors)
+    // Clipboard (capture phase to intercept before anything else)
     document.addEventListener('copy', this.#handleCopy, { capture: true, signal })
     document.addEventListener('cut', this.#handleCut, { capture: true, signal })
     document.addEventListener('paste', this.#handlePaste, { capture: true, signal })
 
-    // Context menu
+    // Selection & Dragging prevention on question text
+    document.addEventListener('selectstart', this.#handleSelectStart, { capture: true, signal })
+    document.addEventListener('dragstart', this.#handleDragStart, { capture: true, signal })
+
+    // Context menu (right-click)
     document.addEventListener('contextmenu', this.#handleContextMenu, { capture: true, signal })
 
-    // Keyboard shortcuts
+    // Keyboard shortcuts (DevTools, Screenshots, Print)
     document.addEventListener('keydown', this.#handleKeyDown, { capture: true, signal })
+    window.addEventListener('keyup', this.#handleKeyUp, { capture: true, signal })
   }
 
   /**
@@ -81,6 +88,7 @@ export class BrowserMonitor {
   stop() {
     if (!this.#isRunning) return
     this.#isRunning = false
+    document.body.classList.remove('window-blurred')
     if (this.#abortController) {
       this.#abortController.abort()
       this.#abortController = null
@@ -95,7 +103,18 @@ export class BrowserMonitor {
     return this.#isFullscreen
   }
 
-  // ── Private event handlers ──────────────────────────────────────
+  /**
+   * Clear OS clipboard
+   */
+  #clearClipboard() {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText('').catch(() => {})
+      }
+    } catch {}
+  }
+
+  // ─── Private event handlers ──────────────────────────────────────────
 
   /**
    * @param {ProctoringEventType} type
@@ -107,14 +126,13 @@ export class BrowserMonitor {
     this.#onEvent({
       type,
       timestamp: Date.now(),
-      severity: EVENT_SEVERITY_MAP[type] || 'MEDIUM',
+      severity: EVENT_SEVERITY_MAP[type] || 'HIGH',
       metadata: { message, ...metadata },
     })
   }
 
   /**
-   * Check if an event target is inside the Monaco editor.
-   * Clipboard events inside the editor are logged but not prevented.
+   * Check if an event target is inside the Monaco editor or custom input.
    * @param {Event} event
    * @returns {boolean}
    */
@@ -126,16 +144,22 @@ export class BrowserMonitor {
 
   #handleVisibility = () => {
     if (document.hidden) {
+      this.#clearClipboard()
+      document.body.classList.add('window-blurred')
       this.#emit('TAB_SWITCH', 'Tab switch detected. Candidate left the exam tab.')
+    } else {
+      document.body.classList.remove('window-blurred')
     }
   }
 
   #handleWindowBlur = () => {
-    this.#emit('WINDOW_BLUR', 'Window lost focus.')
+    this.#clearClipboard()
+    document.body.classList.add('window-blurred')
+    this.#emit('WINDOW_BLUR', 'Window lost focus. Anti-screenshot shield activated.')
   }
 
   #handleWindowFocus = () => {
-    // Informational only — low severity, tracked but typically not scored
+    document.body.classList.remove('window-blurred')
     this.#emit('WINDOW_FOCUS', 'Window regained focus.')
   }
 
@@ -149,6 +173,24 @@ export class BrowserMonitor {
   }
 
   /**
+   * Block text selection on question areas
+   */
+  #handleSelectStart = (event) => {
+    if (!this.#isInsideEditor(event)) {
+      event.preventDefault()
+    }
+  }
+
+  /**
+   * Block dragging text or images
+   */
+  #handleDragStart = (event) => {
+    if (!this.#isInsideEditor(event)) {
+      event.preventDefault()
+    }
+  }
+
+  /**
    * @param {ClipboardEvent} event
    */
   #handleCopy = (event) => {
@@ -156,8 +198,9 @@ export class BrowserMonitor {
     if (!insideEditor) {
       event.preventDefault()
       event.stopPropagation()
+      this.#clearClipboard()
+      this.#emit('COPY', 'Copy attempt detected on question content.')
     }
-    this.#emit('COPY', 'Copy attempt detected.', { insideEditor })
   }
 
   /**
@@ -168,8 +211,9 @@ export class BrowserMonitor {
     if (!insideEditor) {
       event.preventDefault()
       event.stopPropagation()
+      this.#clearClipboard()
+      this.#emit('CUT', 'Cut attempt detected outside editor.')
     }
-    this.#emit('CUT', 'Cut attempt detected.', { insideEditor })
   }
 
   /**
@@ -180,8 +224,8 @@ export class BrowserMonitor {
     if (!insideEditor) {
       event.preventDefault()
       event.stopPropagation()
+      this.#emit('PASTE', 'Paste attempt detected outside editor.')
     }
-    this.#emit('PASTE', 'Paste attempt detected.', { insideEditor })
   }
 
   /**
@@ -191,8 +235,20 @@ export class BrowserMonitor {
     const insideEditor = this.#isInsideEditor(event)
     if (!insideEditor) {
       event.preventDefault()
+      event.stopPropagation()
+      this.#emit('CONTEXT_MENU', 'Right-click context menu attempt.')
     }
-    this.#emit('CONTEXT_MENU', 'Right-click context menu attempt.', { insideEditor })
+  }
+
+  /**
+   * @param {KeyboardEvent} event
+   */
+  #handleKeyUp = (event) => {
+    // Catch PrintScreen on keyup as well (some browsers fire keyup for PrtScn)
+    if (event.key === 'PrintScreen' || event.keyCode === 44) {
+      this.#clearClipboard()
+      this.#emit('SCREENSHOT_ATTEMPT', 'PrintScreen key detected.')
+    }
   }
 
   /**
@@ -202,34 +258,91 @@ export class BrowserMonitor {
     const key = event.key?.toLowerCase()
     const ctrl = event.ctrlKey || event.metaKey
     const shift = event.shiftKey
+    const alt = event.altKey
 
-    // F12 — DevTools
+    // 1. PrintScreen key (any combination)
+    if (event.key === 'PrintScreen' || event.keyCode === 44 || key === 'printscreen') {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#clearClipboard()
+      this.#emit('SCREENSHOT_ATTEMPT', 'PrintScreen key screenshot attempt.')
+      return
+    }
+
+    // 2. Windows Snipping Tool (Win + Shift + S) or Mac Screenshot (Cmd + Shift + 3/4/5)
+    if ((ctrl || event.metaKey) && shift && (key === 's' || key === '3' || key === '4' || key === '5')) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#clearClipboard()
+      this.#emit('SCREENSHOT_ATTEMPT', 'Snipping tool / Screenshot shortcut detected.')
+      return
+    }
+
+    // 3. Alt + PrintScreen
+    if (alt && (event.key === 'PrintScreen' || event.keyCode === 44)) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#clearClipboard()
+      this.#emit('SCREENSHOT_ATTEMPT', 'Alt+PrintScreen screenshot attempt.')
+      return
+    }
+
+    // 4. Ctrl + P (Print to PDF / Printer)
+    if (ctrl && key === 'p') {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#emit('SCREENSHOT_ATTEMPT', 'Ctrl+P (Print page) attempt detected.')
+      return
+    }
+
+    // 5. Ctrl + S (Save page)
+    if (ctrl && key === 's') {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#emit('SCREENSHOT_ATTEMPT', 'Ctrl+S (Save webpage) attempt detected.')
+      return
+    }
+
+    // 6. F12 — DevTools
     if (event.key === 'F12') {
       event.preventDefault()
+      event.stopPropagation()
       this.#emit('DEVTOOLS_ATTEMPT', 'F12 (DevTools) key detected.')
       return
     }
 
-    // Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C — DevTools
+    // 7. Ctrl+Shift+I / Ctrl+Shift+J / Ctrl+Shift+C — DevTools
     if (ctrl && shift && (key === 'i' || key === 'j' || key === 'c')) {
       event.preventDefault()
+      event.stopPropagation()
       this.#emit('DEVTOOLS_ATTEMPT', `Ctrl+Shift+${key.toUpperCase()} (DevTools) shortcut detected.`)
       return
     }
 
-    // Ctrl+C/X/V outside editor — clipboard shortcuts
+    // 8. Ctrl+U (View Source)
+    if (ctrl && key === 'u') {
+      event.preventDefault()
+      event.stopPropagation()
+      this.#emit('DEVTOOLS_ATTEMPT', 'Ctrl+U (View Source) detected.')
+      return
+    }
+
+    // 9. Ctrl+C/X/A outside editor — clipboard/selection shortcuts
     if (ctrl && !shift && !this.#isInsideEditor(event)) {
       if (key === 'c') {
         event.preventDefault()
-        this.#emit('COPY', 'Ctrl+C detected outside code editor.')
+        event.stopPropagation()
+        this.#clearClipboard()
+        this.#emit('COPY', 'Ctrl+C detected on question text.')
       } else if (key === 'x') {
         event.preventDefault()
-        this.#emit('CUT', 'Ctrl+X detected outside code editor.')
-      } else if (key === 'v') {
+        event.stopPropagation()
+        this.#clearClipboard()
+        this.#emit('CUT', 'Ctrl+X detected on question text.')
+      } else if (key === 'a') {
         event.preventDefault()
-        this.#emit('PASTE', 'Ctrl+V detected outside code editor.')
+        event.stopPropagation()
       }
     }
   }
 }
-

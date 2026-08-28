@@ -6,7 +6,6 @@ import { ToastProvider } from './components/ui/ToastProvider'
 import './index.css'
 import AssessmentDashboard from './pages/AssessmentDashboard'
 import CandidateDashboard from './pages/CandidateDashboard'
-import CandidateVerification from './pages/CandidateVerification'
 import CandidateOTP from './pages/CandidateOTP'
 import ChooseTestTypePage from './pages/ChooseTestTypePage'
 import CodingPage from './pages/CodingPage'
@@ -38,7 +37,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Candidate login — default entry point */}
+        {/* Candidate login ï¿½ default entry point */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
 
@@ -49,13 +48,12 @@ function App() {
         <Route path="/hr" element={<Navigate to="/admin" replace />} />
         <Route path="/hr/*" element={<Navigate to="/admin" replace />} />
 
-        {/* Practice flow — entered from the learning portal, untimed, unproctored */}
+        {/* Practice flow ï¿½ entered from the learning portal, untimed, unproctored */}
         <Route path="/practice" element={<PracticeLogin />} />
         <Route path="/practice/problems" element={<PracticeProblems />} />
 
         {/* Candidate flow */}
         <Route path="/dashboard" element={<CandidateDashboard />} />
-        <Route path="/candidate-verification" element={<CandidateVerification />} />
 
         {/* Active Exam Shell (Proctoring + Camera + Fullscreen Lock permanently armed) */}
         <Route element={<ExamRoutesLayout />}>

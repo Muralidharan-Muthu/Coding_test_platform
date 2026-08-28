@@ -1,132 +1,83 @@
-/**
- * CameraPreview.jsx
- * 
- * Small draggable webcam overlay that shows the candidate's camera feed
- * and proctoring status during an exam.
- */
-
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useProctoring } from './useProctoring'
-
-const DEFAULT_POSITION = { x: 16, y: 16 }
 
 export function CameraPreview() {
   const proctoring = useProctoring()
-  const [position, setPosition] = useState(DEFAULT_POSITION)
-  const dragRef = useRef(null)
   const videoContainerRef = useRef(null)
+  const [pos, setPos] = useState({ x: window.innerWidth - 146, y: window.innerHeight - 126 })
+  const dragRef = useRef(null)
 
-  // Attach video element to container when available
+  // Attach video element
   useEffect(() => {
     const container = videoContainerRef.current
     const video = proctoring?.videoElement
     if (!container || !video) return
 
-    // Style the video element
     video.style.width = '100%'
     video.style.height = '100%'
     video.style.objectFit = 'cover'
     video.style.borderRadius = '8px'
-    video.style.transform = 'scaleX(-1)' // Mirror
+    video.style.transform = 'scaleX(-1)'
 
-    // Only append if not already a child
     if (video.parentElement !== container) {
       container.innerHTML = ''
       container.appendChild(video)
     }
-
-    return () => {
-      // Don't remove video on cleanup — ProctoringEngine owns the element
-    }
   }, [proctoring?.videoElement])
 
-  // Drag handlers
-  const handleMouseDown = useCallback((e) => {
-    const isTouchEvent = 'touches' in e
-    const point = isTouchEvent ? e.touches[0] : e
-    dragRef.current = {
-      startX: point.clientX,
-      startY: point.clientY,
-      originX: position.x,
-      originY: position.y,
-    }
-  }, [position])
+  // Drag
+  const onDown = useCallback((e) => {
+    const pt = 'touches' in e ? e.touches[0] : e
+    dragRef.current = { sx: pt.clientX, sy: pt.clientY, ox: pos.x, oy: pos.y }
+  }, [pos])
 
   useEffect(() => {
-    const handleMove = (e) => {
+    const onMove = (e) => {
       if (!dragRef.current) return
-      const isTouchEvent = 'touches' in e
-      const point = isTouchEvent ? e.touches[0] : e
-      const maxX = Math.max(16, window.innerWidth - 176)
-      const maxY = Math.max(16, window.innerHeight - 136)
-      setPosition({
-        x: Math.min(Math.max(16, dragRef.current.originX + (point.clientX - dragRef.current.startX)), maxX),
-        y: Math.min(Math.max(16, dragRef.current.originY + (point.clientY - dragRef.current.startY)), maxY),
+      const pt = 'touches' in e ? e.touches[0] : e
+      setPos({
+        x: Math.min(Math.max(0, dragRef.current.ox + (pt.clientX - dragRef.current.sx)), window.innerWidth - 130),
+        y: Math.min(Math.max(0, dragRef.current.oy + (pt.clientY - dragRef.current.sy)), window.innerHeight - 110),
       })
     }
-
-    const handleUp = () => { dragRef.current = null }
-
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseup', handleUp)
-    window.addEventListener('touchmove', handleMove, { passive: true })
-    window.addEventListener('touchend', handleUp)
-
+    const onUp = () => { dragRef.current = null }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove, { passive: true })
+    window.addEventListener('touchend', onUp)
     return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseup', handleUp)
-      window.removeEventListener('touchmove', handleMove)
-      window.removeEventListener('touchend', handleUp)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
     }
   }, [])
 
-  if (!proctoring || proctoring.status === 'idle' || proctoring.status === 'stopped') {
-    return null
-  }
+  if (!proctoring || proctoring.status === 'idle' || proctoring.status === 'stopped') return null
 
-  const statusClass = proctoring.status === 'active'
-    ? 'ready'
-    : proctoring.status === 'error'
-      ? 'error'
-      : 'loading'
+  const borderColor = proctoring.faceCount === 1 ? '#10b981' : proctoring.faceCount === 0 ? '#ef4444' : '#f59e0b'
 
   return (
     <div
-      className="proctoring-overlay"
-      aria-live="polite"
-      style={{ left: `${position.x}px`, top: `${position.y}px` }}
+      onMouseDown={onDown}
+      onTouchStart={onDown}
+      style={{
+        position: 'fixed',
+        left: pos.x + 'px',
+        top: pos.y + 'px',
+        width: '120px',
+        height: '90px',
+        zIndex: 850,
+        borderRadius: '10px',
+        border: '2px solid ' + borderColor,
+        overflow: 'hidden',
+        cursor: 'grab',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+        background: '#000',
+        transition: 'border-color 0.3s ease',
+      }}
     >
-      {/* Status HUD */}
-      <div className="proctoring-hud">
-        <span className={`proctoring-dot ${statusClass}`} aria-hidden="true" />
-        <span className="proctoring-text">
-          {proctoring.status === 'active' ? 'Proctoring active' :
-           proctoring.status === 'initializing' ? 'Proctoring starting...' :
-           proctoring.status === 'error' ? 'Proctoring error' : 'Proctoring'}
-        </span>
-      </div>
-
-      {/* Camera Error */}
-      {proctoring.cameraError && (
-        <div className="proctoring-status-error" role="status">
-          {proctoring.cameraError}
-        </div>
-      )}
-
-      {/* Camera Preview */}
-      <div className="webcam-preview" aria-label="Candidate webcam feed">
-        <div
-          className="webcam-drag-handle"
-          onMouseDown={handleMouseDown}
-          onTouchStart={handleMouseDown}
-          role="button"
-          tabIndex={0}
-          aria-label="Move camera preview"
-        >
-          Move Camera
-        </div>
-        <div ref={videoContainerRef} className="webcam-video-container" />
-      </div>
+      <div ref={videoContainerRef} style={{ width: '100%', height: '100%' }} />
     </div>
   )
 }

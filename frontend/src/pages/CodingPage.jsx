@@ -9,7 +9,7 @@ import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSqu
 import { FaLightbulb } from 'react-icons/fa'
 import { ProctoringProvider } from '../components/Proctoring/ProctoringProvider'
 import { useProctoring } from '../components/Proctoring/useProctoring'
-import { CameraPreview } from '../components/Proctoring/CameraPreview'
+
 import { ProctoringStatus } from '../components/Proctoring/ProctoringStatus'
 import './CodingPage.css'
 
@@ -825,7 +825,7 @@ function CodingPage() {
         )}
 
         {/* Modular Camera Preview Overlay */}
-        <CameraPreview />
+        
 
       {/* ═══ Main Content ═══ */}
       {showExamGate ? (
@@ -854,7 +854,14 @@ function CodingPage() {
       ) : showExamWorkspace ? (
         <div className="main-split">
           {/* ═══ Left Panel — Description ═══ */}
-          <div className="left-panel" style={{ width: `${leftWidth}%` }}>
+          <div 
+  className="left-panel" 
+  style={{ width: `${leftWidth}%` }}
+  onCopy={(e) => { e.preventDefault(); e.stopPropagation(); }}
+  onCut={(e) => { e.preventDefault(); e.stopPropagation(); }}
+  onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); }}
+  onDragStart={(e) => e.preventDefault()}
+>
             <div className="left-panel-tabs">
               <button className="left-tab active">
                 <span className="tab-icon-svg"><FiFileText /></span> Description

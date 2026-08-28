@@ -1,30 +1,32 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Webcam from 'react-webcam'
 import { getExamStatus, getExamSummary } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession } from '../utils/sessionStorage'
+import { FiCamera, FiShield, FiMonitor, FiAlertTriangle, FiClock, FiRefreshCw } from 'react-icons/fi'
 import './CandidateDashboard.css'
+
+const webcamConstraints = { facingMode: 'user' }
 
 function CandidateDashboard() {
   const navigate = useNavigate()
+  const webcamRef = useRef(null)
   const [userName, setUserName] = useState('')
   const [examSummary, setExamSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [examStarted, setExamStarted] = useState(false)
   const [startingExam, setStartingExam] = useState(false)
   const [actionError, setActionError] = useState('')
+  const [capturedImage, setCapturedImage] = useState('')
+  const [cameraError, setCameraError] = useState('')
 
   useEffect(() => {
     const name = localStorage.getItem('user_name')
     const sessionId = localStorage.getItem('session_id')
-
-    if (!name || !sessionId) {
-      navigate('/')
-      return
-    }
-
+    if (!name || !sessionId) { navigate('/'); return }
     setUserName(name)
     loadExamData()
   }, [navigate])
@@ -34,13 +36,9 @@ function CandidateDashboard() {
       const sessionId = localStorage.getItem('session_id') || ''
       const summary = await getExamSummary(sessionId)
       setExamSummary(summary)
-
-      // Check if exam already started
       const status = await getExamStatus(sessionId)
-      
       if (status.status === 'active') {
         setExamStarted(true)
-        // Store remaining time
         localStorage.setItem('exam_remaining', status.remaining_seconds)
         localStorage.setItem('exam_start_time', status.start_time)
       } else if (status.status === 'completed') {
@@ -53,198 +51,200 @@ function CandidateDashboard() {
     }
   }
 
-  const handleStartExam = async () => {
+  const handleCapture = () => {
+    const image = webcamRef.current?.getScreenshot()
+    if (!image) {
+      setCameraError('Camera capture failed. Allow camera access and try again.')
+      return
+    }
+    setCameraError('')
+    setCapturedImage(image)
+    localStorage.setItem('candidate_photo_verified', 'true')
+  }
+
+  const handleRetake = () => {
+    setCapturedImage('')
+    setCameraError('')
+    localStorage.removeItem('candidate_photo_verified')
+  }
+
+  const handleStartExam = () => {
     setStartingExam(true)
     setActionError('')
     try {
-      localStorage.removeItem('exam_secure_mode_started')
       if (!localStorage.getItem('exam_answers')) {
         localStorage.setItem('exam_answers', JSON.stringify({}))
       }
-      navigate('/candidate-verification')
+      navigate('/test-structure')
     } catch (err) {
-      console.error('Failed to open exam flow', err)
-      setActionError('Unable to open the test flow. Please try again.')
+      setActionError('Unable to start. Please try again.')
     } finally {
       setStartingExam(false)
     }
   }
 
-  const handleContinueExam = () => {
-    navigate('/candidate-verification')
-  }
+  const handleContinueExam = () => navigate('/test-structure')
+  const handleLogout = () => { clearCandidateSession(); navigate('/') }
 
-  const handleLogout = () => {
-    clearCandidateSession()
-    navigate('/')
-  }
-
-  const getDifficultyColor = (difficulty) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy': return '#4caf50'
-      case 'medium': return '#ff9800'
-      case 'hard': return '#f44336'
-      default: return '#9e9e9e'
+  const getDifficultyColor = (d) => {
+    switch (d?.toLowerCase()) {
+      case 'easy': return '#10b981'
+      case 'medium': return '#f59e0b'
+      case 'hard': return '#ef4444'
+      default: return '#6b7280'
     }
   }
 
-  const renderLanguageBadge = (language) => {
-    if (language === 'python') {
-      return <span className="lang-badge python"><PythonIcon size={14} /> Python</span>
-    }
-    if (language === 'sql') {
-      return <span className="lang-badge sql"><DatabaseIcon size={14} /> SQL</span>
-    }
-    return <span className="lang-badge mcq"><ChecklistIcon size={14} /> MCQ</span>
+  const renderLangBadge = (lang) => {
+    if (lang === 'python') return <span className="cd-lang python"><PythonIcon size={12} /> Python</span>
+    if (lang === 'sql') return <span className="cd-lang sql"><DatabaseIcon size={12} /> SQL</span>
+    return <span className="cd-lang mcq"><ChecklistIcon size={12} /> MCQ</span>
   }
 
-  if (loading) {
-    return <Spinner label="Loading exam details…" size={40} fullPage />
-  }
+  if (loading) return <Spinner label="Loading..." size={40} fullPage />
+
+  const photoReady = !!capturedImage || examStarted
 
   return (
-    <div className="dashboard-page">
-      <header className="header">
-        <div className="header-logo">
-          <PlatformLogoSmall onClick={() => navigate('/dashboard')} />
-        </div>
-        <div className="header-right">
+    <div className="cd-page">
+      <header className="cd-header">
+        <PlatformLogoSmall />
+        <div className="cd-header-right">
           <ThemeToggle />
-          <div className="user-info">
-            <div className="user-avatar" aria-hidden="true">{userName.charAt(0).toUpperCase()}</div>
-            <span className="user-name-text">{userName}</span>
-            <button onClick={handleLogout} className="btn-logout">Logout</button>
+          <div className="cd-user">
+            <div className="cd-avatar">{userName.charAt(0).toUpperCase()}</div>
+            <span>{userName}</span>
           </div>
+          <button onClick={handleLogout} className="cd-btn-logout">Logout</button>
         </div>
       </header>
 
-      <div className="dashboard-content">
-        <div className="welcome-section">
-          <h2>Welcome, {userName}!</h2>
-          <p className="welcome-subtitle">You are about to begin your coding assessment</p>
-        </div>
-
-        <div className="instructions-card">
-          <h3>Assessment Instructions</h3>
-          
-          <div className="instruction-grid">
-            <div className="instruction-item">
-              <span className="instruction-icon" aria-hidden="true"><ClockIcon size={24} /></span>
+      <div className="cd-body">
+        <div className="cd-main">
+          {/* Stats Row */}
+          <div className="cd-stats">
+            <div className="cd-stat">
+              <ClockIcon size={18} />
               <div>
-                <strong>Total Duration</strong>
-                <p>2 Hours 30 Minutes</p>
+                <span className="cd-stat-val">150 min</span>
+                <span className="cd-stat-lbl">Duration</span>
               </div>
             </div>
-            
-            <div className="instruction-item">
-              <span className="instruction-icon" aria-hidden="true"><ChecklistIcon size={24} /></span>
+            <div className="cd-stat">
+              <ChecklistIcon size={18} />
               <div>
-                <strong>Total Questions</strong>
-                <p>{examSummary?.total_questions || 0} Questions</p>
+                <span className="cd-stat-val">{examSummary?.total_questions || 0}</span>
+                <span className="cd-stat-lbl">Questions</span>
               </div>
             </div>
-            
-            <div className="instruction-item">
-              <span className="instruction-icon" aria-hidden="true"><PythonIcon size={24} /></span>
+            <div className="cd-stat">
+              <PythonIcon size={18} />
               <div>
-                <strong>Python Problems</strong>
-                <p>{examSummary?.python_questions || 0} Questions</p>
+                <span className="cd-stat-val">{examSummary?.python_questions || 0}</span>
+                <span className="cd-stat-lbl">Python</span>
               </div>
             </div>
-            
-            <div className="instruction-item">
-              <span className="instruction-icon" aria-hidden="true"><DatabaseIcon size={24} /></span>
+            <div className="cd-stat">
+              <DatabaseIcon size={18} />
               <div>
-                <strong>SQL Problems</strong>
-                <p>{examSummary?.sql_questions || 0} Questions</p>
+                <span className="cd-stat-val">{examSummary?.sql_questions || 0}</span>
+                <span className="cd-stat-lbl">SQL</span>
               </div>
             </div>
-
-            <div className="instruction-item">
-              <span className="instruction-icon" aria-hidden="true"><ChecklistIcon size={24} /></span>
+            <div className="cd-stat">
+              <ChecklistIcon size={18} />
               <div>
-                <strong>MCQ Questions</strong>
-                <p>{examSummary?.mcq_questions || 0} Questions</p>
+                <span className="cd-stat-val">{examSummary?.mcq_questions || 0}</span>
+                <span className="cd-stat-lbl">MCQ</span>
               </div>
             </div>
           </div>
 
-          <div className="rules-section">
-            <h4>Important Rules</h4>
-            <ul>
-              <li>Timer cannot be paused once the test starts</li>
-              <li>Auto submission will occur when time expires</li>
-              <li>You can manually submit anytime before time runs out</li>
-              <li>Navigate freely between problems during the test</li>
-              <li>Your progress is auto-saved while you type</li>
-            </ul>
+          {/* Rules */}
+          <div className="cd-rules">
+            <h4>Exam Rules</h4>
+            <div className="cd-rule"><FiCamera size={16} /><span><b>Camera:</b> Stay visible. 5s absence = lose 1 of 3 lives.</span></div>
+            <div className="cd-rule"><FiMonitor size={16} /><span><b>Fullscreen:</b> Must stay in fullscreen throughout the test.</span></div>
+            <div className="cd-rule"><FiAlertTriangle size={16} /><span><b>Shortcuts:</b> PrintScreen, DevTools, Alt+Tab = 60s penalty each.</span></div>
+            <div className="cd-rule"><FiClock size={16} /><span><b>Auto-submit:</b> Timer runs out or 0 lives = exam submitted.</span></div>
           </div>
 
-          <div className="difficulty-legend">
-            <h4>Difficulty Levels</h4>
-            <div className="legend-items">
-              <span className="legend-item"><span className="dot easy" aria-hidden="true"></span> Easy — 10 marks</span>
-              <span className="legend-item"><span className="dot medium" aria-hidden="true"></span> Medium — 20 marks</span>
-              <span className="legend-item"><span className="dot hard" aria-hidden="true"></span> Hard — 40 marks</span>
+          {/* Questions Table */}
+          {examSummary?.problems?.length > 0 && (
+            <div className="cd-table-wrap">
+              <h4>Questions</h4>
+              <table className="cd-table">
+                <thead>
+                  <tr><th>Title</th><th>Type</th><th>Level</th><th>Marks</th></tr>
+                </thead>
+                <tbody>
+                  {examSummary.problems.map((p) => (
+                    <tr key={p.id}>
+                      <td>{p.title}</td>
+                      <td>{renderLangBadge(p.language)}</td>
+                      <td><span className="cd-diff" style={{ background: getDifficultyColor(p.difficulty) }}>{p.difficulty}</span></td>
+                      <td>{p.marks}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </div>
-
-        <div className="problems-overview">
-          <h3>Questions Overview</h3>
-          <div className="problems-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Question</th>
-                  <th>Language</th>
-                  <th>Difficulty</th>
-                  <th>Marks</th>
-                  <th>Est. Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {examSummary?.problems?.map((problem, index) => (
-                  <tr key={problem.id}>
-                    <td>{problem.title}</td>
-                    <td>{renderLanguageBadge(problem.language)}</td>
-                    <td>
-                      <span 
-                        className="difficulty-badge"
-                        style={{ backgroundColor: getDifficultyColor(problem.difficulty) }}
-                      >
-                        {problem.difficulty}
-                      </span>
-                    </td>
-                    <td>{problem.marks}</td>
-                    <td>{problem.time_limit} mins</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan="3"><strong>Total</strong></td>
-                  <td><strong>{examSummary?.total_marks || 0}</strong></td>
-                  <td><strong>150 mins</strong></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        <div className="action-section">
-          {examStarted ? (
-            <button onClick={handleContinueExam} className="btn-take-test continue" disabled={startingExam}>
-              {startingExam ? 'Opening Test...' : 'Continue Test'}
-            </button>
-          ) : (
-            <button onClick={handleStartExam} className="btn-take-test" disabled={startingExam}>
-              {startingExam ? 'Opening Test...' : 'Take Test'}
-            </button>
           )}
-          {actionError && (
-            <div className="exam-action-error" role="alert">{actionError}</div>
-          )}
+        </div>
+
+        {/* Right Panel — Photo Capture */}
+        <div className="cd-side">
+          <div className="cd-photo-card">
+            <h4><FiShield size={16} /> Identity Verification</h4>
+            <p className="cd-photo-hint">Capture your photo before starting the exam.</p>
+
+            <div className="cd-cam-stage">
+              {capturedImage ? (
+                <img src={capturedImage} alt="Captured" className="cd-cam-img" />
+              ) : (
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  mirrored
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={webcamConstraints}
+                  className="cd-cam-feed"
+                  onUserMediaError={() => setCameraError('Camera access denied. Allow permission and reload.')}
+                />
+              )}
+            </div>
+
+            {cameraError && <div className="cd-cam-error">{cameraError}</div>}
+
+            <div className="cd-cam-actions">
+              {capturedImage ? (
+                <button className="cd-btn-retake" onClick={handleRetake}><FiRefreshCw size={14} /> Retake</button>
+              ) : (
+                <button className="cd-btn-capture" onClick={handleCapture}><FiCamera size={14} /> Capture Photo</button>
+              )}
+            </div>
+          </div>
+
+          {/* Start Button */}
+          <div className="cd-action">
+            {examStarted ? (
+              <button onClick={handleContinueExam} className="cd-btn-start" disabled={startingExam}>
+                {startingExam ? 'Opening...' : 'Resume Test'}
+              </button>
+            ) : (
+              <button
+                onClick={handleStartExam}
+                className="cd-btn-start"
+                disabled={!photoReady || startingExam}
+              >
+                {startingExam ? 'Starting...' : 'Start Test'}
+              </button>
+            )}
+            {!photoReady && !examStarted && (
+              <p className="cd-action-hint">Capture your photo to enable</p>
+            )}
+            {actionError && <div className="cd-action-error">{actionError}</div>}
+          </div>
         </div>
       </div>
     </div>

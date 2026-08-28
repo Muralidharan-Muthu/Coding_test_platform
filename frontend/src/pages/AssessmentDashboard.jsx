@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import CodeReviewModal from '../components/assessment/CodeReviewModal'
 import ColorLegend from '../components/assessment/ColorLegend'
@@ -12,10 +12,17 @@ import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/ToastProvider'
 import { exportAssessmentResults, getProctoringReports } from '../services/assessmentApi'
-import { FiBarChart2, FiX } from 'react-icons/fi'
+import { FiBarChart2, FiX, FiFileText, FiShield, FiTrendingUp, FiCheckSquare, FiLayers } from 'react-icons/fi'
 import './AssessmentDashboard.css'
 
-/* ─── Nav Items (matches AdminDashboard) ─── */
+/* â”€â”€â”€ Nav Items (matches AdminDashboard) â”€â”€â”€ */
+const TABLE_TABS = [
+  { id: 'summary', label: 'Test Summary', icon: FiFileText },
+  { id: 'proctoring', label: 'Trust & Proctoring', icon: FiShield },
+  { id: 'difficulty', label: 'Difficulty Breakdown', icon: FiTrendingUp },
+  { id: 'problems', label: 'Problem-wise Performance', icon: FiCheckSquare },
+]
+
 const NAV_ITEMS = [
   {
     label: 'Assessment Dashboard',
@@ -227,6 +234,7 @@ function AssessmentDashboard() {
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
   const [adminName, setAdminName] = useState('')
+  const [activeTableTab, setActiveTableTab] = useState('summary')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedLogs, setSelectedLogs] = useState([])
   const [selectedCandidateName, setSelectedCandidateName] = useState('')
@@ -351,7 +359,7 @@ function AssessmentDashboard() {
       onLogout={handleLogout}
     >
 
-      {/* ── Filter Bar ── */}
+      {/* â”€â”€ Filter Bar â”€â”€ */}
       <FilterBar
         filters={filters}
         setFilters={setFilters}
@@ -363,16 +371,13 @@ function AssessmentDashboard() {
         totalCount={totalCount}
       />
 
-      {/* ── Page Content ── */}
+      {/* â”€â”€ Page Content â”€â”€ */}
       <main className="asd-content">
 
         {/* Page Heading */}
-        <div className="asd-page-heading">
-          <h2>Assessment Results</h2>
-        </div>
 
         {loading ? (
-          <Spinner label="Loading assessment data…" size={44} />
+          <Spinner label="Loading assessment dataâ€¦" size={44} />
         ) : results.length === 0 ? (
           <div className="asd-empty">
             <div className="asd-empty-icon" aria-hidden="true"><FiBarChart2 /></div>
@@ -384,44 +389,77 @@ function AssessmentDashboard() {
             <StatCards stats={stats} />
             <ColorLegend />
 
-            <div className="asd-table-card">
-              <div className="asd-table-header">
-                <h3>Test Summary</h3>
-                <span className="asd-table-tag">candidate_test_summary</span>
-              </div>
-              <TestSummaryTable data={results} onViewCode={handleOpenCodeReview} />
+            {/* Table Switching Navigation Bar */}
+            <div className="asd-table-nav-bar" role="tablist" aria-label="Assessment Table Sections">
+              {TABLE_TABS.map((tab) => {
+                const Icon = tab.icon
+                const isActive = activeTableTab === tab.id
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    className={`asd-table-nav-item ${isActive ? "active" : ""}`}
+                    onClick={() => setActiveTableTab(tab.id)}
+                  >
+                    <Icon className="asd-table-nav-icon" />
+                    <span>{tab.label}</span>
+                  </button>
+                )
+              })}
             </div>
 
-            <div className="asd-table-card">
-              <div className="asd-table-header">
-                <h3>Trust & Proctoring</h3>
-                <span className="asd-table-tag">candidate_proctoring_logs</span>
-              </div>
-              <TrustProctoringTable data={results} onViewLogs={handleOpenLogs} />
-            </div>
-
-            <div className="asd-table-card">
-              <div className="asd-table-header">
-                <div className="asd-title-row">
-                  <h3>Difficulty Breakdown</h3>
-                  <div className="asd-diff-badges">
-                    <span className="asd-diff-badge asd-diff-easy">Easy 4 Qs</span>
-                    <span className="asd-diff-badge asd-diff-medium">Medium 4 Qs</span>
-                    <span className="asd-diff-badge asd-diff-hard">Hard 2 Qs</span>
-                  </div>
+            {/* 1. Test Summary */}
+            {(activeTableTab === "summary") && (
+              <div id="test-summary" className="asd-table-card">
+                <div className="asd-table-header">
+                  <h3>Test Summary</h3>
+                  <span className="asd-table-tag">candidate_test_summary</span>
                 </div>
-                <span className="asd-table-tag">candidate_problem_testcases</span>
+                <TestSummaryTable data={results} onViewCode={handleOpenCodeReview} />
               </div>
-              <DifficultyTable data={results} />
-            </div>
+            )}
 
-            <div className="asd-table-card">
-              <div className="asd-table-header">
-                <h3>Problem-wise Performance</h3>
-                <span className="asd-table-tag">candidate_problem_testcase_details</span>
+            {/* 2. Trust & Proctoring */}
+            {(activeTableTab === "proctoring") && (
+              <div id="trust-proctoring" className="asd-table-card">
+                <div className="asd-table-header">
+                  <h3>Trust & Proctoring</h3>
+                  <span className="asd-table-tag">candidate_proctoring_logs</span>
+                </div>
+                <TrustProctoringTable data={results} onViewLogs={handleOpenLogs} />
               </div>
-              <ProblemDetailTable data={results} />
-            </div>
+            )}
+
+            {/* 3. Difficulty Breakdown */}
+            {(activeTableTab === "difficulty") && (
+              <div id="difficulty-breakdown" className="asd-table-card">
+                <div className="asd-table-header">
+                  <div className="asd-title-row">
+                    <h3>Difficulty Breakdown</h3>
+                    <div className="asd-diff-badges">
+                      <span className="asd-diff-badge asd-diff-easy">Easy 4 Qs</span>
+                      <span className="asd-diff-badge asd-diff-medium">Medium 4 Qs</span>
+                      <span className="asd-diff-badge asd-diff-hard">Hard 2 Qs</span>
+                    </div>
+                  </div>
+                  <span className="asd-table-tag">candidate_problem_testcases</span>
+                </div>
+                <DifficultyTable data={results} />
+              </div>
+            )}
+
+            {/* 4. Problem-wise Performance */}
+            {(activeTableTab === "problems") && (
+              <div id="problem-performance" className="asd-table-card">
+                <div className="asd-table-header">
+                  <h3>Problem-wise Performance</h3>
+                  <span className="asd-table-tag">candidate_problem_testcase_details</span>
+                </div>
+                <ProblemDetailTable data={results} />
+              </div>
+            )}
           </>
         )}
       </main>

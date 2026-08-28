@@ -1,40 +1,28 @@
-/* ─── Color Legend ─── */
+/* ─── Compact Color Legend ─── */
 .color-legend {
   background: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: 8px;
   border: 1px solid var(--color-border);
-  padding: 18px 24px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-sm);
-  transition: background var(--transition-theme), border-color var(--transition-theme);
-}
-
-.legend-title {
-  margin: 0 0 14px 0;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text);
+  padding: 8px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: color var(--transition-theme);
-}
-
-.legend-title::before {
-  content: '🎨';
-  font-size: 16px;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .legend-sections {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 28px;
+  gap: 18px;
 }
 
 .legend-section {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
 }
 
 .section-label {
@@ -42,39 +30,39 @@
   font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  transition: color var(--transition-theme);
+  letter-spacing: 0.4px;
+  white-space: nowrap;
 }
 
 .legend-items {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 4px;
 }
 
 .legend-text {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--color-text-muted);
-  transition: color var(--transition-theme);
 }
 
 /* Score Chips */
 .legend-chip {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 11px;
   color: #ffffff;
 }
 
@@ -86,11 +74,11 @@
 
 /* Column Bars */
 .legend-bar {
-  width: 34px;
-  height: 18px;
-  border-radius: var(--radius-xs);
+  width: 18px;
+  height: 12px;
+  border-radius: 3px;
   display: inline-block;
-  border: 1.5px solid;
+  border: 1px solid;
 }
 
 .bar-python  { background: var(--color-secondary-light); border-color: var(--color-secondary); }

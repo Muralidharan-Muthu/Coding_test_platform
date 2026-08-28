@@ -3,11 +3,10 @@ import './ColorLegend.css'
 function ColorLegend() {
   return (
     <div className="color-legend">
-      <h3 className="legend-title">Color Guide</h3>
       <div className="legend-sections">
         {/* Score Legend */}
         <div className="legend-section">
-          <span className="section-label">Problem Scores:</span>
+          <span className="section-label">Scores:</span>
           <div className="legend-items">
             <div className="legend-item">
               <span className="legend-chip chip-5">5</span>
@@ -19,7 +18,7 @@ function ColorLegend() {
             </div>
             <div className="legend-item">
               <span className="legend-chip chip-3">3</span>
-              <span className="legend-text">Average</span>
+              <span className="legend-text">Avg</span>
             </div>
             <div className="legend-item">
               <span className="legend-chip chip-2">2</span>
@@ -46,7 +45,7 @@ function ColorLegend() {
             </div>
             <div className="legend-item">
               <span className="legend-bar bar-total"></span>
-              <span className="legend-text">Overall/Total</span>
+              <span className="legend-text">Total</span>
             </div>
           </div>
         </div>

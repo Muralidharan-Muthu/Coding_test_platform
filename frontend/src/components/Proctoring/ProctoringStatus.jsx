@@ -1,73 +1,51 @@
-/**
- * ProctoringStatus.jsx
- * 
- * Top-bar proctoring indicator showing:
- * - Recording dot
- * - Camera status
- * - Face detection status
- * - Fullscreen status
- */
-
-import { FiAlertTriangle, FiCamera, FiCheck, FiMaximize2, FiMinus, FiSquare, FiVideoOff } from 'react-icons/fi'
+import { FiCamera, FiCheck, FiAlertTriangle, FiVideoOff } from 'react-icons/fi'
 import { useProctoring } from './useProctoring'
 
 export function ProctoringStatus() {
   const proctoring = useProctoring()
-
-  if (!proctoring || proctoring.status === 'idle' || proctoring.status === 'stopped') {
-    return null
-  }
+  if (!proctoring || proctoring.status === 'idle' || proctoring.status === 'stopped') return null
 
   const isActive = proctoring.status === 'active'
-  const isError = proctoring.status === 'error'
   const faceOk = proctoring.faceCount === 1
-  const faceWarning = proctoring.faceCount === 0
-  const faceMultiple = proctoring.faceCount > 1
 
   return (
-    <div className="proctoring-status-bar" role="status" aria-live="polite">
-      {/* Recording indicator */}
-      <div className="proctoring-status-item">
-        <span
-          className={`proctoring-status-dot ${isActive ? 'active' : isError ? 'error' : 'loading'}`}
-          aria-hidden="true"
-        />
-        <span className="proctoring-status-label">
-          {isActive ? 'Proctoring Active' : isError ? 'Proctoring Error' : 'Starting...'}
-        </span>
-      </div>
-
-      {/* Camera */}
-      <div className="proctoring-status-item">
-        <span className="proctoring-status-icon">
-          {proctoring.cameraEnabled ? <FiCamera /> : <FiVideoOff />}
-        </span>
-        <span className="proctoring-status-label">
-          Camera: {proctoring.cameraEnabled ? 'OK' : 'Off'}
-        </span>
-      </div>
-
-      {/* Face */}
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 850,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '4px 14px',
+      borderRadius: '0 0 10px 10px',
+      background: 'var(--color-surface)',
+      border: '1px solid var(--color-border)',
+      borderTop: 'none',
+      fontSize: '11px',
+      fontWeight: 600,
+      color: 'var(--color-text-muted)',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span style={{
+          width: '6px', height: '6px', borderRadius: '50%',
+          background: isActive ? '#10b981' : '#f59e0b',
+          boxShadow: isActive ? '0 0 6px #10b981' : 'none',
+        }} />
+        {isActive ? 'Proctoring' : 'Starting...'}
+      </span>
+      <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+        {proctoring.cameraEnabled ? <FiCamera size={11} /> : <FiVideoOff size={11} />}
+        {proctoring.cameraEnabled ? 'Cam OK' : 'Cam Off'}
+      </span>
       {isActive && (
-        <div className="proctoring-status-item">
-          <span className="proctoring-status-icon">
-            {faceOk ? <FiCheck /> : faceWarning ? <FiAlertTriangle /> : faceMultiple ? <FiAlertTriangle /> : <FiMinus />}
-          </span>
-          <span className={`proctoring-status-label ${faceOk ? 'ok' : 'warn'}`}>
-            Face: {faceOk ? 'Detected' : faceWarning ? 'Not Found' : `${proctoring.faceCount} Detected`}
-          </span>
-        </div>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: faceOk ? '#10b981' : '#ef4444' }}>
+          {faceOk ? <FiCheck size={11} /> : <FiAlertTriangle size={11} />}
+          {faceOk ? 'Face OK' : 'No Face'}
+        </span>
       )}
-
-      {/* Fullscreen */}
-      <div className="proctoring-status-item">
-        <span className="proctoring-status-icon">
-          {proctoring.isFullscreen ? <FiMaximize2 /> : <FiSquare />}
-        </span>
-        <span className="proctoring-status-label">
-          Fullscreen: {proctoring.isFullscreen ? 'Active' : 'Inactive'}
-        </span>
-      </div>
     </div>
   )
 }

@@ -135,3 +135,113 @@
     display: none;
   }
 }
+
+/* --- Interactive MCQ Practice Styling --- */
+.practice-mcq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.practice-mcq-card {
+  transition: all 0.2s ease;
+  border-left: 4px solid transparent;
+}
+
+.practice-mcq-card.practice-correct {
+  border-left-color: #10b981;
+}
+
+.practice-mcq-card.practice-incorrect {
+  border-left-color: #ef4444;
+}
+
+.practice-result-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.practice-result-badge.correct {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.practice-result-badge.incorrect {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.mcq-option-button.practice-opt-correct {
+  background: rgba(16, 185, 129, 0.18) !important;
+  border-color: #10b981 !important;
+  color: #10b981 !important;
+}
+
+.mcq-option-button.practice-opt-correct .mcq-option-label {
+  background: #10b981 !important;
+  color: #ffffff !important;
+}
+
+.mcq-option-button.practice-opt-wrong {
+  background: rgba(239, 68, 68, 0.18) !important;
+  border-color: #ef4444 !important;
+  color: #ef4444 !important;
+}
+
+.mcq-option-button.practice-opt-wrong .mcq-option-label {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+}
+
+.practice-explanation-box {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text);
+  animation: fadeIn 0.25s ease;
+}
+
+.practice-explanation-box strong {
+  color: var(--color-accent);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.practice-empty-card {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 36px 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-align: center;
+}
+
+.practice-empty-card h3 {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.practice-empty-card p {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

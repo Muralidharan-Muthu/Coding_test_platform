@@ -340,3 +340,26 @@
     min-width: auto;
   }
 }
+
+/* --- Anti-Copy & Anti-Selection on Question Cards --- */
+.problem-item,
+.problem-info,
+.mcq-question-card,
+.mcq-question-main,
+.mcq-question-text,
+.mcq-option-button,
+.mcq-option-text {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.window-blurred .section-problems-page {
+  filter: blur(20px) !important;
+  opacity: 0.1 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}

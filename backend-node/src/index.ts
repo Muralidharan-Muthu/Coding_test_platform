@@ -9,6 +9,7 @@ import assessmentRoutes from './routes/assessment';
 import reportsRoutes from './routes/reports';
 import candidatesRoutes from './routes/candidates';
 import examRoutes from './routes/exam';
+import runnerRoutes from './routes/runner';
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use('/api/reports/proctoring', reportsRoutes);
 app.use('/api/candidates', candidatesRoutes);
 app.use('/exam', examRoutes);
 app.use('/', problemsRoutes);
+app.use('/', runnerRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', framework: 'Node.js/Express' });

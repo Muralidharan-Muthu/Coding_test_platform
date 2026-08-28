@@ -1270,3 +1270,59 @@
   font-size: 13px;
   font-style: italic;
 }
+
+/* --- STRICT ANTI-COPY & ANTI-SCREENSHOT PROTECTIONS --- */
+.left-panel,
+.left-panel-content,
+.left-panel-tabs,
+.problem-statement,
+.problem-statement *,
+.problem-title-section,
+.problem-title-section *,
+.sql-input-format,
+.sql-input-format *,
+.format-text,
+.sample-block,
+.sample-block *,
+.sql-schema-container,
+.table-schema-wrapper,
+.table-schema-wrapper *,
+.sql-table-schema,
+.sql-table-schema *,
+.toolbar-header,
+.testcase-tab,
+.testcase-input-block label {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Anti-Screenshot / Anti-Snip Window Blur Shield */
+.window-blurred .left-panel {
+  filter: blur(22px) !important;
+  opacity: 0.08 !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+.window-blurred .main-split::after {
+  content: '?? SCREEN CAPTURE SHIELD: Exam content is hidden while out-of-focus. Click into the window to resume.';
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  transform: translate(-50%, -50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
+  color: #f87171;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  z-index: 500;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
