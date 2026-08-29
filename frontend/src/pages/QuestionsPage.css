@@ -1,4 +1,4 @@
-.questions-page {
+﻿.questions-page {
   min-height: 100vh;
   background-color: var(--color-bg);
   color: var(--color-text);
@@ -917,3 +917,345 @@
 [data-theme="dark"] .btn-copy-json { background-color: var(--color-surface-2); color: var(--color-text); }
 [data-theme="dark"] .btn-copy-json:hover { background-color: var(--color-border); }
 [data-theme="dark"] .paste-section label { color: var(--color-text); }
+
+/* ─── Language Tab Bar (content area) ─── */
+.qp-lang-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+  padding: 4px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.qp-lang-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.qp-lang-tab:hover {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}
+
+.qp-lang-tab.active {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+  box-shadow: 0 2px 8px rgba(255,161,22,0.3);
+}
+
+.qp-lang-tab--add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-left: auto;
+  border-style: dashed;
+  border-color: var(--color-border);
+}
+
+.qp-lang-tab--add:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(255,161,22,0.08);
+}
+
+/* ─── Difficulty Tab Nav ─── */
+.qp-diff-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.qp-diff-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.qp-diff-tab:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface-2);
+}
+
+.qp-diff-label { font-size: 13px; font-weight: 600; }
+
+.qp-diff-count {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  transition: all 0.15s ease;
+  min-width: 20px;
+  text-align: center;
+}
+
+.qp-diff-tab.active.qp-diff-easy {
+  color: var(--color-success);
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+}
+.qp-diff-tab.active.qp-diff-easy .qp-diff-count {
+  background: var(--color-success);
+  color: #fff;
+  border-color: var(--color-success);
+}
+
+.qp-diff-tab.active.qp-diff-medium {
+  color: var(--color-warning);
+  border-color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+.qp-diff-tab.active.qp-diff-medium .qp-diff-count {
+  background: var(--color-warning);
+  color: #fff;
+  border-color: var(--color-warning);
+}
+
+.qp-diff-tab.active.qp-diff-hard {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background: var(--color-error-bg);
+}
+.qp-diff-tab.active.qp-diff-hard .qp-diff-count {
+  background: var(--color-error);
+  color: #fff;
+  border-color: var(--color-error);
+}
+
+/* ─── Empty Diff State ─── */
+.qp-empty-diff {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-radius: 10px;
+  border: 1px dashed var(--color-border);
+  margin-top: 14px;
+}
+.qp-empty-diff p { margin: 0 0 16px; font-size: 14px; }
+
+/* ─── Sidebar Tab Row ─── */
+.tab-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+.tab-row .tab { flex: 1; min-width: 0; }
+
+.tab-remove-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s;
+}
+.tab-row:hover .tab-remove-btn { opacity: 1; }
+.tab-remove-btn:hover { background: var(--color-error-bg); color: var(--color-error); }
+
+/* ─── Add Type Button (sidebar) ─── */
+.btn-add-type {
+  width: 100%;
+  margin-top: 6px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1.5px dashed var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+.btn-add-type:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(255,161,22,0.07);
+}
+.btn-add-type--icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+}
+
+/* ─── Add Type Modal ─── */
+.qp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: qpFadeIn 0.15s ease;
+}
+
+.qp-modal {
+  background: var(--color-surface);
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: qpSlideIn 0.2s ease;
+}
+
+.qp-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.qp-modal-header h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.qp-modal-close {
+  width: 28px; height: 28px;
+  border-radius: 6px; border: none;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  cursor: pointer; font-size: 16px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.qp-modal-close:hover { background: var(--color-error-bg); color: var(--color-error); }
+
+.qp-modal-desc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0 0 14px;
+}
+.qp-modal-desc code {
+  background: var(--color-surface-2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.qp-modal-input {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1.5px solid var(--color-border-strong);
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  font-size: 14px;
+  font-family: inherit;
+  box-sizing: border-box;
+  transition: all 0.15s;
+}
+.qp-modal-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(255,161,22,0.15);
+}
+
+.qp-modal-error {
+  font-size: 12px;
+  color: var(--color-error);
+  margin: 6px 0 0;
+}
+
+.qp-modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.qp-modal-btn-cancel {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.qp-modal-btn-cancel:hover { background: var(--color-surface-2); color: var(--color-text); }
+
+.qp-modal-btn-add {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.qp-modal-btn-add:hover { background: var(--color-accent-hover); }
+
+@keyframes qpFadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes qpSlideIn { from { transform: translateY(-12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
+/* ─── Compact Top Toolbar (Difficulty Navbar + Add Button) ─── */
+.qp-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.qp-toolbar .qp-diff-tabs {
+  margin: 0;
+}
+
+.qp-toolbar .btn-add {
+  margin: 0;
+}

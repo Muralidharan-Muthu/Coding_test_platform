@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { generateOTP, getCandidates, sendOTPEmail } from '../api'
+import { getCandidates, sendOTPEmail } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
+import { FiMail, FiEye, FiUsers } from 'react-icons/fi'
 import './CandidateOTP.css'
 import './SendMailPage.css'
 
@@ -14,7 +15,6 @@ function SendMailPage() {
   const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
   const [candidates, setCandidates] = useState([])
-  const [generating, setGenerating] = useState({})
   const [sending, setSending] = useState({})
 
   useEffect(() => {
@@ -58,66 +58,58 @@ function SendMailPage() {
     }
   }, [candidates])
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-'
+  const formatDate = (isoString) => {
+    if (!isoString) return '-'
     try {
-      return new Date(dateStr).toLocaleString()
+      const date = new Date(isoString)
+      return date.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      })
     } catch {
-      return dateStr
+      return '-'
     }
+  }
+
+  const isExpired = (expiresAt) => {
+    if (!expiresAt) return true
+    return new Date() > new Date(expiresAt)
   }
 
   const getStatusBadge = (candidate) => {
-    if (!candidate.otp_code) return <span className="status-badge status-no-otp">No OTP</span>
-    if (candidate.is_expired) return <span className="status-badge status-expired">Expired</span>
-    if (candidate.sent) return <span className="status-badge status-sent">Sent</span>
-    return <span className="status-badge status-generated">Generated</span>
-  }
-
-  const handleGenerateOTP = async (candidate) => {
-    setGenerating((prev) => ({ ...prev, [candidate.email]: true }))
-
-    try {
-      const response = await generateOTP(candidate.username, candidate.email)
-      // Carries a code the admin may need to transcribe — stays until dismissed.
-      toast.success(`OTP generated for ${candidate.email}: ${response.otp_code}`, {
-        title: 'OTP generated',
-        duration: Infinity,
-      })
-      await loadCandidates()
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to generate OTP')
-    } finally {
-      setGenerating((prev) => ({ ...prev, [candidate.email]: false }))
+    if (!candidate.otp_code) {
+      return <span className="otp-status-badge pending">No OTP</span>
     }
+    if (isExpired(candidate.expires_at)) {
+      return <span className="otp-status-badge expired">Expired</span>
+    }
+    return <span className="otp-status-badge active">Active</span>
   }
 
   const handleSendEmail = async (candidate) => {
     setSending((prev) => ({ ...prev, [candidate.email]: true }))
-
     try {
       const response = await sendOTPEmail(candidate.username, candidate.email)
       if (response.delivered) {
         toast.success(
           response.otp_regenerated
-            ? `Email sent successfully to ${candidate.email} with a fresh OTP`
-            : `Email sent successfully to ${candidate.email}`,
-          { title: 'Mail sent' }
+            ? `Email sent to ${candidate.email} with fresh OTP`
+            : `Email sent to ${candidate.email}`
         )
       } else if (response.status === 'warning') {
-        // Delivery failed but the OTP is usable — the admin has to pass it on
-        // by hand, so this must not disappear on a timer.
         const manualDetails = [
           response.message,
           response.otp ? `OTP: ${response.otp}` : '',
           response.login_link ? `Login: ${response.login_link}` : '',
         ].filter(Boolean).join(' ')
-        toast.warning(manualDetails, {
-          title: 'Send this manually',
-          duration: Infinity,
-        })
+        toast.warning(manualDetails, { duration: Infinity })
       } else {
-        toast.success(`Email sent to ${candidate.email}`, { title: 'Mail sent' })
+        toast.success(`Email sent to ${candidate.email}`)
       }
       await loadCandidates()
     } catch (err) {
@@ -144,72 +136,72 @@ function SendMailPage() {
       onLogout={handleLogout}
     >
       <div className="otp-content send-mail-content">
-        <div className="otp-table-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0 }}>Imported Candidates ({dedupedCandidates.rows.length})</h3>
-            {dedupedCandidates.duplicateCount > 0 && (
-              <span className="send-mail-dedupe-note">
-                Duplicate rows hidden: {dedupedCandidates.duplicateCount}
-              </span>
-            )}
+        <div className="mc-table-card">
+          <div className="mc-table-header">
+            <div>
+              <h3 className="mc-card-title">Candidate Credentials & Mail ({dedupedCandidates.rows.length})</h3>
+              <p className="mc-card-subtitle" style={{ marginTop: '2px' }}>
+                {dedupedCandidates.duplicateCount > 0 ? `${dedupedCandidates.duplicateCount} duplicate rows hidden — ` : ''}
+                Send access emails with automatically generated OTP credentials to candidates.
+              </p>
+            </div>
           </div>
 
           {loading ? (
             <Spinner label="Loading candidates…" size={40} />
           ) : dedupedCandidates.rows.length === 0 ? (
-            <p className="otp-no-data">No candidates found.</p>
+            <div className="mc-empty-state">
+              <div className="mc-empty-icon"><FiUsers /></div>
+              <h4>No Candidates Found</h4>
+              <p>Add candidates first in Manage Candidates to send credentials.</p>
+            </div>
           ) : (
             <div className="table-responsive">
-              <table className="otp-table">
+              <table className="mc-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '50px' }}>#</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>OTP</th>
+                    <th style={{ width: '100px' }}>OTP</th>
                     <th>Generated</th>
                     <th>Expires</th>
-                    <th>Status</th>
-                    <th>Generate OTP</th>
-                    <th>Send Mail</th>
-                    <th>View</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Status</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Send Mail</th>
+                    <th style={{ width: '70px', textAlign: 'center' }}>View</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dedupedCandidates.rows.map((candidate) => (
+                  {dedupedCandidates.rows.map((candidate, index) => (
                     <tr key={candidate.email}>
-                      <td>{candidate.username}</td>
-                      <td className="email-cell">{candidate.email}</td>
-                      <td className="otp-code">{candidate.otp_code || '-'}</td>
-                      <td>{formatDate(candidate.created_at)}</td>
-                      <td>{formatDate(candidate.expires_at)}</td>
-                      <td>{getStatusBadge(candidate)}</td>
+                      <td className="mc-col-num">#{index + 1}</td>
+                      <td><span className="mc-username-text">{candidate.username}</span></td>
+                      <td className="email-cell"><span className="mc-email-text">{candidate.email}</span></td>
                       <td>
-                        <button
-                          type="button"
-                          className="otp-btn-generate"
-                          disabled={Boolean(generating[candidate.email]) || Boolean(sending[candidate.email])}
-                          onClick={() => handleGenerateOTP(candidate)}
-                        >
-                          {generating[candidate.email] ? 'Generating...' : 'Generate OTP'}
-                        </button>
+                        <span className="sm-otp-code">{candidate.otp_code || '—'}</span>
                       </td>
-                      <td>
+                      <td style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>{formatDate(candidate.created_at)}</td>
+                      <td style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>{formatDate(candidate.expires_at)}</td>
+                      <td style={{ textAlign: 'center' }}>{getStatusBadge(candidate)}</td>
+                      <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"
-                          className="otp-btn-send"
-                          disabled={Boolean(sending[candidate.email]) || Boolean(generating[candidate.email])}
+                          className="sm-btn-action send"
+                          disabled={Boolean(sending[candidate.email])}
                           onClick={() => handleSendEmail(candidate)}
                         >
+                          <FiMail size={12} style={{ marginRight: '4px' }} />
                           {sending[candidate.email] ? 'Sending...' : 'Send Mail'}
                         </button>
                       </td>
-                      <td>
+                      <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"
-                          className="otp-btn-view"
+                          className="sm-btn-view"
+                          title="View Assessment"
                           onClick={() => navigate(`/admin/dashboard?candidate_email=${encodeURIComponent(candidate.email)}`)}
                         >
-                          View
+                          <FiEye size={13} />
                         </button>
                       </td>
                     </tr>

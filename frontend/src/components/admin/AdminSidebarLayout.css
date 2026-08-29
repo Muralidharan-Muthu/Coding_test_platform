@@ -1,4 +1,4 @@
-.admin-shell {
+﻿.admin-shell {
   min-height: 100vh;
   display: flex;
   position: relative;
@@ -431,4 +431,81 @@
   .admin-shell.mobile-open .admin-shell-overlay {
     display: block;
   }
+}
+
+/* ─── Subnav Custom Row & Add Type Button ─── */
+.admin-shell-subnav-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  width: 100%;
+}
+
+.admin-shell-subnav-row .admin-shell-subnav-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-shell-subnav-del-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.15s ease;
+}
+
+.admin-shell-subnav-row:hover .admin-shell-subnav-del-btn {
+  opacity: 1;
+}
+
+.admin-shell-subnav-del-btn:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.admin-shell-subnav-add-btn {
+  position: relative;
+  height: 36px;
+  width: 100%;
+  border-radius: 8px;
+  border: 1.5px dashed var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  margin-top: 2px;
+  transition: all 0.15s ease;
+}
+
+.admin-shell-subnav-add-btn::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 10px;
+  height: 1.5px;
+  border-radius: 999px;
+  background: var(--color-border);
+  transform: translateY(-50%);
+}
+
+.admin-shell-subnav-add-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: rgba(255, 161, 22, 0.08);
 }

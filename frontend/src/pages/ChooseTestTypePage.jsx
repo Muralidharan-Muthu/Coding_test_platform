@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+﻿import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiCheck, FiRefreshCw, FiSave } from 'react-icons/fi'
+import { FiCheck, FiRefreshCw, FiSave, FiUsers } from 'react-icons/fi'
 import {
   getCandidates,
   setCandidateTestType,
@@ -100,7 +100,6 @@ function ChooseTestTypePage() {
       ...prev,
       [email]: normalized,
     }))
-    // Release the shuffle status for this candidate when test type is changed
     setShuffledState((prev) => ({
       ...prev,
       [email]: false,
@@ -155,7 +154,7 @@ function ChooseTestTypePage() {
         email: c.email,
         test_type: normalizeTestType(selectedTypes[c.email] || c.test_type),
       }))
-      const response = await bulkShuffleCandidateQuestions(payload)
+      await bulkShuffleCandidateQuestions(payload)
 
       const updatedShuffled = {}
       dedupedCandidates.rows.forEach((c) => {
@@ -163,9 +162,7 @@ function ChooseTestTypePage() {
       })
       setShuffledState((prev) => ({ ...prev, ...updatedShuffled }))
 
-      toast.success(`Successfully shuffled questions for all ${dedupedCandidates.rows.length} candidates!`, {
-        title: 'Bulk Shuffle Complete',
-      })
+      toast.success(`Successfully shuffled questions for all ${dedupedCandidates.rows.length} candidates!`)
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to shuffle questions for all candidates')
     } finally {
@@ -189,9 +186,7 @@ function ChooseTestTypePage() {
         test_type: normalizeTestType(selectedTypes[row.email] || row.test_type),
       })))
 
-      toast.success(`Saved test types for all ${dedupedCandidates.rows.length} candidates!`, {
-        title: 'Bulk Save Complete',
-      })
+      toast.success(`Saved test types for all ${dedupedCandidates.rows.length} candidates!`)
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to save test types for candidates')
     } finally {
@@ -213,42 +208,41 @@ function ChooseTestTypePage() {
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
     >
-      <main className="otp-content ctt-content">
+      <div className="otp-content ctt-content">
 
-        <section className="ctt-card">
-          <h2>Choose Test Type For Individual Candidates</h2>
-          <p className="ctt-subtitle">
-            Assign a test format for each candidate separately. The selected type will be used when that candidate logs in and starts the test.
-          </p>
-          {dedupedCandidates.duplicateCount > 0 && (
-            <p className="ctt-help">
-              Duplicate candidate rows hidden on this page: {dedupedCandidates.duplicateCount}
-            </p>
-          )}
-        </section>
+        {/* ── Compact Assignment Summary Card ── */}
+        <div className="mc-card ctt-summary-box">
+          <div className="mc-card-header">
+            <div>
+              <h3 className="mc-card-title">Assignment Summary</h3>
+              <p className="mc-card-subtitle">
+                {dedupedCandidates.duplicateCount > 0 ? `${dedupedCandidates.duplicateCount} duplicate rows hidden — ` : ''}
+                Format distribution across candidates.
+              </p>
+            </div>
+          </div>
 
-        <section className="ctt-summary-card">
-          <h3>Assignment Summary</h3>
-          <div className="ctt-summary-grid">
-            <div className="ctt-stat">
-              <span className="ctt-stat-label">Total Candidates</span>
-              <strong>{summary.total}</strong>
+          <div className="ctt-stats-grid">
+            <div className="ctt-stat-chip total">
+              <span className="ctt-stat-label">Total</span>
+              <span className="ctt-stat-val">{summary.total}</span>
             </div>
             {Object.entries(TEST_TYPES).map(([key, config]) => (
-              <div key={key} className="ctt-stat">
+              <div key={key} className={`ctt-stat-chip type-${key}`}>
                 <span className="ctt-stat-label">{config.label}</span>
-                <strong>{summary[key]}</strong>
+                <span className="ctt-stat-val">{summary[key]}</span>
               </div>
             ))}
           </div>
-        </section>
+        </div>
 
-        <section className="otp-table-section">
+        {/* ── Candidate Test Type Assignment Table Card ── */}
+        <div className="mc-table-card">
           <div className="ctt-table-header">
             <div>
-              <h3 style={{ margin: 0 }}>Candidate Test Type Assignment ({dedupedCandidates.rows.length})</h3>
-              <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--color-text-muted)' }}>
-                Configure test formats, shuffle questions, or save changes for all candidates.
+              <h3 className="mc-card-title">Candidate Test Type Assignment ({dedupedCandidates.rows.length})</h3>
+              <p className="mc-card-subtitle" style={{ marginTop: '2px' }}>
+                Assign test formats, shuffle questions, or save configurations.
               </p>
             </div>
             <div className="ctt-bulk-actions">
@@ -258,8 +252,8 @@ function ChooseTestTypePage() {
                 disabled={bulkShuffling || bulkSaving || dedupedCandidates.rows.length === 0}
                 onClick={handleShuffleAll}
               >
-                <FiRefreshCw style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                {bulkShuffling ? 'Shuffling All...' : 'Shuffle All Candidates'}
+                <FiRefreshCw style={{ marginRight: '6px' }} />
+                {bulkShuffling ? 'Shuffling...' : 'Shuffle All'}
               </button>
               <button
                 type="button"
@@ -267,8 +261,8 @@ function ChooseTestTypePage() {
                 disabled={bulkSaving || bulkShuffling || dedupedCandidates.rows.length === 0}
                 onClick={handleSaveAll}
               >
-                <FiSave style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                {bulkSaving ? 'Saving All...' : 'Save All Changes'}
+                <FiSave style={{ marginRight: '6px' }} />
+                {bulkSaving ? 'Saving...' : 'Save All Changes'}
               </button>
             </div>
           </div>
@@ -276,28 +270,34 @@ function ChooseTestTypePage() {
           {loading ? (
             <Spinner label="Loading candidates…" size={40} />
           ) : dedupedCandidates.rows.length === 0 ? (
-            <p className="otp-no-data">No candidates found. Add candidates first in Manage Candidates.</p>
+            <div className="mc-empty-state">
+              <div className="mc-empty-icon"><FiUsers /></div>
+              <h4>No Candidates Found</h4>
+              <p>Add candidates first in Manage Candidates to assign test formats.</p>
+            </div>
           ) : (
             <div className="table-responsive">
-              <table className="otp-table ctt-table">
+              <table className="mc-table ctt-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '50px' }}>#</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>Assigned Test Type</th>
+                    <th style={{ minWidth: '180px' }}>Assigned Test Type</th>
                     <th>Description</th>
-                    <th>Shuffle</th>
-                    <th>Save</th>
+                    <th style={{ width: '110px', textAlign: 'center' }}>Shuffle</th>
+                    <th style={{ width: '90px', textAlign: 'center' }}>Save</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {dedupedCandidates.rows.map((candidate) => {
+                  {dedupedCandidates.rows.map((candidate, index) => {
                     const selectedType = normalizeTestType(selectedTypes[candidate.email] || candidate.test_type)
                     const isCandidateShuffled = Boolean(shuffledState[candidate.email])
                     return (
                       <tr key={candidate.email}>
-                        <td>{candidate.username}</td>
-                        <td className="email-cell">{candidate.email}</td>
+                        <td className="mc-col-num">#{index + 1}</td>
+                        <td><span className="mc-username-text">{candidate.username}</span></td>
+                        <td className="email-cell"><span className="mc-email-text">{candidate.email}</span></td>
                         <td>
                           <select
                             className="ctt-select"
@@ -310,34 +310,31 @@ function ChooseTestTypePage() {
                             ))}
                           </select>
                         </td>
-                        <td className="ctt-description-cell">{TEST_TYPES[selectedType].description}</td>
-                        <td>
+                        <td className="ctt-desc-cell">{TEST_TYPES[selectedType].description}</td>
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             type="button"
-                            className={`otp-btn-shuffle ${isCandidateShuffled ? 'otp-btn-shuffled' : ''}`}
+                            className={`ctt-btn-shuffle ${isCandidateShuffled ? 'shuffled' : ''}`}
                             disabled={Boolean(shuffling[candidate.email]) || Boolean(saving[candidate.email]) || bulkShuffling || bulkSaving}
                             onClick={() => handleShuffleCandidate(candidate)}
                           >
                             {shuffling[candidate.email] ? (
-                              'Shuffling...'
+                              '...'
                             ) : isCandidateShuffled ? (
-                              <>
-                                <FiCheck style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                                Shuffled
-                              </>
+                              <><FiCheck size={12} style={{ marginRight: '4px' }} /> Shuffled</>
                             ) : (
                               'Shuffle'
                             )}
                           </button>
                         </td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           <button
                             type="button"
-                            className="ctt-save-btn"
+                            className="mc-btn-save-sm"
                             disabled={Boolean(saving[candidate.email]) || Boolean(shuffling[candidate.email]) || bulkSaving || bulkShuffling}
                             onClick={() => handleSaveCandidate(candidate)}
                           >
-                            {saving[candidate.email] ? 'Saving...' : 'Save'}
+                            {saving[candidate.email] ? '...' : 'Save'}
                           </button>
                         </td>
                       </tr>
@@ -347,11 +344,10 @@ function ChooseTestTypePage() {
               </table>
             </div>
           )}
-        </section>
-      </main>
+        </div>
+      </div>
     </AdminSidebarLayout>
   )
 }
 
 export default ChooseTestTypePage
-

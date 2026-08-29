@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
@@ -6,7 +6,7 @@ import { useToast } from '../components/ui/ToastProvider'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import * as XLSX from 'xlsx'
-import { FiDownload, FiPlus, FiUploadCloud } from 'react-icons/fi'
+import { FiDownload, FiPlus, FiUploadCloud, FiTrash2, FiEdit2, FiCheck, FiX, FiUsers } from 'react-icons/fi'
 import './CandidateOTP.css'
 
 const EMPTY_EDIT_FORM = { username: '', email: '' }
@@ -100,7 +100,7 @@ function CandidateOTP() {
   }
 
   const handleDeleteCandidate = async (candidate) => {
-    if (!window.confirm(`Delete candidate ${candidate.username}? This action cannot be undone.`)) {
+    if (!window.confirm(`Delete candidate "${candidate.username}"? This action cannot be undone.`)) {
       return
     }
 
@@ -111,7 +111,7 @@ function CandidateOTP() {
       if (editingEmail === candidate.email) {
         resetEditState()
       }
-      toast.success(response.message || `Candidate ${candidate.username} deleted successfully`)
+      toast.success(response.message || `Candidate "${candidate.username}" deleted successfully`)
       await loadCandidates()
     } catch (err) {
       toast.error(err.response?.data?.detail || `Failed to delete candidate ${candidate.username}`)
@@ -161,7 +161,6 @@ function CandidateOTP() {
 
     const keys = Object.keys(row)
 
-    // 1. Try exact/fuzzy header matching
     for (const k of keys) {
       const normKey = String(k).trim().toLowerCase().replace(/[^a-z0-9]/g, '')
       const val = String(row[k] || '').trim()
@@ -174,7 +173,6 @@ function CandidateOTP() {
       }
     }
 
-    // 2. Fallback: if email wasn't found by header name, find any property containing '@'
     if (!email) {
       for (const k of keys) {
         const val = String(row[k] || '').trim()
@@ -185,7 +183,6 @@ function CandidateOTP() {
       }
     }
 
-    // 3. Fallback: if username is still empty, pick first non-email text value
     if (!username) {
       for (const k of keys) {
         const val = String(row[k] || '').trim()
@@ -196,7 +193,6 @@ function CandidateOTP() {
       }
     }
 
-    // 4. Final fallback: if username is empty but email exists, derive username from email prefix
     if (!username && email) {
       username = email.split('@')[0]
     }
@@ -352,123 +348,121 @@ function CandidateOTP() {
     >
       <div className="otp-content">
 
-        <div className="otp-instructions">
-          <h3>How to Manage Candidates:</h3>
-          <ol>
-            <li><strong>Add Candidates:</strong> Upload an Excel file with columns "username" and "email", or add candidates manually</li>
-            <li><strong>Edit Candidate:</strong> Use the new edit option to correct a candidate name or email before sending access details</li>
-            <li><strong>Choose Test Type:</strong> Use the "Choose Test Type" sub-topic to assign each candidate their test format</li>
-            <li><strong>Send Mail:</strong> Use the "Send Mail" sub-topic to generate OTP and send the login email</li>
-          </ol>
-        </div>
-
-        <div className="otp-add-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0 }}>Add or Import Candidates</h3>
+        {/* ── Add or Import Section ── */}
+        <div className="mc-card">
+          <div className="mc-card-header">
+            <div>
+              <h3 className="mc-card-title">Add or Import Candidates</h3>
+              <p className="mc-card-subtitle">
+                Upload an Excel/CSV file with <strong>username</strong> and <strong>email</strong> columns, or add candidates manually.
+              </p>
+            </div>
             {candidates.length > 0 && (
               <button
+                type="button"
                 onClick={handleClearAllCandidates}
                 disabled={clearing}
-                className="otp-btn-clear"
+                className="mc-btn-danger"
               >
+                <FiTrash2 size={12} style={{ marginRight: '5px' }} />
                 {clearing ? 'Clearing...' : 'Clear All Candidates'}
               </button>
             )}
           </div>
-          <p style={{ marginBottom: '15px', color: '#666' }}>Excel file should have columns: <strong>username</strong> and <strong>email</strong></p>
-          <div className="otp-add-form">
+
+          <div className="mc-add-form">
             <input
               type="text"
               placeholder="Username"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
-              className="otp-input"
+              className="mc-input"
             />
             <input
               type="email"
-              placeholder="Email"
+              placeholder="Email address"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
-              className="otp-input"
+              className="mc-input mc-input-email"
             />
             <button
+              type="button"
               onClick={handleAddCandidate}
               disabled={importing}
-              className="otp-btn-add"
+              className="mc-btn-primary"
             >
-              <FiPlus style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+              <FiPlus size={14} style={{ marginRight: '4px' }} />
               {importing ? 'Adding...' : 'Add Candidate'}
             </button>
             <button
+              type="button"
               onClick={handleImportExcel}
               disabled={importing}
-              className="otp-btn-import"
+              className="mc-btn-secondary"
             >
-              <FiUploadCloud style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-              {importing ? 'Importing...' : 'Import from Excel / CSV'}
+              <FiUploadCloud size={14} style={{ marginRight: '5px' }} />
+              {importing ? 'Importing...' : 'Import Excel / CSV'}
             </button>
             <button
               type="button"
               onClick={handleDownloadSampleExcel}
               disabled={importing}
-              style={{
-                padding: '10px 16px',
-                background: 'var(--color-surface-2)',
-                color: 'var(--color-text)',
-                border: '1px solid var(--color-border-strong)',
-                borderRadius: '8px',
-                fontSize: '14px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-              }}
+              className="mc-btn-ghost"
             >
-              <FiDownload style={{ verticalAlign: 'middle' }} />
+              <FiDownload size={13} style={{ marginRight: '5px' }} />
               Sample Template
             </button>
           </div>
         </div>
 
-        <div className="otp-table-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3 style={{ margin: 0 }}>Imported Candidates ({candidates.length})</h3>
+        {/* ── Candidates Table Card ── */}
+        <div className="mc-table-card">
+          <div className="mc-table-header">
+            <div>
+              <h3 className="mc-card-title">Imported Candidates ({candidates.length})</h3>
+            </div>
           </div>
 
           {loading ? (
             <Spinner label="Loading candidates…" size={40} />
           ) : candidates.length === 0 ? (
-            <p className="otp-no-data">No candidates found. Add or import candidates above.</p>
+            <div className="mc-empty-state">
+              <div className="mc-empty-icon"><FiUsers /></div>
+              <h4>No Candidates Found</h4>
+              <p>Add candidate details manually or upload an Excel/CSV file using the form above.</p>
+            </div>
           ) : (
             <div className="table-responsive">
-              <table className="otp-table">
+              <table className="mc-table">
                 <thead>
                   <tr>
+                    <th style={{ width: '60px' }}>#</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>Edit</th>
-                    <th>Delete</th>
+                    <th style={{ width: '120px', textAlign: 'center' }}>Edit</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>Delete</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {candidates.map((candidate) => {
+                  {candidates.map((candidate, index) => {
                     const isEditing = editingEmail === candidate.email
                     const isSaving = Boolean(saving[candidate.email])
                     const isDeleting = Boolean(deleting[candidate.email])
 
                     return (
                       <tr key={candidate.email}>
+                        <td className="mc-col-num">#{index + 1}</td>
                         <td>
                           {isEditing ? (
                             <input
                               type="text"
                               value={editForm.username}
                               onChange={(e) => handleEditChange('username', e.target.value)}
-                              className="otp-input otp-table-input"
+                              className="mc-inline-input"
+                              autoFocus
                             />
                           ) : (
-                            candidate.username
+                            <span className="mc-username-text">{candidate.username}</span>
                           )}
                         </td>
                         <td className="email-cell">
@@ -477,47 +471,53 @@ function CandidateOTP() {
                               type="email"
                               value={editForm.email}
                               onChange={(e) => handleEditChange('email', e.target.value)}
-                              className="otp-input otp-table-input"
+                              className="mc-inline-input"
                             />
                           ) : (
-                            candidate.email
+                            <span className="mc-email-text">{candidate.email}</span>
                           )}
                         </td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           {isEditing ? (
-                            <div className="otp-inline-actions">
+                            <div className="mc-inline-actions">
                               <button
+                                type="button"
                                 onClick={() => handleSaveEdit(candidate)}
                                 disabled={isSaving || isDeleting}
-                                className="otp-btn-save"
+                                className="mc-btn-save"
+                                title="Save changes"
                               >
-                                {isSaving ? 'Saving...' : 'Save'}
+                                <FiCheck size={13} /> Save
                               </button>
                               <button
+                                type="button"
                                 onClick={cancelEditing}
                                 disabled={isSaving}
-                                className="otp-btn-cancel"
+                                className="mc-btn-cancel-edit"
+                                title="Cancel"
                               >
-                                Cancel
+                                <FiX size={13} />
                               </button>
                             </div>
                           ) : (
                             <button
+                              type="button"
                               onClick={() => startEditing(candidate)}
                               disabled={isDeleting}
-                              className="otp-btn-edit"
+                              className="mc-btn-edit"
                             >
-                              Edit
+                              <FiEdit2 size={12} style={{ marginRight: '4px' }} /> Edit
                             </button>
                           )}
                         </td>
-                        <td>
+                        <td style={{ textAlign: 'center' }}>
                           <button
+                            type="button"
                             onClick={() => handleDeleteCandidate(candidate)}
                             disabled={isDeleting || isSaving}
-                            className="otp-btn-delete"
+                            className="mc-btn-del"
                           >
-                            {isDeleting ? 'Deleting...' : 'Delete'}
+                            <FiTrash2 size={12} style={{ marginRight: '4px' }} /> Delete
                           </button>
                         </td>
                       </tr>

@@ -1,33 +1,30 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, { createMcqQuestion, deleteMcqQuestion } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import { FiPlus, FiX } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
 import './MCQQuestionsPage.css'
+import './QuestionsPage.css'
 
-const NAV_ITEMS = [
-  {
-    label: 'Assessment Dashboard',
-    href: '/dashboard/assessment',
-    activePaths: ['/dashboard/assessment'],
-  },
-  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
-  {
-    label: 'Manage Candidates',
-    href: '/admin/otp',
-    activePaths: ['/admin/otp'],
-    children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
-    ],
-  },
-]
+const BUILTIN_LANGS = ['python', 'sql', 'mcq']
 
-const QUESTION_TYPE_ITEMS = [
-  { id: 'python', label: 'Python Questions', shortLabel: 'Py' },
-  { id: 'sql', label: 'SQL Questions', shortLabel: 'SQL' },
-  { id: 'mcq', label: 'MCQ Questions', shortLabel: 'MCQ' },
+function loadCustomLangs() {
+  try {
+    const saved = localStorage.getItem('custom_question_langs')
+    return saved ? JSON.parse(saved) : []
+  } catch { return [] }
+}
+
+function saveCustomLangs(langs) {
+  localStorage.setItem('custom_question_langs', JSON.stringify(langs))
+}
+
+const DIFFICULTY_TABS = [
+  { id: 'easy',   label: 'Easy'   },
+  { id: 'medium', label: 'Medium' },
+  { id: 'hard',   label: 'Hard'   },
 ]
 
 const MCQ_TEMPLATE = JSON.stringify(
@@ -47,8 +44,7 @@ const MCQ_TEMPLATE = JSON.stringify(
 )
 
 function formatIST(isoString) {
-  if (!isoString) return '--'
-
+  if (!isoString) return '—'
   try {
     const date = new Date(isoString)
     return date.toLocaleString('en-IN', {
@@ -61,7 +57,7 @@ function formatIST(isoString) {
       hour12: true,
     })
   } catch {
-    return '--'
+    return '—'
   }
 }
 
@@ -81,20 +77,124 @@ function normalizeMcqQuestion(rawQuestion) {
   }
 }
 
+function AddTypeModal({ onAdd, onClose }) {
+  const [value, setValue] = useState('')
+  const [error, setError] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const trimmed = value.trim().toLowerCase()
+    if (!trimmed) { setError('Enter a language name'); return }
+    if (trimmed.length < 2) { setError('Name too short'); return }
+    if (BUILTIN_LANGS.includes(trimmed)) { setError('This type already exists'); return }
+    if (!/^[a-z0-9_+#]+$/i.test(trimmed)) { setError('Only letters, numbers, _, #, + allowed'); return }
+    onAdd(trimmed)
+  }
+
+  return (
+    <div className="qp-modal-overlay" onClick={onClose}>
+      <div className="qp-modal" onClick={e => e.stopPropagation()}>
+        <div className="qp-modal-header">
+          <h3>Add Question Type</h3>
+          <button className="qp-modal-close" onClick={onClose} aria-label="Close"><FiX /></button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <p className="qp-modal-desc">Add a custom language like <code>java</code>, <code>c++</code>, <code>javascript</code>.</p>
+          <input
+            className="qp-modal-input"
+            type="text"
+            value={value}
+            onChange={e => { setValue(e.target.value); setError('') }}
+            placeholder="e.g. java, c++, javascript"
+            autoFocus
+          />
+          {error && <p className="qp-modal-error">{error}</p>}
+          <div className="qp-modal-actions">
+            <button type="button" className="qp-modal-btn-cancel" onClick={onClose}>Cancel</button>
+            <button type="submit" className="qp-modal-btn-add"><FiPlus /> Add Type</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
 function MCQQuestionsPage() {
   const navigate = useNavigate()
   const toast = useToast()
   const [questions, setQuestions] = useState([])
   const [adminName, setAdminName] = useState('')
   const [loading, setLoading] = useState(true)
+  const [activeDiffTab, setActiveDiffTab] = useState('easy')
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
   const [error, setError] = useState('')
   const [expandedQuestions, setExpandedQuestions] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [customLangs, setCustomLangs] = useState(loadCustomLangs)
+  const [showAddTypeModal, setShowAddTypeModal] = useState(false)
+
+  const navItems = [
+    {
+      label: 'Assessment Dashboard',
+      href: '/admin/dashboard/assessment',
+      activePaths: ['/admin/dashboard', '/admin/dashboard/assessment', '/dashboard/assessment'],
+    },
+    {
+      label: 'Questions',
+      href: '/admin/questions/python_questions',
+      activePaths: ['/admin/questions'],
+      children: [
+        {
+          label: 'Python Questions',
+          href: '/admin/questions/python_questions',
+          activePaths: ['/admin/questions/python_questions', '/admin/questions/python'],
+        },
+        {
+          label: 'SQL Questions',
+          href: '/admin/questions/sql_questions',
+          activePaths: ['/admin/questions/sql_questions', '/admin/questions/sql'],
+        },
+        {
+          label: 'MCQ Questions',
+          href: '/admin/questions/mcq_questions',
+          activePaths: ['/admin/questions/mcq_questions', '/admin/questions/mcq'],
+        },
+        ...customLangs.map((lang) => ({
+          label: `${lang.charAt(0).toUpperCase() + lang.slice(1)} Questions`,
+          href: `/admin/questions/python_questions?lang=${lang}`,
+          activePaths: [`/admin/questions/python_questions?lang=${lang}`],
+          isCustom: true,
+          typeKey: lang,
+        })),
+        {
+          label: '+ Add Type',
+          isAddButton: true,
+        },
+      ],
+    },
+    {
+      label: 'Manage Candidates',
+      href: '/admin/otp',
+      activePaths: ['/admin/otp'],
+      children: [
+        {
+          label: 'Choose Test Type',
+          href: '/admin/test-type',
+          activePaths: ['/admin/test-type'],
+        },
+        {
+          label: 'Send Mail',
+          href: '/admin/send-mail',
+          activePaths: ['/admin/send-mail'],
+        },
+      ],
+    },
+  ]
 
   const loadQuestions = async () => {
     try {
+      setLoading(true)
       const response = await api.get('/admin/mcq-questions')
       const nextQuestions = Array.isArray(response.data?.questions) ? response.data.questions : []
       setQuestions(nextQuestions)
@@ -125,16 +225,21 @@ function MCQQuestionsPage() {
     navigate('/admin')
   }
 
-  const handleQuestionTypeChange = (nextType) => {
-    if (nextType === 'mcq') {
-      return
-    }
+  const handleAddCustomType = (lang) => {
+    const next = [...customLangs, lang]
+    setCustomLangs(next)
+    saveCustomLangs(next)
+    setShowAddTypeModal(false)
+    toast.success(`"${lang.charAt(0).toUpperCase() + lang.slice(1)} Questions" added!`)
+    navigate(`/admin/questions/python_questions?lang=${lang}`)
+  }
 
-    if (nextType === 'python') {
-      navigate('/admin/questions/python_questions')
-    } else if (nextType === 'sql') {
-      navigate('/admin/questions/sql_questions')
-    }
+  const handleRemoveCustomType = (lang) => {
+    if (!window.confirm(`Remove "${lang}" question type?`)) return
+    const next = customLangs.filter(l => l !== lang)
+    setCustomLangs(next)
+    saveCustomLangs(next)
+    toast.success(`"${lang}" type removed`)
   }
 
   const toggleExpanded = (questionKey) => {
@@ -197,13 +302,8 @@ function MCQQuestionsPage() {
   }
 
   const handleDelete = async (questionId, questionTitle) => {
-    if (!questionId) {
-      return
-    }
-
-    if (!window.confirm(`Delete "${questionTitle}"?`)) {
-      return
-    }
+    if (!questionId) return
+    if (!window.confirm(`Delete "${questionTitle}"?`)) return
 
     try {
       await deleteMcqQuestion(questionId)
@@ -217,30 +317,8 @@ function MCQQuestionsPage() {
   const easyList = questions.filter((question) => question.difficulty?.toLowerCase() === 'easy')
   const mediumList = questions.filter((question) => question.difficulty?.toLowerCase() === 'medium')
   const hardList = questions.filter((question) => question.difficulty?.toLowerCase() === 'hard')
-
-  const renderQuestionTypeTabs = (placement, collapsed = false) => (
-    <div className={`question-type-tabs question-type-tabs--${placement}${collapsed ? ' is-collapsed' : ''}`}>
-      {placement === 'sidebar' && !collapsed && (
-        <p className="question-type-tabs-label">Question Type</p>
-      )}
-
-      <div className="tabs" role="tablist" aria-label="Question type">
-        {QUESTION_TYPE_ITEMS.map((item) => (
-          <button
-            key={item.id}
-            type="button"
-            className={`tab ${item.id === 'mcq' ? 'active' : ''}`}
-            onClick={() => handleQuestionTypeChange(item.id)}
-            aria-pressed={item.id === 'mcq'}
-            aria-label={item.label}
-          >
-            <span className="tab-short" aria-hidden="true">{item.shortLabel}</span>
-            <span className="tab-full">{item.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  )
+  const diffCountMap = { easy: easyList.length, medium: mediumList.length, hard: hardList.length }
+  const currentDiffList = activeDiffTab === 'easy' ? easyList : activeDiffTab === 'medium' ? mediumList : hardList
 
   const renderQuestionCard = (question, index) => {
     const questionKey = question.id || `${question.question_title}-${index}`
@@ -304,44 +382,40 @@ function MCQQuestionsPage() {
     <AdminSidebarLayout
       className="mcq-questions-page"
       adminName={adminName || 'Admin User'}
-      navItems={NAV_ITEMS}
-      sidebarExtraAfterHref="/admin/questions/python_questions"
-      sidebarExtra={({ collapsed }) => renderQuestionTypeTabs('sidebar', collapsed)}
+      navItems={navItems}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
+      onAddType={() => setShowAddTypeModal(true)}
+      onRemoveCustomType={handleRemoveCustomType}
     >
       <div className="questions-content">
 
-        {renderQuestionTypeTabs('content')}
+        {/* ── Compact Toolbar: Difficulty Navbar + Add Question Button ── */}
+        {!showAdd && (
+          <div className="qp-toolbar">
+            <div className="qp-diff-tabs" role="tablist" aria-label="Filter by difficulty">
+              {DIFFICULTY_TABS.map(dt => (
+                <button
+                  key={dt.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeDiffTab === dt.id}
+                  className={`qp-diff-tab${activeDiffTab === dt.id ? ' active' : ''} qp-diff-${dt.id}`}
+                  onClick={() => setActiveDiffTab(dt.id)}
+                >
+                  <span className="qp-diff-label">{dt.label}</span>
+                  <span className="qp-diff-count">{diffCountMap[dt.id]}</span>
+                </button>
+              ))}
+            </div>
 
-        <div className="actions-bar">
-          {!showAdd && (
-            <button onClick={openAdd} className="btn-add">+ Add Question</button>
-          )}
-        </div>
+            <button onClick={openAdd} className="btn-add">
+              <FiPlus size={14} /> Add Question
+            </button>
+          </div>
+        )}
 
-        <div className="summary-card">
-          <div className="summary-item summary-easy">
-            <span className="summary-label">Easy</span>
-            <span className="summary-num">{easyList.length}</span>
-          </div>
-          <div className="summary-divider" />
-          <div className="summary-item summary-medium">
-            <span className="summary-label">Medium</span>
-            <span className="summary-num">{mediumList.length}</span>
-          </div>
-          <div className="summary-divider" />
-          <div className="summary-item summary-hard">
-            <span className="summary-label">Hard</span>
-            <span className="summary-num">{hardList.length}</span>
-          </div>
-          <div className="summary-divider" />
-          <div className="summary-item summary-total">
-            <span className="summary-label">Total</span>
-            <span className="summary-num">{questions.length}</span>
-          </div>
-        </div>
-
+        {/* ── Add Question Section ── */}
         {showAdd && (
           <div className="add-section">
             <div className="add-header">
@@ -377,65 +451,51 @@ function MCQQuestionsPage() {
               />
               {error && <div className="error-msg">{error}</div>}
               <button onClick={handleAdd} className="btn-submit" disabled={submitting}>
-                {submitting ? 'Adding...' : 'Add Question'}
+                <FiPlus size={14} /> {submitting ? 'Adding...' : 'Add Question'}
               </button>
             </div>
           </div>
         )}
 
-        {loading ? (
-          <Spinner label="Loading questions…" size={40} />
-        ) : questions.length === 0 && !showAdd ? (
-          <p className="no-questions">No MCQ questions found.</p>
-        ) : (
-          <div className="questions-groups">
-            {easyList.length > 0 && (
-              <div className="difficulty-group">
-                <div className="group-header group-easy">
-                  <div className="group-header-left">
-                    <span className="group-dot dot-easy" />
-                    <span className="group-title">Easy Questions</span>
+        {/* ── Active Difficulty Questions List ── */}
+        {!showAdd && (
+          <>
+            {loading ? (
+              <Spinner label="Loading questions…" size={40} />
+            ) : questions.length === 0 ? (
+              <p className="no-questions">No MCQ questions found. Click "+ Add Question" to create one.</p>
+            ) : currentDiffList.length === 0 ? (
+              <div className="qp-empty-diff">
+                <p>No <strong>{activeDiffTab}</strong> MCQ questions yet.</p>
+                <button className="btn-add" onClick={openAdd}><FiPlus size={14} /> Add One</button>
+              </div>
+            ) : (
+              <div className="questions-groups">
+                <div className="difficulty-group">
+                  <div className={`group-header group-${activeDiffTab}`}>
+                    <div className="group-header-left">
+                      <span className={`group-dot dot-${activeDiffTab}`} />
+                      <span className="group-title">
+                        {activeDiffTab.charAt(0).toUpperCase() + activeDiffTab.slice(1)} MCQ Questions
+                      </span>
+                    </div>
+                    <span className="group-count">
+                      {currentDiffList.length} question{currentDiffList.length !== 1 ? 's' : ''}
+                    </span>
                   </div>
-                  <span className="group-count">{easyList.length} question{easyList.length !== 1 ? 's' : ''}</span>
-                </div>
-                <div className="questions-list">
-                  {easyList.map((question, index) => renderQuestionCard(question, index))}
+                  <div className="questions-list">
+                    {currentDiffList.map((question, index) => renderQuestionCard(question, index))}
+                  </div>
                 </div>
               </div>
             )}
-
-            {mediumList.length > 0 && (
-              <div className="difficulty-group">
-                <div className="group-header group-medium">
-                  <div className="group-header-left">
-                    <span className="group-dot dot-medium" />
-                    <span className="group-title">Medium Questions</span>
-                  </div>
-                  <span className="group-count">{mediumList.length} question{mediumList.length !== 1 ? 's' : ''}</span>
-                </div>
-                <div className="questions-list">
-                  {mediumList.map((question, index) => renderQuestionCard(question, index))}
-                </div>
-              </div>
-            )}
-
-            {hardList.length > 0 && (
-              <div className="difficulty-group">
-                <div className="group-header group-hard">
-                  <div className="group-header-left">
-                    <span className="group-dot dot-hard" />
-                    <span className="group-title">Hard Questions</span>
-                  </div>
-                  <span className="group-count">{hardList.length} question{hardList.length !== 1 ? 's' : ''}</span>
-                </div>
-                <div className="questions-list">
-                  {hardList.map((question, index) => renderQuestionCard(question, index))}
-                </div>
-              </div>
-            )}
-          </div>
+          </>
         )}
       </div>
+
+      {showAddTypeModal && (
+        <AddTypeModal onAdd={handleAddCustomType} onClose={() => setShowAddTypeModal(false)} />
+      )}
     </AdminSidebarLayout>
   )
 }

@@ -1,51 +1,98 @@
-.send-mail-content {
-  display: grid;
-  gap: 20px;
-}
-
-.send-mail-content > * {
-  min-width: 0;
-}
-
-.send-mail-header-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 20px;
-}
-
-.send-mail-header-card h3 {
-  margin: 0 0 8px;
-  color: var(--color-secondary);
-}
-
-.send-mail-header-card p {
-  margin: 0 0 10px;
-  color: var(--color-text-muted);
-}
-
-.send-mail-dedupe-note {
+﻿/* ─── Compact Send Mail Page Styles ─── */
+.sm-otp-code {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-weight: 700;
   color: var(--color-accent);
-  font-weight: 600;
+  background: var(--color-surface-2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  font-size: 12px;
 }
 
-.send-mail-all-btn {
-  margin-top: 4px;
-  padding: 10px 16px;
-  background: #2563eb;
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
+.otp-status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.otp-status-badge.active {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid var(--color-success-border);
+}
+
+.otp-status-badge.expired {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid var(--color-error-border);
+}
+
+.otp-status-badge.pending {
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.sm-btn-action {
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 5px;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
-.send-mail-all-btn:hover:not(:disabled) {
-  background: #1d4ed8;
+.sm-btn-action.generate {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
 }
 
-.send-mail-all-btn:disabled {
-  background: #93c5fd;
+.sm-btn-action.generate:hover:not(:disabled) {
+  background: var(--color-secondary);
+  color: #fff;
+  border-color: var(--color-secondary);
+}
+
+.sm-btn-action.send {
+  background: var(--color-accent);
+  color: #ffffff;
+  border: none;
+  font-weight: 700;
+}
+
+.sm-btn-action.send:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.sm-btn-action:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+.sm-btn-view {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.sm-btn-view:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-strong);
+  background: var(--color-surface);
 }

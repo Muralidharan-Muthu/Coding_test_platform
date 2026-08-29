@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+﻿import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
 import { PlatformLogoSmall } from '../ui/Branding'
@@ -58,6 +58,28 @@ const QuestionsIcon = () => (
   </svg>
 )
 
+const CodeIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+)
+
+const DatabaseIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <ellipse cx="12" cy="5" rx="9" ry="3" />
+    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+  </svg>
+)
+
+const McqIcon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 11l3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+)
+
 const UsersIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -85,17 +107,36 @@ const MailIcon = () => (
   </svg>
 )
 
-function getNavIcon(href = '') {
-  if (href.includes('/dashboard/assessment')) return <DashboardIcon />
-  if (href.includes('/admin/questions')) return <QuestionsIcon />
-  if (href.includes('/admin/otp')) return <UsersIcon />
-  if (href.includes('/admin/test-type')) return <TestTypeIcon />
-  if (href.includes('/admin/send-mail')) return <MailIcon />
-  return <DashboardIcon />
+const PlusIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+  </svg>
+)
+
+const CloseIcon = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+)
+
+function getNavIcon(href = '', label = '') {
+  const lower = (href + ' ' + label).toLowerCase()
+  if (lower.includes('assessment') || lower.includes('dashboard')) return <DashboardIcon />
+  if (lower.includes('python')) return <CodeIcon />
+  if (lower.includes('sql')) return <DatabaseIcon />
+  if (lower.includes('mcq')) return <McqIcon />
+  if (lower.includes('add') || lower.includes('plus')) return <PlusIcon />
+  if (lower.includes('test-type')) return <TestTypeIcon />
+  if (lower.includes('send-mail') || lower.includes('mail')) return <MailIcon />
+  if (lower.includes('otp') || lower.includes('candidate')) return <UsersIcon />
+  if (lower.includes('question')) return <QuestionsIcon />
+  return <CodeIcon />
 }
 
 function isNavItemActive(item, pathname) {
-  if (!item) return false
+  if (!item || !item.href) return false
   if (Array.isArray(item.activePaths) && item.activePaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
     return true
   }
@@ -114,6 +155,8 @@ function AdminSidebarLayout({
   sidebarExtraAfterHref = null,
   onNavigate = () => {},
   onLogout = () => {},
+  onAddType = null,
+  onRemoveCustomType = null,
   children,
 }) {
   const location = useLocation()
@@ -234,7 +277,7 @@ function AdminSidebarLayout({
                       aria-current={isActive ? 'page' : undefined}
                     >
                       <span className="admin-shell-nav-icon" aria-hidden="true">
-                        {getNavIcon(item.href)}
+                        {getNavIcon(item.href, item.label)}
                       </span>
                       <span className="admin-shell-nav-label">{item.label}</span>
                     </button>
@@ -255,20 +298,53 @@ function AdminSidebarLayout({
                   {!collapsed && hasChildren && isExpanded && (
                     <div className={`admin-shell-subnav${hasActiveChild ? ' active' : ''}`}>
                       {item.children.map((child) => {
+                        if (child.isAddButton) {
+                          return (
+                            <button
+                              key="add-type-button"
+                              type="button"
+                              className="admin-shell-subnav-add-btn"
+                              onClick={() => {
+                                if (onAddType) onAddType()
+                              }}
+                            >
+                              <span className="admin-shell-nav-icon" aria-hidden="true">
+                                <PlusIcon />
+                              </span>
+                              <span className="admin-shell-nav-label">Add Type</span>
+                            </button>
+                          )
+                        }
+
                         const isChildActive = isNavItemActive(child, location.pathname)
                         return (
-                          <button
-                            key={`${child.label}-${child.href || 'child'}`}
-                            type="button"
-                            className={`admin-shell-nav-item admin-shell-subnav-item${isChildActive ? ' active' : ''}`}
-                            onClick={() => child.href && onNavigate(child.href)}
-                            aria-current={isChildActive ? 'page' : undefined}
-                          >
-                            <span className="admin-shell-nav-icon" aria-hidden="true">
-                              {getNavIcon(child.href)}
-                            </span>
-                            <span className="admin-shell-nav-label">{child.label}</span>
-                          </button>
+                          <div key={`${child.label}-${child.href || 'child'}`} className="admin-shell-subnav-row">
+                            <button
+                              type="button"
+                              className={`admin-shell-nav-item admin-shell-subnav-item${isChildActive ? ' active' : ''}`}
+                              onClick={() => child.href && onNavigate(child.href, child)}
+                              aria-current={isChildActive ? 'page' : undefined}
+                            >
+                              <span className="admin-shell-nav-icon" aria-hidden="true">
+                                {getNavIcon(child.href, child.label)}
+                              </span>
+                              <span className="admin-shell-nav-label">{child.label}</span>
+                            </button>
+
+                            {child.isCustom && onRemoveCustomType && (
+                              <button
+                                type="button"
+                                className="admin-shell-subnav-del-btn"
+                                title={`Remove ${child.label}`}
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  onRemoveCustomType(child.typeKey || child.label.replace(' Questions', '').toLowerCase())
+                                }}
+                              >
+                                <CloseIcon />
+                              </button>
+                            )}
+                          </div>
                         )
                       })}
                     </div>

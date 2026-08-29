@@ -1,12 +1,14 @@
-/**
+﻿/**
  * Centralized Application Constants & Navigation Metadata
  */
 
 export interface NavItem {
   label: string;
-  href: string;
-  activePaths: string[];
+  href?: string;
+  activePaths?: string[];
   children?: NavItem[];
+  isCustom?: boolean;
+  isAddButton?: boolean;
 }
 
 export interface TestTypeConfig {
@@ -24,14 +26,39 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
     label: 'Questions',
     href: '/admin/questions/python_questions',
     activePaths: ['/admin/questions'],
+    children: [
+      {
+        label: 'Python Questions',
+        href: '/admin/questions/python_questions',
+        activePaths: ['/admin/questions/python_questions', '/admin/questions/python'],
+      },
+      {
+        label: 'SQL Questions',
+        href: '/admin/questions/sql_questions',
+        activePaths: ['/admin/questions/sql_questions', '/admin/questions/sql'],
+      },
+      {
+        label: 'MCQ Questions',
+        href: '/admin/questions/mcq_questions',
+        activePaths: ['/admin/questions/mcq_questions', '/admin/questions/mcq'],
+      },
+    ],
   },
   {
     label: 'Manage Candidates',
     href: '/admin/otp',
     activePaths: ['/admin/otp'],
     children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
+      {
+        label: 'Choose Test Type',
+        href: '/admin/test-type',
+        activePaths: ['/admin/test-type'],
+      },
+      {
+        label: 'Send Mail',
+        href: '/admin/send-mail',
+        activePaths: ['/admin/send-mail'],
+      },
     ],
   },
 ];
