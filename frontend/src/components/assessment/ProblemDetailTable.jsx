@@ -1,6 +1,5 @@
-import './ProblemDetailTable.css'
+﻿import './ProblemDetailTable.css'
 
-const SCORE_KEY_PATTERN = /^P(\d+)_(py|sql)$/i
 const PYTHON_SLOT_COUNT = 5
 const SQL_SLOT_COUNT = 5
 
@@ -9,7 +8,7 @@ function ScoreChip({ score }) {
   const displayScore = Number.isFinite(numericScore) ? numericScore : 0
 
   let colorClass = 'chip-gray'
-  if (displayScore === 5) colorClass = 'chip-green'
+  if (displayScore >= 5) colorClass = 'chip-green'
   else if (displayScore === 4) colorClass = 'chip-blue'
   else if (displayScore === 3) colorClass = 'chip-yellow'
   else if (displayScore === 2) colorClass = 'chip-orange'
@@ -18,37 +17,50 @@ function ScoreChip({ score }) {
   return <span className={`score-chip ${colorClass}`}>{displayScore}</span>
 }
 
-function normalizeProblemScores(problemScores) {
+function normalizeProblemScores(row) {
   const grouped = {
-    py: [],
-    sql: [],
+    py: Array(PYTHON_SLOT_COUNT).fill(0),
+    sql: Array(SQL_SLOT_COUNT).fill(0),
   }
 
-  const entries = problemScores && typeof problemScores === 'object'
-    ? Object.entries(problemScores)
-    : []
+  const problemScores = row.problem_scores || {}
+  const problemTestcases = row.problem_testcases || {}
 
-  entries.forEach(([key, value]) => {
-    const match = key.match(SCORE_KEY_PATTERN)
-    if (!match) {
-      return
+  let pyIdx = 0
+  let sqlIdx = 0
+
+  // 1. Check explicit P1_py / P1_sql keys
+  Object.entries(problemScores).forEach(([key, val]) => {
+    const match = key.match(/^P(\d+)_(py|sql)$/i)
+    if (match) {
+      const order = Number(match[1]) - 1
+      const lang = match[2].toLowerCase()
+      if (order >= 0 && order < 5) {
+        grouped[lang][order] = Number(val) || 0
+      }
     }
-
-    const order = Number(match[1])
-    const language = match[2].toLowerCase()
-    const numericValue = Number(value)
-    const normalizedValue = Number.isFinite(numericValue) ? numericValue : 0
-
-    grouped[language].push({
-      key,
-      order,
-      value: normalizedValue,
-    })
   })
 
-  const sortByOrder = (left, right) => left.order - right.order || left.key.localeCompare(right.key)
-  grouped.py.sort(sortByOrder)
-  grouped.sql.sort(sortByOrder)
+  // 2. If slots still 0, check problem_testcases entries
+  Object.entries(problemTestcases).forEach(([key, data]) => {
+    if (key.includes('easy_') || key.includes('medium_') || key.includes('hard_')) return
+    const passed = Number(data?.passed) || 0
+    const total = Number(data?.total) || 5
+    const scoreVal = total > 0 ? Math.round((passed / total) * 5) : 0
+
+    const isSql = String(key).toLowerCase().includes('sql')
+    if (isSql) {
+      if (sqlIdx < SQL_SLOT_COUNT && grouped.sql[sqlIdx] === 0) {
+        grouped.sql[sqlIdx] = scoreVal
+        sqlIdx++
+      }
+    } else {
+      if (pyIdx < PYTHON_SLOT_COUNT && grouped.py[pyIdx] === 0) {
+        grouped.py[pyIdx] = scoreVal
+        pyIdx++
+      }
+    }
+  })
 
   return grouped
 }
@@ -57,8 +69,6 @@ function ProblemDetailTable({ data }) {
   if (!data || data.length === 0) {
     return <div className="no-data">No data available</div>
   }
-
-  const normalizedRows = data.map(row => normalizeProblemScores(row.problem_scores))
 
   return (
     <div className="table-scroll-container">
@@ -81,7 +91,7 @@ function ProblemDetailTable({ data }) {
         </thead>
         <tbody>
           {data.map((row, idx) => {
-            const scores = normalizedRows[idx]
+            const scores = normalizeProblemScores(row)
 
             return (
               <tr key={row.candidate_id || idx}>
@@ -89,12 +99,12 @@ function ProblemDetailTable({ data }) {
                 <td className="name-cell">{row.name}</td>
                 {Array.from({ length: PYTHON_SLOT_COUNT }, (_, index) => (
                   <td key={`python-${index}`} className="python-col">
-                    <ScoreChip score={scores.py[index]?.value ?? 0} />
+                    <ScoreChip score={scores.py[index] ?? 0} />
                   </td>
                 ))}
                 {Array.from({ length: SQL_SLOT_COUNT }, (_, index) => (
                   <td key={`sql-${index}`} className="sql-col">
-                    <ScoreChip score={scores.sql[index]?.value ?? 0} />
+                    <ScoreChip score={scores.sql[index] ?? 0} />
                   </td>
                 ))}
               </tr>

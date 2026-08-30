@@ -1,7 +1,11 @@
 ﻿import { Fragment, useEffect, useMemo, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
 import { PlatformLogoSmall } from '../ui/Branding'
+import { getQuestionTypes, createQuestionType, deleteQuestionType } from '../../api'
+import { useToast } from '../ui/ToastProvider'
+import { useConfirm } from '../ui/ConfirmDialog'
+import { FiPlus, FiX } from 'react-icons/fi'
 import './AdminSidebarLayout.css'
 
 const SIDEBAR_STATE_KEY = 'admin_sidebar_collapsed'
@@ -135,9 +139,10 @@ function getNavIcon(href = '', label = '') {
   return <CodeIcon />
 }
 
-function isNavItemActive(item, pathname) {
+function isNavItemActive(item, pathname, search = '') {
   if (!item || !item.href) return false
-  if (Array.isArray(item.activePaths) && item.activePaths.some((path) => pathname === path || pathname.startsWith(`${path}/`))) {
+  const fullCurrent = pathname + (search || '')
+  if (Array.isArray(item.activePaths) && item.activePaths.some((path) => fullCurrent === path || pathname === path || pathname.startsWith(`${path}/`))) {
     return true
   }
   return pathname === item.href || pathname.startsWith(`${item.href}/`)
@@ -145,6 +150,64 @@ function isNavItemActive(item, pathname) {
 
 function getGroupKey(item) {
   return item.href || item.label
+}
+
+function AddTypeGlobalModal({ onAdd, onClose }) {
+  const [value, setValue] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const trimmed = value.trim()
+    if (!trimmed) {
+      setError('Please enter a type name (e.g. Java, C++, JavaScript)')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      await onAdd(trimmed)
+      onClose()
+    } catch (err) {
+      setError(err?.response?.data?.detail || err?.message || 'Failed to create question type table')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="qp-modal-overlay" onClick={onClose}>
+      <div className="qp-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="qp-modal-header">
+          <h3>Add Question Type</h3>
+          <button className="qp-modal-close" onClick={onClose} aria-label="Close"><FiX /></button>
+        </div>
+        <form onSubmit={handleSubmit}>
+          <p className="qp-modal-desc">
+            Enter a custom language like <code>Java</code>, <code>C++</code>, <code>JavaScript</code>.
+            A dedicated database table will be automatically provisioned in Turso.
+          </p>
+          <input
+            className="qp-modal-input"
+            type="text"
+            value={value}
+            onChange={(e) => { setValue(e.target.value); setError('') }}
+            placeholder="e.g. Java, C++, JavaScript"
+            autoFocus
+            disabled={loading}
+          />
+          {error && <p className="qp-modal-error">{error}</p>}
+          <div className="qp-modal-actions">
+            <button type="button" className="qp-modal-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
+            <button type="submit" className="qp-modal-btn-add" disabled={loading}>
+              <FiPlus /> {loading ? 'Creating Table…' : 'Add Type'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
 }
 
 function AdminSidebarLayout({
@@ -160,9 +223,106 @@ function AdminSidebarLayout({
   children,
 }) {
   const location = useLocation()
+  const navigate = useNavigate()
+  const toast = useToast()
+  const confirm = useConfirm()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(SIDEBAR_STATE_KEY) === '1')
   const [mobileOpen, setMobileOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState({})
+  const [globalQuestionTypes, setGlobalQuestionTypes] = useState([])
+  const [showGlobalAddType, setShowGlobalAddType] = useState(false)
+
+  // Load question types dynamically in sidebar
+  const fetchSidebarQuestionTypes = async () => {
+    try {
+      const types = await getQuestionTypes()
+      setGlobalQuestionTypes(types || [])
+    } catch (err) {
+      console.error('[Sidebar] Failed to load dynamic question types:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchSidebarQuestionTypes()
+  }, [location.pathname])
+
+  const handleGlobalCreateType = async (typeName) => {
+    const res = await createQuestionType(typeName)
+    toast.success(`Question type '${res.type?.display_name || typeName}' created! Database table provisioned.`)
+    await fetchSidebarQuestionTypes()
+    navigate(`/admin/questions/python_questions?type=${res.type?.slug || typeName.toLowerCase()}`)
+  }
+
+  const handleGlobalRemoveType = async (typeSlug) => {
+    const ok = await confirm({
+      title: 'Delete Question Type',
+      message: `Are you sure you want to delete question type "${typeSlug}"? This will drop its dedicated table from the database and remove all its questions.`,
+      confirmText: 'Delete Type & Table',
+      cancelText: 'Cancel',
+      type: 'danger'
+    })
+    if (!ok) return
+
+    try {
+      await deleteQuestionType(typeSlug)
+      toast.success(`Deleted question type '${typeSlug}'.`)
+      await fetchSidebarQuestionTypes()
+      navigate('/admin/questions/python_questions')
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || 'Failed to delete question type')
+    }
+  }
+
+  // Enrich navItems so that the Questions submenu ALWAYS has all dynamic types
+  const enrichedNavItems = useMemo(() => {
+    const customTypes = globalQuestionTypes.filter((t) => t.is_system === 0)
+    
+    return navItems.map((item) => {
+      if ((item.label || '').toLowerCase().includes('questions') && Array.isArray(item.children)) {
+        const baseSystemChildren = [
+          {
+            label: 'Python Questions',
+            href: '/admin/questions/python_questions',
+            activePaths: ['/admin/questions/python_questions', '/admin/questions/python'],
+          },
+          {
+            label: 'SQL Questions',
+            href: '/admin/questions/sql_questions',
+            activePaths: ['/admin/questions/sql_questions', '/admin/questions/sql'],
+          },
+          {
+            label: 'MCQ Questions',
+            href: '/admin/questions/mcq_questions',
+            activePaths: ['/admin/questions/mcq_questions', '/admin/questions/mcq'],
+          },
+        ]
+
+        const customChildren = customTypes.map((t) => ({
+          label: `${t.display_name} Questions`,
+          href: `/admin/questions/python_questions?type=${t.slug}`,
+          activePaths: [
+            `/admin/questions/python_questions?type=${t.slug}`,
+            `/admin/questions/python_questions?lang=${t.slug}`,
+          ],
+          isCustom: true,
+          typeKey: t.slug,
+        }))
+
+        return {
+          ...item,
+          children: [
+            ...baseSystemChildren,
+            ...customChildren,
+            {
+              label: '+ Add Type',
+              isAddButton: true,
+            },
+          ],
+        }
+      }
+      return item
+    })
+  }, [navItems, globalQuestionTypes])
 
   useEffect(() => {
     localStorage.setItem(SIDEBAR_STATE_KEY, collapsed ? '1' : '0')
@@ -175,17 +335,18 @@ function AdminSidebarLayout({
   useEffect(() => {
     setExpandedGroups((prev) => {
       const next = { ...prev }
-      navItems.forEach((item) => {
+      enrichedNavItems.forEach((item) => {
         if (!Array.isArray(item.children) || item.children.length === 0) return
         const key = getGroupKey(item)
-        const shouldOpen = isNavItemActive(item, location.pathname) || item.children.some((child) => isNavItemActive(child, location.pathname))
+        const shouldOpen = isNavItemActive(item, location.pathname, location.search) ||
+          item.children.some((child) => isNavItemActive(child, location.pathname, location.search))
         if (prev[key] === undefined || shouldOpen) {
           next[key] = true
         }
       })
       return next
     })
-  }, [location.pathname, navItems])
+  }, [location.pathname, location.search, enrichedNavItems])
 
   const flattenedNavItems = useMemo(() => {
     const flattened = []
@@ -197,13 +358,13 @@ function AdminSidebarLayout({
         }
       })
     }
-    walk(navItems)
+    walk(enrichedNavItems)
     return flattened
-  }, [navItems])
+  }, [enrichedNavItems])
 
   const activeItem = useMemo(
-    () => flattenedNavItems.find((item) => isNavItemActive(item, location.pathname)),
-    [flattenedNavItems, location.pathname]
+    () => flattenedNavItems.find((item) => isNavItemActive(item, location.pathname, location.search)),
+    [flattenedNavItems, location.pathname, location.search]
   )
 
   const currentLabel = activeItem?.label || 'Admin Dashboard'
@@ -211,7 +372,7 @@ function AdminSidebarLayout({
     ? sidebarExtra({ collapsed, pathname: location.pathname })
     : sidebarExtra
   const appendSidebarExtraToEnd = Boolean(renderedSidebarExtra) && (
-    !sidebarExtraAfterHref || !navItems.some((item) => item.href === sidebarExtraAfterHref)
+    !sidebarExtraAfterHref || !enrichedNavItems.some((item) => item.href === sidebarExtraAfterHref)
   )
 
   const toggleGroup = (item) => {
@@ -237,7 +398,7 @@ function AdminSidebarLayout({
             <button
               type="button"
               className="admin-shell-brand"
-              onClick={() => onNavigate(navItems[0]?.href || '/admin/dashboard/assessment')}
+              onClick={() => onNavigate(enrichedNavItems[0]?.href || '/admin/dashboard/assessment')}
               aria-label="Go to assessment dashboard"
             >
               <PlatformLogoSmall />
@@ -256,12 +417,11 @@ function AdminSidebarLayout({
         </div>
 
         <nav className="admin-shell-nav">
-          {navItems.map((item) => {
+          {enrichedNavItems.map((item) => {
             const hasChildren = Array.isArray(item.children) && item.children.length > 0
-            const hasActiveChild = hasChildren && item.children.some((child) => isNavItemActive(child, location.pathname))
-            const isActive = isNavItemActive(item, location.pathname) || hasActiveChild
+            const hasActiveChild = hasChildren && item.children.some((child) => isNavItemActive(child, location.pathname, location.search))
+            const isActive = isNavItemActive(item, location.pathname, location.search) || hasActiveChild
             const isExpanded = hasChildren ? Boolean(expandedGroups[getGroupKey(item)]) : false
-            const insertSidebarExtraAfterItem = Boolean(renderedSidebarExtra) && item.href === sidebarExtraAfterHref
 
             return (
               <Fragment key={`${item.label}-${item.href || 'root'}`}>
@@ -306,6 +466,7 @@ function AdminSidebarLayout({
                               className="admin-shell-subnav-add-btn"
                               onClick={() => {
                                 if (onAddType) onAddType()
+                                else setShowGlobalAddType(true)
                               }}
                             >
                               <span className="admin-shell-nav-icon" aria-hidden="true">
@@ -316,7 +477,7 @@ function AdminSidebarLayout({
                           )
                         }
 
-                        const isChildActive = isNavItemActive(child, location.pathname)
+                        const isChildActive = isNavItemActive(child, location.pathname, location.search)
                         return (
                           <div key={`${child.label}-${child.href || 'child'}`} className="admin-shell-subnav-row">
                             <button
@@ -331,14 +492,18 @@ function AdminSidebarLayout({
                               <span className="admin-shell-nav-label">{child.label}</span>
                             </button>
 
-                            {child.isCustom && onRemoveCustomType && (
+                            {child.isCustom && (
                               <button
                                 type="button"
                                 className="admin-shell-subnav-del-btn"
                                 title={`Remove ${child.label}`}
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  onRemoveCustomType(child.typeKey || child.label.replace(' Questions', '').toLowerCase())
+                                  if (onRemoveCustomType) {
+                                    onRemoveCustomType(child.typeKey || child.label.replace(' Questions', '').toLowerCase())
+                                  } else {
+                                    handleGlobalRemoveType(child.typeKey || child.label.replace(' Questions', '').toLowerCase())
+                                  }
                                 }}
                               >
                                 <CloseIcon />
@@ -350,32 +515,19 @@ function AdminSidebarLayout({
                     </div>
                   )}
                 </div>
-
-                {insertSidebarExtraAfterItem && (
-                  <div className="admin-shell-nav-extra">
-                    {renderedSidebarExtra}
-                  </div>
-                )}
               </Fragment>
             )
           })}
-
-          {appendSidebarExtraToEnd && (
-            <div className="admin-shell-nav-extra">
-              {renderedSidebarExtra}
-            </div>
-          )}
         </nav>
 
-        <div className="admin-shell-sidebar-footer">
+        <div className="admin-shell-footer">
           <button
             type="button"
             className="admin-shell-logout"
             onClick={onLogout}
             title={collapsed ? 'Logout' : undefined}
-            aria-label="Log out"
           >
-            <span className="admin-shell-nav-icon" aria-hidden="true">
+            <span className="admin-shell-logout-icon" aria-hidden="true">
               <LogoutIcon />
             </span>
             <span className="admin-shell-nav-label">Logout</span>
@@ -389,38 +541,36 @@ function AdminSidebarLayout({
             <button
               type="button"
               className="admin-shell-mobile-toggle"
+              onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Open navigation menu"
-              onClick={() => setMobileOpen(true)}
             >
               <MenuIcon />
             </button>
-            {collapsed && (
-              <div className="admin-shell-topbar-brand" aria-hidden="true">
-                <img
-                  className="admin-shell-topbar-brand-img"
-                  src="/assets/meptrasoft-logo.png"
-                  alt=""
-                />
-              </div>
-            )}
-            <p className="admin-shell-page-title">{currentLabel}</p>
+            <h1 className="admin-shell-page-title">{currentLabel}</h1>
           </div>
 
           <div className="admin-shell-topbar-right">
             <ThemeToggle />
-            <div className="admin-shell-user-chip" title={adminName || 'Admin User'}>
+            <div className="admin-shell-user">
               <span className="admin-shell-user-avatar" aria-hidden="true">
                 {(adminName || 'A').charAt(0).toUpperCase()}
               </span>
-              <span className="admin-shell-user-name">{adminName || 'Admin User'}</span>
+              <span className="admin-shell-user-name">{adminName}</span>
             </div>
           </div>
         </header>
 
-        <div className="admin-shell-body">
+        <main className="admin-shell-body">
           {children}
-        </div>
+        </main>
       </div>
+
+      {showGlobalAddType && (
+        <AddTypeGlobalModal
+          onAdd={handleGlobalCreateType}
+          onClose={() => setShowGlobalAddType(false)}
+        />
+      )}
     </div>
   )
 }

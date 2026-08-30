@@ -1,4 +1,4 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
@@ -220,5 +220,46 @@ export const deleteMcqQuestion = async (questionId) => {
   return response.data
 }
 
-export default api
 
+// Dynamic Question Types & per-type question management
+export const getQuestionTypes = async () => {
+  const response = await api.get('/admin/question-types')
+  return response.data.types || []
+}
+
+export const createQuestionType = async (name) => {
+  const response = await api.post('/admin/question-types', { name })
+  return response.data
+}
+
+export const deleteQuestionType = async (slug) => {
+  const response = await api.delete(`/admin/question-types/${slug}`)
+  return response.data
+}
+
+export const getQuestionsByType = async (type) => {
+  const response = await api.get(`/admin/questions-by-type/${type}`)
+  return response.data || []
+}
+
+export const createQuestionUnderType = async (type, payload) => {
+  const response = await api.post(`/admin/questions-by-type/${type}`, payload)
+  return response.data
+}
+
+export const deleteQuestionUnderType = async (type, id) => {
+  const response = await api.delete(`/admin/questions-by-type/${type}/${id}`)
+  return response.data
+}
+
+// Groq Vision AI Proctoring: analyze webcam frame
+export const analyzeProctorFrame = async (imageBase64, candidateId, sessionId) => {
+  const response = await api.post('/proctoring/ai-analyze', {
+    image: imageBase64,
+    candidateId,
+    sessionId,
+  })
+  return response.data
+}
+
+export default api

@@ -1,133 +1,101 @@
+﻿import { createPortal } from 'react-dom'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiLock, FiMaximize, FiAlertTriangle, FiHeart, FiXOctagon, FiShield } from 'react-icons/fi'
+import { FiLock, FiMaximize, FiAlertTriangle, FiXOctagon, FiShield, FiAlertCircle } from 'react-icons/fi'
 import { ProctoringProvider } from './ProctoringProvider'
 import { ProctoringStatus } from './ProctoringStatus'
 import { CameraPreview } from './CameraPreview'
 import { useProctoring } from './useProctoring'
-import { submitExam } from '../../api'
+import { submitExam, analyzeProctorFrame } from '../../api'
 import './ExamProctoringShell.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
-const EXAM_LIVES_KEY = 'exam_proctoring_lives'
-const INITIAL_LIVES = 3
-const TIME_PENALTY_SECONDS = 60
+const AI_SCAN_INTERVAL_MS = 20000 // Periodic background scan every 20s
+const MAX_CRITICAL_FLAGS = 5     // Max critical fraud flags before auto-submit
 
 /**
  * AntiScreenshotShield:
- * Instantly renders an opaque solid blackout barrier across the entire screen
- * whenever:
- * 1. Window loses focus (blur event - e.g. when Snipping Tool, Xbox overlay, or screenshot utility is activated)
- * 2. Tab becomes hidden
- * 3. Any screenshot shortcut key (PrintScreen, Win+Shift+S, Meta+Shift+3/4/5, Alt+PrtScn, Ctrl+P) is pressed
- * This guarantees any external screenshot tool captures ONLY the black shield.
+ * Protects test content by blurring on snipping tool, print screen, and tab switches.
  */
 function AntiScreenshotShield() {
   const [isShieldActive, setIsShieldActive] = useState(false)
-  const isSecure = localStorage.getItem(EXAM_SECURE_MODE_KEY) === 'true'
+
+  const wipeClipboard = useCallback(() => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText('').catch(() => {})
+      }
+    } catch {}
+  }, [])
+
+  const triggerShield = useCallback(() => {
+    wipeClipboard()
+    document.body.classList.add('eps-page-blur')
+    setIsShieldActive(true)
+  }, [wipeClipboard])
+
+  const dismissShield = useCallback(() => {
+    document.body.classList.remove('eps-page-blur')
+    setIsShieldActive(false)
+    setTimeout(() => window.focus(), 50)
+  }, [])
 
   useEffect(() => {
-    if (!isSecure) return
-
-    const wipeClipboard = () => {
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText('Screenshots and clipboard copying are prohibited during the assessment.').catch(() => {})
-        }
-      } catch {}
-    }
-
-    const triggerShield = () => {
-      wipeClipboard()
-      setIsShieldActive(true)
-    }
-
-    const dismissShield = () => {
-      setIsShieldActive(false)
-    }
-
-    // 1. Loss of window focus (e.g. Snipping tool, Alt+Tab, PrtScn overlay)
-    const handleBlur = () => {
-      triggerShield()
-    }
-
-    const handleFocus = () => {
-      dismissShield()
-    }
-
-    // 2. Visibility change
-    const handleVisibility = () => {
-      if (document.hidden) {
-        triggerShield()
-      } else {
-        dismissShield()
-      }
-    }
-
-    // 3. Screenshot key combinations
     const handleKey = (e) => {
-      const k = e.key?.toLowerCase()
-      const isPrtScn = e.key === 'PrintScreen' || e.keyCode === 44 || k === 'printscreen'
+      const k = (e.key || '').toLowerCase()
+      const code = (e.code || '').toLowerCase()
+      const isPrtScn = e.key === 'PrintScreen' || e.keyCode === 44 || k === 'printscreen' || code === 'printscreen'
       const isSnipping = (e.metaKey || e.ctrlKey) && e.shiftKey && (k === 's' || k === '3' || k === '4' || k === '5')
       const isAltPrtScn = e.altKey && isPrtScn
       const isPrint = (e.ctrlKey || e.metaKey) && k === 'p'
 
       if (isPrtScn || isSnipping || isAltPrtScn || isPrint) {
-        e.preventDefault()
-        e.stopPropagation()
+        try { e.preventDefault(); e.stopPropagation() } catch {}
         triggerShield()
-        // Keep shield up to ensure screenshot tools grab only the shield
-        setTimeout(() => {
-          if (document.hasFocus()) dismissShield()
-        }, 1500)
       }
     }
 
-    window.addEventListener('blur', handleBlur)
-    window.addEventListener('focus', handleFocus)
-    document.addEventListener('visibilitychange', handleVisibility)
+    const handleVisibility = () => {
+      if (document.hidden) triggerShield()
+    }
+
     window.addEventListener('keydown', handleKey, { capture: true })
     window.addEventListener('keyup', handleKey, { capture: true })
-
-    // Check initial focus
-    if (!document.hasFocus()) {
-      setIsShieldActive(true)
-    }
+    document.addEventListener('visibilitychange', handleVisibility, { capture: true })
 
     return () => {
-      window.removeEventListener('blur', handleBlur)
-      window.removeEventListener('focus', handleFocus)
-      document.removeEventListener('visibilitychange', handleVisibility)
+      document.body.classList.remove('eps-page-blur')
       window.removeEventListener('keydown', handleKey, { capture: true })
       window.removeEventListener('keyup', handleKey, { capture: true })
+      document.removeEventListener('visibilitychange', handleVisibility, { capture: true })
     }
-  }, [isSecure])
+  }, [triggerShield])
 
-  if (!isSecure || !isShieldActive) return null
+  if (!isShieldActive) return null
 
-  return (
-    <div 
-      className="eps-screenshot-curtain"
-      onClick={() => setIsShieldActive(false)}
-      role="alert"
-      aria-live="assertive"
+  return createPortal(
+    <div
+      className="eps-blur-overlay"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => { if (e.target === e.currentTarget) dismissShield() }}
     >
-      <div className="eps-screenshot-curtain-card">
-        <FiShield size={56} style={{ color: '#ef4444', marginBottom: '16px' }} />
+      <div className="eps-blur-card" onClick={(e) => e.stopPropagation()}>
+        <div className="eps-blur-icon-wrap">
+          <FiShield size={32} />
+        </div>
         <h2>Screen Content Protected</h2>
-        <p>
-          Screenshots, snipping tools, and background window captures are blocked for exam security.
-        </p>
-        <span className="eps-curtain-resume-hint">
-          Click anywhere in this window to resume assessment
-        </span>
+        <p>Screenshots, snipping tools, and screen capture are restricted during this assessment.</p>
+        <button type="button" className="eps-btn-continue" onClick={dismissShield} autoFocus>
+          OK to Continue
+        </button>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
 function FullscreenLockOverlay() {
-  const proctoring = useProctoring()
   const [isFullscreen, setIsFullscreen] = useState(Boolean(document.fullscreenElement))
   const isSecureExamStarted = localStorage.getItem(EXAM_SECURE_MODE_KEY) === 'true'
 
@@ -138,11 +106,7 @@ function FullscreenLockOverlay() {
   }, [])
 
   const handleReenter = async () => {
-    try {
-      if (document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen()
-      }
-    } catch {}
+    try { await document.documentElement.requestFullscreen() } catch {}
   }
 
   if (!isSecureExamStarted || isFullscreen) return null
@@ -161,22 +125,21 @@ function FullscreenLockOverlay() {
   )
 }
 
-function ProctoringSurveillanceGuard() {
+/**
+ * Inner shell that connects the proctoring camera control with AI Vision verification.
+ */
+function ExamProctoringShellInner({ children }) {
   const navigate = useNavigate()
   const proctoring = useProctoring()
-  const [lives, setLives] = useState(() => {
-    const saved = localStorage.getItem(EXAM_LIVES_KEY)
-    return saved !== null ? parseInt(saved, 10) : INITIAL_LIVES
-  })
-  const [missingSeconds, setMissingSeconds] = useState(0)
   const [isDisqualified, setIsDisqualified] = useState(false)
-  const [penaltyMessage, setPenaltyMessage] = useState('')
-  const lastViolationRef = useRef(null)
+  const [aiStatus, setAiStatus] = useState('idle') // idle | scanning | clean | warning | critical
+  const [aiReason, setAiReason] = useState('')
+  const [riskScore, setRiskScore] = useState(0)
+  const [criticalCount, setCriticalCount] = useState(0)
+  const [warningMessage, setWarningMessage] = useState('')
+  const scanTimerRef = useRef(null)
+  const lastScanTimeRef = useRef(0)
   const isSecure = localStorage.getItem(EXAM_SECURE_MODE_KEY) === 'true'
-
-  const playAlert = useCallback(() => {
-    try { new Audio('https://www.soundjay.com/buttons/sounds/beep-01a.mp3').play().catch(() => {}) } catch {}
-  }, [])
 
   const handleDisqualification = useCallback(async () => {
     setIsDisqualified(true)
@@ -189,70 +152,109 @@ function ProctoringSurveillanceGuard() {
     finally {
       localStorage.removeItem(EXAM_SECURE_MODE_KEY)
       localStorage.removeItem('exam_answers')
-      navigate('/submission-complete?reason=proctoring_exhausted')
+      navigate('/submission-complete?reason=ai_fraud_detected')
     }
   }, [navigate])
 
-  // Face absence monitor
-  useEffect(() => {
-    if (!isSecure || proctoring?.status !== 'active') return
-    let timer = null
-    const fc = proctoring.faceCount ?? 1
+  // Capture frame from the camera feed controlled by the proctoring engine
+  const captureFrame = useCallback(() => {
+    const video = proctoring?.videoElement
+    if (!video || video.readyState < 2 || video.videoWidth === 0) return null
 
-    if (fc === 0) {
-      timer = setInterval(() => {
-        setMissingSeconds(prev => {
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.min(video.videoWidth, 640)
+    canvas.height = Math.min(video.videoHeight, 480)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return null
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+    return canvas.toDataURL('image/jpeg', 0.6)
+  }, [proctoring?.videoElement])
+
+  const showWarning = useCallback((msg) => {
+    setWarningMessage(msg)
+    setTimeout(() => setWarningMessage(''), 6000)
+  }, [])
+
+  // Execute AI vision analysis on the camera frame
+  const executeAIScan = useCallback(async () => {
+    if (!isSecure || proctoring?.status !== 'active') return
+    const now = Date.now()
+    if (now - lastScanTimeRef.current < 5000) return // Throttle min 5s between scans
+    lastScanTimeRef.current = now
+
+    const frame = captureFrame()
+    if (!frame) return
+
+    setAiStatus('scanning')
+    try {
+      const candidateId = localStorage.getItem('user_id') || localStorage.getItem('user_name') || 'unknown'
+      const sessionId = localStorage.getItem('session_id') || 'unknown'
+      const result = await analyzeProctorFrame(frame, candidateId, sessionId)
+      
+      setRiskScore(result.risk_score)
+      setAiReason(result.reason)
+
+      if (result.risk_score >= 80) {
+        setAiStatus('critical')
+        setCriticalCount(prev => {
           const next = prev + 1
-          if (next >= 5) {
-            setLives(curr => {
-              const rem = curr - 1
-              localStorage.setItem(EXAM_LIVES_KEY, rem.toString())
-              playAlert()
-              if (rem <= 0) handleDisqualification()
-              return Math.max(0, rem)
-            })
-            return 0
-          }
+          if (next >= MAX_CRITICAL_FLAGS) handleDisqualification()
           return next
         })
-      }, 1000)
-    } else {
-      setMissingSeconds(0)
+        showWarning(`🚨 AI Fraud Alert: ${result.reason}`)
+      } else if (result.risk_score >= 40) {
+        setAiStatus('warning')
+        showWarning(`⚠️ AI Warning: ${result.reason}`)
+      } else {
+        setAiStatus('clean')
+      }
+    } catch (err) {
+      console.error('[AI Proctor] Scan error:', err)
+      setAiStatus('idle')
     }
-    return () => { if (timer) clearInterval(timer) }
-  }, [isSecure, proctoring?.status, proctoring?.faceCount, playAlert, handleDisqualification])
+  }, [isSecure, proctoring?.status, captureFrame, handleDisqualification, showWarning])
 
-  // Violation penalties
+  // Trigger immediate AI verification if camera face detector notices anomalies
+  useEffect(() => {
+    if (!isSecure || proctoring?.status !== 'active') return
+    if (proctoring.faceCount === 0 || proctoring.faceCount > 1) {
+      executeAIScan()
+    }
+  }, [isSecure, proctoring?.status, proctoring?.faceCount, executeAIScan])
+
+  // Periodic AI verification loop
+  useEffect(() => {
+    if (!isSecure || proctoring?.status !== 'active') return
+
+    const initialTimeout = setTimeout(executeAIScan, 4000)
+    scanTimerRef.current = setInterval(executeAIScan, AI_SCAN_INTERVAL_MS)
+
+    return () => {
+      clearTimeout(initialTimeout)
+      if (scanTimerRef.current) clearInterval(scanTimerRef.current)
+    }
+  }, [isSecure, proctoring?.status, executeAIScan])
+
+  // Time penalty for browser violations
+  const lastViolationRef = useRef(null)
   useEffect(() => {
     if (!isSecure || !proctoring?.violation) return
     const v = proctoring.violation
     if (lastViolationRef.current === v.timestamp) return
     lastViolationRef.current = v.timestamp
 
-    const penalize = ['SCREENSHOT_ATTEMPT', 'DEVTOOLS_ATTEMPT', 'APP_SWITCH_ATTEMPT', 'TAB_SWITCH', 'FULLSCREEN_EXIT', 'MULTIPLE_FACES']
+    const penalize = ['SCREENSHOT_ATTEMPT', 'DEVTOOLS_ATTEMPT', 'APP_SWITCH_ATTEMPT', 'TAB_SWITCH', 'FULLSCREEN_EXIT']
     if (penalize.includes(v.type)) {
       const curr = parseInt(localStorage.getItem('exam_remaining') || '0', 10)
       if (curr > 0) {
-        localStorage.setItem('exam_remaining', Math.max(0, curr - TIME_PENALTY_SECONDS).toString())
-        window.dispatchEvent(new CustomEvent('exam_time_penalty', { detail: { penaltySeconds: TIME_PENALTY_SECONDS, reason: v.type } }))
+        localStorage.setItem('exam_remaining', Math.max(0, curr - 60).toString())
+        window.dispatchEvent(new CustomEvent('exam_time_penalty', { detail: { penaltySeconds: 60, reason: v.type } }))
       }
-      setPenaltyMessage(v.type.replace(/_/g, ' ') + ' — ' + TIME_PENALTY_SECONDS + 's penalty')
-      playAlert()
-      setTimeout(() => setPenaltyMessage(''), 4000)
+      showWarning(`⚠️ ${v.type.replace(/_/g, ' ')} — 60s time penalty`)
+      // Trigger AI scan on violation to see candidate screen/action
+      executeAIScan()
     }
-  }, [isSecure, proctoring?.violation, playAlert])
-
-  // Sync lives from storage
-  useEffect(() => {
-    const handler = () => {
-      const s = localStorage.getItem(EXAM_LIVES_KEY)
-      if (s !== null) setLives(parseInt(s, 10))
-    }
-    window.addEventListener('storage', handler)
-    return () => window.removeEventListener('storage', handler)
-  }, [])
-
-  if (!isSecure) return null
+  }, [isSecure, proctoring?.violation, showWarning, executeAIScan])
 
   if (isDisqualified) {
     return (
@@ -260,38 +262,36 @@ function ProctoringSurveillanceGuard() {
         <div className="eps-lock-modal eps-disqualified">
           <FiXOctagon size={44} />
           <h2>Exam Terminated</h2>
-          <p>All 3 proctoring lives exhausted. Your exam has been auto-submitted.</p>
+          <p>Multiple critical fraud indicators detected by AI vision proctoring. Your exam has been auto-submitted.</p>
         </div>
       </div>
     )
   }
 
   return (
-    <>
-      {/* Face absence warning */}
-      {missingSeconds > 0 && proctoring?.faceCount === 0 && (
-        <div className="eps-face-warn">
-          <FiAlertTriangle size={20} />
-          <span>Face not detected! {5 - missingSeconds}s left or lose 1 life</span>
-          <span className="eps-lives-pill">{lives}/3</span>
+    <div className="eps-shell">
+      {/* Top Proctoring Bar with live AI verification indicator */}
+      <ProctoringStatus aiStatus={aiStatus} riskScore={riskScore} />
+
+      {/* Main Workspace */}
+      {children}
+
+      {/* Draggable Camera Preview using the proctoring engine stream */}
+      <CameraPreview aiStatus={aiStatus} aiReason={aiReason} riskScore={riskScore} />
+
+      {/* Overlays */}
+      <FullscreenLockOverlay />
+      <AntiScreenshotShield />
+
+      {/* AI Fraud Warning Toast */}
+      {warningMessage && (
+        <div className={`eps-ai-warning ${aiStatus === 'critical' ? 'critical' : 'warning'}`}>
+          <FiAlertCircle size={18} />
+          <span>{warningMessage}</span>
+          <span className="eps-ai-flags">{criticalCount}/{MAX_CRITICAL_FLAGS} flags</span>
         </div>
       )}
-
-      {/* Penalty toast */}
-      {penaltyMessage && (
-        <div className="eps-penalty-toast">
-          <FiAlertTriangle size={16} />
-          <span>{penaltyMessage}</span>
-        </div>
-      )}
-
-      {/* Lives HUD */}
-      <div className="eps-lives-hud">
-        {[1, 2, 3].map(i => (
-          <FiHeart key={i} size={14} className={i <= lives ? 'eps-heart-active' : 'eps-heart-lost'} />
-        ))}
-      </div>
-    </>
+    </div>
   )
 }
 
@@ -301,14 +301,7 @@ export function ExamProctoringShell({ children }) {
 
   return (
     <ProctoringProvider testId={sessionId} candidateId={candidateId} enabled={true}>
-      <div className="eps-shell">
-        <ProctoringStatus />
-        {children}
-        <CameraPreview />
-        <FullscreenLockOverlay />
-        <AntiScreenshotShield />
-        <ProctoringSurveillanceGuard />
-      </div>
+      <ExamProctoringShellInner>{children}</ExamProctoringShellInner>
     </ProctoringProvider>
   )
 }

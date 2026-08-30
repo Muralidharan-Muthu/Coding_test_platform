@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+﻿import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPracticeProblems } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
@@ -72,7 +72,7 @@ function PracticeProblems() {
   }
 
   const openProblem = (problemId) => {
-    navigate('/coding/' + problemId + '?mode=practice')
+    navigate('/practice/coding/' + problemId)
   }
 
   const handleSelectMcqOption = (questionId, optionIndex) => {

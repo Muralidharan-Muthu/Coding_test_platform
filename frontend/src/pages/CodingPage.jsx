@@ -791,17 +791,15 @@ function CodingPage() {
             )}
           </div>
 
-          <div className="toolbar-center">
+          <div className="toolbar-center" />
+
+          <div className="toolbar-right">
             <button onClick={handleRun} disabled={loading} className="btn-run-toolbar">
               <span className="toolbar-btn-icon"><FiPlay /></span> {loading ? 'Running...' : 'Run'}
             </button>
             <button onClick={handleSubmit} disabled={loading} className="btn-submit-toolbar">
               <span className="toolbar-btn-icon"><FiUploadCloud /></span> {loading ? 'Submitting...' : 'Submit'}
             </button>
-          </div>
-
-          <div className="toolbar-right">
-            {isExamMode && isExamActive && <ProctoringStatus />}
             {isExamMode && (
               <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
                 <span className="timer-icon" aria-hidden="true"><FiClock /></span>

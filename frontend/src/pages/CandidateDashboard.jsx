@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import { getExamStatus, getExamSummary } from '../api'
@@ -6,7 +6,7 @@ import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession } from '../utils/sessionStorage'
-import { FiCamera, FiShield, FiMonitor, FiAlertTriangle, FiClock, FiRefreshCw } from 'react-icons/fi'
+import { FiCamera, FiShield, FiMonitor, FiLock, FiClock, FiRefreshCw, FiCode, FiEye } from 'react-icons/fi'
 import './CandidateDashboard.css'
 
 const webcamConstraints = { facingMode: 'user' }
@@ -68,12 +68,16 @@ function CandidateDashboard() {
     localStorage.removeItem('candidate_photo_verified')
   }
 
-  const handleStartExam = () => {
+  const handleStartExam = async () => {
     setStartingExam(true)
     setActionError('')
     try {
       if (!localStorage.getItem('exam_answers')) {
         localStorage.setItem('exam_answers', JSON.stringify({}))
+      }
+      // Enter fullscreen directly on user gesture
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        try { await document.documentElement.requestFullscreen() } catch {}
       }
       navigate('/test-structure')
     } catch (err) {
@@ -83,7 +87,13 @@ function CandidateDashboard() {
     }
   }
 
-  const handleContinueExam = () => navigate('/test-structure')
+  const handleContinueExam = async () => {
+    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+      try { await document.documentElement.requestFullscreen() } catch {}
+    }
+    navigate('/test-structure')
+  }
+
   const handleLogout = () => { clearCandidateSession(); navigate('/') }
 
   const getDifficultyColor = (d) => {
@@ -96,12 +106,25 @@ function CandidateDashboard() {
   }
 
   const renderLangBadge = (lang) => {
-    if (lang === 'python') return <span className="cd-lang python"><PythonIcon size={12} /> Python</span>
-    if (lang === 'sql') return <span className="cd-lang sql"><DatabaseIcon size={12} /> SQL</span>
-    return <span className="cd-lang mcq"><ChecklistIcon size={12} /> MCQ</span>
+    const l = (lang || '').toLowerCase()
+    if (l === 'python') return <span className="cd-lang python"><PythonIcon size={12} /> Python</span>
+    if (l === 'sql') return <span className="cd-lang sql"><DatabaseIcon size={12} /> SQL</span>
+    if (l === 'mcq') return <span className="cd-lang mcq"><ChecklistIcon size={12} /> MCQ</span>
+    return <span className="cd-lang" style={{ background: '#8b5cf6', color: '#fff' }}><FiCode size={12} /> {l.toUpperCase()}</span>
   }
 
-  if (loading) return <Spinner label="Loading..." size={40} fullPage />
+  // Dynamic breakdown of languages present in questions
+  const languageStats = useMemo(() => {
+    const problems = examSummary?.problems || []
+    const counts = {}
+    problems.forEach((p) => {
+      const lang = (p.language || 'python').toLowerCase()
+      counts[lang] = (counts[lang] || 0) + 1
+    })
+    return counts
+  }, [examSummary])
+
+  if (loading) return <Spinner label="Loading exam data…" size={40} fullPage />
 
   const photoReady = !!capturedImage || examStarted
 
@@ -121,7 +144,7 @@ function CandidateDashboard() {
 
       <div className="cd-body">
         <div className="cd-main">
-          {/* Stats Row */}
+          {/* Dynamic Stats Row */}
           <div className="cd-stats">
             <div className="cd-stat">
               <ClockIcon size={18} />
@@ -133,46 +156,76 @@ function CandidateDashboard() {
             <div className="cd-stat">
               <ChecklistIcon size={18} />
               <div>
-                <span className="cd-stat-val">{examSummary?.total_questions || 0}</span>
+                <span className="cd-stat-val">{examSummary?.total_questions || (examSummary?.problems?.length || 0)}</span>
                 <span className="cd-stat-lbl">Questions</span>
               </div>
             </div>
-            <div className="cd-stat">
-              <PythonIcon size={18} />
-              <div>
-                <span className="cd-stat-val">{examSummary?.python_questions || 0}</span>
-                <span className="cd-stat-lbl">Python</span>
-              </div>
-            </div>
-            <div className="cd-stat">
-              <DatabaseIcon size={18} />
-              <div>
-                <span className="cd-stat-val">{examSummary?.sql_questions || 0}</span>
-                <span className="cd-stat-lbl">SQL</span>
-              </div>
-            </div>
-            <div className="cd-stat">
-              <ChecklistIcon size={18} />
-              <div>
-                <span className="cd-stat-val">{examSummary?.mcq_questions || 0}</span>
-                <span className="cd-stat-lbl">MCQ</span>
-              </div>
-            </div>
+
+            {Object.keys(languageStats).length > 0 ? (
+              Object.entries(languageStats).map(([lang, count]) => (
+                <div key={lang} className="cd-stat">
+                  {lang === 'python' && <PythonIcon size={18} />}
+                  {lang === 'sql' && <DatabaseIcon size={18} />}
+                  {lang === 'mcq' && <ChecklistIcon size={18} />}
+                  {!['python', 'sql', 'mcq'].includes(lang) && <FiCode size={18} style={{ color: '#8b5cf6' }} />}
+                  <div>
+                    <span className="cd-stat-val">{count}</span>
+                    <span className="cd-stat-lbl">{lang.toUpperCase()}</span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div className="cd-stat">
+                  <PythonIcon size={18} />
+                  <div>
+                    <span className="cd-stat-val">{examSummary?.python_questions || 0}</span>
+                    <span className="cd-stat-lbl">Python</span>
+                  </div>
+                </div>
+                <div className="cd-stat">
+                  <DatabaseIcon size={18} />
+                  <div>
+                    <span className="cd-stat-val">{examSummary?.sql_questions || 0}</span>
+                    <span className="cd-stat-lbl">SQL</span>
+                  </div>
+                </div>
+                <div className="cd-stat">
+                  <ChecklistIcon size={18} />
+                  <div>
+                    <span className="cd-stat-val">{examSummary?.mcq_questions || 0}</span>
+                    <span className="cd-stat-lbl">MCQ</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Rules */}
+          {/* Current Professional AI Proctoring Rules */}
           <div className="cd-rules">
-            <h4>Exam Rules</h4>
-            <div className="cd-rule"><FiCamera size={16} /><span><b>Camera:</b> Stay visible. 5s absence = lose 1 of 3 lives.</span></div>
-            <div className="cd-rule"><FiMonitor size={16} /><span><b>Fullscreen:</b> Must stay in fullscreen throughout the test.</span></div>
-            <div className="cd-rule"><FiAlertTriangle size={16} /><span><b>Shortcuts:</b> PrintScreen, DevTools, Alt+Tab = 60s penalty each.</span></div>
-            <div className="cd-rule"><FiClock size={16} /><span><b>Auto-submit:</b> Timer runs out or 0 lives = exam submitted.</span></div>
+            <h4>Assessment Guidelines & Security Rules</h4>
+            <div className="cd-rule">
+              <FiEye size={16} />
+              <span><b>AI Vision Proctoring:</b> Continuous automated monitoring for candidate face visibility, multi-person detection, mobile phones, and external aids via sequential Groq AI models.</span>
+            </div>
+            <div className="cd-rule">
+              <FiMonitor size={16} />
+              <span><b>Fullscreen Security:</b> The assessment must remain in locked fullscreen mode throughout. Tab switching or exiting fullscreen logs a fraud infraction.</span>
+            </div>
+            <div className="cd-rule">
+              <FiLock size={16} />
+              <span><b>Screen Content Protection:</b> Screenshots, Snipping Tool, PrintScreen, DevTools, and shortcut keys are strictly blocked and screen content is automatically blurred.</span>
+            </div>
+            <div className="cd-rule">
+              <FiClock size={16} />
+              <span><b>Timed Auto-Submission:</b> When the 150-minute exam timer reaches zero or upon manual completion, your assessment is automatically submitted.</span>
+            </div>
           </div>
 
           {/* Questions Table */}
           {examSummary?.problems?.length > 0 && (
             <div className="cd-table-wrap">
-              <h4>Questions</h4>
+              <h4>Assigned Questions Overview</h4>
               <table className="cd-table">
                 <thead>
                   <tr><th>Title</th><th>Type</th><th>Level</th><th>Marks</th></tr>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import { useConfirm } from '../components/ui/ConfirmDialog'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import * as XLSX from 'xlsx'
@@ -14,6 +15,7 @@ const EMPTY_EDIT_FORM = { username: '', email: '' }
 function CandidateOTP() {
   const navigate = useNavigate()
   const toast = useToast()
+  const confirm = useConfirm()
   const [adminName, setAdminName] = useState('')
   const [candidates, setCandidates] = useState([])
   const [loading, setLoading] = useState(true)
@@ -25,6 +27,7 @@ function CandidateOTP() {
   const [editForm, setEditForm] = useState(EMPTY_EDIT_FORM)
   const [newUsername, setNewUsername] = useState('')
   const [newEmail, setNewEmail] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('admin_logged_in')
@@ -81,9 +84,13 @@ function CandidateOTP() {
   }
 
   const handleClearAllCandidates = async () => {
-    if (!window.confirm('Are you sure you want to delete all imported candidates? This action cannot be undone.')) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Clear All Candidates',
+      message: 'Are you sure you want to delete all imported candidates? This action cannot be undone and will remove all their credentials and assignments.',
+      confirmText: 'Clear All Candidates',
+      type: 'danger'
+    })
+    if (!ok) return
 
     setClearing(true)
 
@@ -100,9 +107,13 @@ function CandidateOTP() {
   }
 
   const handleDeleteCandidate = async (candidate) => {
-    if (!window.confirm(`Delete candidate "${candidate.username}"? This action cannot be undone.`)) {
-      return
-    }
+    const ok = await confirm({
+      title: 'Delete Candidate',
+      message: `Are you sure you want to delete candidate "${candidate.username}" (${candidate.email})? This action cannot be undone.`,
+      confirmText: 'Delete Candidate',
+      type: 'danger'
+    })
+    if (!ok) return
 
     setDeleting((prev) => ({ ...prev, [candidate.email]: true }))
 
@@ -417,9 +428,31 @@ function CandidateOTP() {
 
         {/* ── Candidates Table Card ── */}
         <div className="mc-table-card">
-          <div className="mc-table-header">
+          <div className="mc-table-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
             <div>
               <h3 className="mc-card-title">Imported Candidates ({candidates.length})</h3>
+            </div>
+
+            {/* Search Bar */}
+            <div className="ctt-search-wrapper" style={{ maxWidth: '320px', minWidth: '220px' }}>
+              <input
+                type="text"
+                className="ctt-search-input"
+                style={{ paddingLeft: '14px' }}
+                placeholder="Search candidates by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="ctt-search-clear-btn"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                >
+                  <FiX size={14} />
+                </button>
+              )}
             </div>
           </div>
 
@@ -444,7 +477,11 @@ function CandidateOTP() {
                   </tr>
                 </thead>
                 <tbody>
-                  {candidates.map((candidate, index) => {
+                  {candidates.filter(c => {
+                    if (!searchQuery.trim()) return true
+                    const q = searchQuery.toLowerCase()
+                    return (c.username || '').toLowerCase().includes(q) || (c.email || '').toLowerCase().includes(q)
+                  }).map((candidate, index) => {
                     const isEditing = editingEmail === candidate.email
                     const isSaving = Boolean(saving[candidate.email])
                     const isDeleting = Boolean(deleting[candidate.email])

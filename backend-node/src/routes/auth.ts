@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { authenticateUser, createUser, updateUserPassword, listUsers, deleteUser } from '../services/authService';
 import { getCandidateOtp, verifyCandidateOtp } from '../services/otpService';
@@ -25,9 +25,14 @@ router.post('/login', async (req: Request, res: Response) => {
       return res.status(404).json({ detail: 'Candidate not found. Check your username and email.' });
     }
 
-    const verified = await verifyCandidateOtp(emailClean, otpClean);
-    if (!verified) {
-      return res.status(401).json({ detail: 'Invalid or expired OTP. Please request a new one.' });
+    const verifyResult = await verifyCandidateOtp(emailClean, otpClean);
+    if (!verifyResult.verified) {
+      if (verifyResult.reason === 'already_submitted') {
+        return res.status(403).json({
+          detail: 'You have already completed and submitted this assessment. Please contact the administrator for a new test invitation if you need to retake it.',
+        });
+      }
+      return res.status(401).json({ detail: 'Invalid or expired OTP. Please check your email or request a new one.' });
     }
 
     // Ensure a User record exists so downstream features (submissions,

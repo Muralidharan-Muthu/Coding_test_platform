@@ -1,21 +1,37 @@
-import './TestSummaryTable.css'
+﻿import './TestSummaryTable.css'
 import './TrustProctoringTable.css'
 
 const MAX_TRUST_SCORE = 100
+
 const TRUST_DEDUCTIONS = {
-  face_missing: 1,
+  // Local & browser events
+  face_missing: 2,
+  no_face_detected: 3,
   webcam_unavailable: 10,
-  gaze_warning: 5,
-  window_blur: 5,
-  tab_switch: 5,
+  gaze_warning: 2,
+  looking_away: 2,
+  window_blur: 3,
+  tab_switch: 4,
   fullscreen_exit: 5,
-  copy_attempt: 3,
-  paste_attempt: 3,
-  mouth_open: 10,
-  head_turn: 10,
-  external_screen: 20,
-  multiple_faces: 20,
-  phone_detected: 20,
+  copy_attempt: 2,
+  paste_attempt: 2,
+  devtools_attempt: 10,
+  screenshot_attempt: 10,
+  mouth_open: 5,
+  head_turn: 3,
+  multiple_faces: 15,
+  external_screen: 15,
+  mobile_phone_detected: 25,
+  phone_detected: 25,
+  headphones_detected: 10,
+  notes_detected: 15,
+  suspicious_activity: 10,
+  // AI scan events
+  ai_scan_critical: 20,
+  ai_scan_high: 12,
+  ai_scan_medium: 6,
+  ai_scan_low: 2,
+  ai_scan_clean: 0,
 }
 
 function TrustScore({ score }) {
@@ -76,8 +92,19 @@ function getTrustScoreFromLogs(logs = []) {
   let score = MAX_TRUST_SCORE
 
   logs.forEach((log) => {
-    const type = String(log?.violation_type || '').trim().toLowerCase()
-    const deduction = TRUST_DEDUCTIONS[type] || 0
+    const rawType = String(log?.violation_type || '').trim().toLowerCase()
+    const type = rawType.replace(/\s+/g, '_')
+    let deduction = TRUST_DEDUCTIONS[type]
+
+    if (deduction === undefined) {
+      if (type.includes('critical')) deduction = 20
+      else if (type.includes('high')) deduction = 12
+      else if (type.includes('medium')) deduction = 6
+      else if (type.includes('phone')) deduction = 25
+      else if (type.includes('face')) deduction = 5
+      else deduction = 2
+    }
+
     const count = Number.isFinite(Number(log?.count)) ? Number(log.count) : 1
     const normalizedCount = count > 0 ? count : 1
     score -= deduction * normalizedCount
@@ -114,7 +141,7 @@ function TrustProctoringTable({ data, onViewLogs }) {
               <tr key={row.candidate_id || idx}>
                 <td className="id-cell">{row.candidate_id}</td>
                 <td className="name-cell">{row.name}</td>
-              <td className="trust-col">
+                <td className="trust-col">
                   <TrustScore score={trustScore} />
                 </td>
                 <td className="logs-col">
@@ -128,9 +155,9 @@ function TrustProctoringTable({ data, onViewLogs }) {
                     type="button"
                     className="view-logs-button"
                     onClick={() => onViewLogs?.(row.logs || [], row.name)}
-                    >
-                      View Logs
-                    </button>
+                  >
+                    View Logs ({totalLogs})
+                  </button>
                 </td>
               </tr>
             )

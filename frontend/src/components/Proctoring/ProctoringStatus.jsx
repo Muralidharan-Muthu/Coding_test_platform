@@ -1,12 +1,24 @@
-import { FiCamera, FiCheck, FiAlertTriangle, FiVideoOff } from 'react-icons/fi'
+﻿import { FiCamera, FiCheck, FiAlertTriangle, FiVideoOff, FiCpu } from 'react-icons/fi'
 import { useProctoring } from './useProctoring'
 
-export function ProctoringStatus() {
+export function ProctoringStatus({ aiStatus = 'clean', riskScore = 0 }) {
   const proctoring = useProctoring()
   if (!proctoring || proctoring.status === 'idle' || proctoring.status === 'stopped') return null
 
   const isActive = proctoring.status === 'active'
   const faceOk = proctoring.faceCount === 1
+
+  const aiColor =
+    aiStatus === 'critical' ? '#ef4444' :
+    aiStatus === 'warning' ? '#f59e0b' :
+    aiStatus === 'scanning' ? '#3b82f6' :
+    '#10b981'
+
+  const aiText =
+    aiStatus === 'scanning' ? 'AI: Scanning…' :
+    aiStatus === 'critical' ? `AI: Risk ${riskScore}` :
+    aiStatus === 'warning' ? `AI: Risk ${riskScore}` :
+    'AI: Verified'
 
   return (
     <div style={{
@@ -46,6 +58,10 @@ export function ProctoringStatus() {
           {faceOk ? 'Face OK' : 'No Face'}
         </span>
       )}
+      <span style={{ display: 'flex', alignItems: 'center', gap: '3px', color: aiColor }}>
+        <FiCpu size={11} />
+        {aiText}
+      </span>
     </div>
   )
 }

@@ -6,6 +6,7 @@ import {
   getProctoringSessionById,
   getProctoringReports,
 } from '../services/proctoringService';
+import { analyzeAndLogFrame } from '../services/groqProctoringService';
 
 const router = Router();
 
@@ -93,6 +94,25 @@ router.get('/reports', async (req: Request, res: Response) => {
     return res.json(reports);
   } catch (err: any) {
     console.error('[Proctoring] Failed to get reports:', err);
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// ──────────────────────────────────────────────────────────────────
+// POST /proctoring/ai-analyze
+// Groq Vision AI: Analyze a webcam frame for fraud indicators.
+// Body: { image: base64, candidateId: string, sessionId: string }
+// ──────────────────────────────────────────────────────────────────
+router.post('/ai-analyze', async (req: Request, res: Response) => {
+  try {
+    const { image, candidateId, sessionId } = req.body;
+    if (!image || !candidateId) {
+      return res.status(400).json({ detail: 'image and candidateId are required.' });
+    }
+    const analysis = await analyzeAndLogFrame(image, candidateId, sessionId || 'unknown');
+    return res.json(analysis);
+  } catch (err: any) {
+    console.error('[Proctoring] AI analysis failed:', err.message);
     return res.status(500).json({ detail: err.message });
   }
 });

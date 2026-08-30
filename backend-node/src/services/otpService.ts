@@ -1,8 +1,31 @@
+﻿let sharedTransporter: nodemailer.Transporter | null = null;
+function getPooledTransporter() {
+    if (!sharedTransporter && process.env.SMTP_HOST && process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) {
+        sharedTransporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT) || 587,
+            secure: false,
+            pool: true,
+            maxConnections: 5,
+            maxMessages: 100,
+            auth: {
+                user: process.env.SMTP_USERNAME,
+                pass: process.env.SMTP_PASSWORD
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
+        });
+    }
+    return sharedTransporter;
+}
 import nodemailer from 'nodemailer';
 import prisma from '../db/prisma';
 
 export const OTP_EXPIRY_HOURS = 24;
 export const OTP_LENGTH = 6;
+import { getQuestionsByType } from './questionTypeService';
+
 export const DEFAULT_TEST_TYPE = "both";
 
 const TEST_TYPE_SECTIONS: Record<string, string[]> = {
@@ -40,13 +63,20 @@ const TEST_TYPE_ALIASES: Record<string, string> = {
 };
 
 export const normalizeTestType = (testType?: string): string => {
-    const normalized = (testType || DEFAULT_TEST_TYPE).trim().toLowerCase();
-    return TEST_TYPE_ALIASES[normalized] || DEFAULT_TEST_TYPE;
+    if (!testType) return DEFAULT_TEST_TYPE;
+    const raw = String(testType).trim().toLowerCase();
+    if (TEST_TYPE_ALIASES[raw]) return TEST_TYPE_ALIASES[raw];
+    const parts = raw.split(/[\+,\s\/&]+/).map(p => p.trim()).filter(Boolean);
+    if (parts.length === 0) return DEFAULT_TEST_TYPE;
+    return parts.join('+');
 };
 
 export const getTestTypeSections = (testType?: string): string[] => {
-    const normalized = normalizeTestType(testType);
-    return TEST_TYPE_SECTIONS[normalized] || TEST_TYPE_SECTIONS[DEFAULT_TEST_TYPE];
+    const raw = String(testType || DEFAULT_TEST_TYPE).trim().toLowerCase();
+    if (TEST_TYPE_SECTIONS[raw]) return TEST_TYPE_SECTIONS[raw];
+    const parts = raw.split(/[\+,\s\/&]+/).map(p => p.trim()).filter(Boolean);
+    if (parts.length === 0) return ['python', 'sql'];
+    return Array.from(new Set(parts));
 };
 
 export const hasTestTypeSection = (testType: string, section: string): boolean => {
@@ -58,8 +88,8 @@ export const generateOtp = (): string => {
 };
 
 export const saveCandidateOtp = async (username: string, email: string, otpCode: string) => {
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + OTP_EXPIRY_HOURS);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + OTP_EXPIRY_HOURS * 60 * 60 * 1000);
 
     const existing = await prisma.candidateOtp.findFirst({ where: { email } });
     if (existing) {
@@ -68,6 +98,7 @@ export const saveCandidateOtp = async (username: string, email: string, otpCode:
             data: {
                 username,
                 otp_code: otpCode,
+                created_at: now.toISOString(),
                 expires_at: expiresAt.toISOString(),
                 sent: existing.sent + 1,
                 status: 'unused'
@@ -80,8 +111,8 @@ export const saveCandidateOtp = async (username: string, email: string, otpCode:
             username,
             email,
             otp_code: otpCode,
+            created_at: now.toISOString(),
             expires_at: expiresAt.toISOString(),
-            created_at: new Date().toISOString(),
             sent: 1,
             status: 'unused',
             test_type: DEFAULT_TEST_TYPE
@@ -95,11 +126,15 @@ export const verifyCandidateOtp = async (email: string, otpCode: string) => {
         where: { email: emailClean, otp_code: otpCode.trim() }
     });
 
-    if (!candidate) return false;
+    if (!candidate) return { verified: false, reason: 'invalid_otp' };
+
+    if (candidate.status === 'submitted') {
+        return { verified: false, reason: 'already_submitted' };
+    }
 
     const expiresAt = candidate.expires_at ? new Date(candidate.expires_at) : new Date(0);
     if (expiresAt < new Date()) {
-        return false;
+        return { verified: false, reason: 'expired' };
     }
 
     if (candidate.status !== 'used') {
@@ -109,7 +144,7 @@ export const verifyCandidateOtp = async (email: string, otpCode: string) => {
         });
     }
 
-    return true;
+    return { verified: true, candidate };
 };
 
 export const getAllCandidates = async () => {
@@ -229,21 +264,11 @@ export const sendOtpEmailToCandidate = async (username: string, email: string) =
 
     let delivered = false;
 
-    // If SMTP environment variables exist, attempt email delivery via nodemailer
+    // If SMTP environment variables exist, attempt fast email delivery via pooled nodemailer
     if (process.env.SMTP_HOST && process.env.SMTP_USERNAME && process.env.SMTP_PASSWORD) {
         try {
-            const transporter = nodemailer.createTransport({
-                host: process.env.SMTP_HOST,
-                port: Number(process.env.SMTP_PORT) || 587,
-                secure: false,
-                auth: {
-                    user: process.env.SMTP_USERNAME,
-                    pass: process.env.SMTP_PASSWORD
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
+            const transporter = getPooledTransporter();
+            if (!transporter) throw new Error('SMTP transporter not initialized');
 
             await transporter.sendMail({
                 from: `"Meptrasoft AI Technologies" <${process.env.SMTP_USERNAME}>`,
@@ -536,6 +561,37 @@ export const shuffleCandidateQuestions = async (email: string, testType?: string
                 }
             });
             totalSaved++;
+        }
+    }
+
+    // Dynamic question types support (e.g. java, cpp, etc.)
+    const standardSections = new Set(['python', 'sql', 'mcq']);
+    for (const section of sections) {
+        if (!standardSections.has(section)) {
+            try {
+                const dynamicProblems = await getQuestionsByType(section);
+                if (dynamicProblems && dynamicProblems.length > 0) {
+                    const count = Math.min(3, dynamicProblems.length);
+                    const selectedDyn = pickBalancedByDifficulty(dynamicProblems, count, { Easy: 1, Medium: 1, Hard: 1 });
+                    for (const prob of selectedDyn) {
+                        await prisma.candidateSelectedExamProblem.create({
+                            data: {
+                                candidate_email: emailClean,
+                                problem_id: prob.id,
+                                language: section,
+                                difficulty: prob.difficulty || 'Medium',
+                                marks: prob.marks || 10,
+                                time_limit: prob.time_limit || 15,
+                                title: prob.title || `${section.toUpperCase()} Question`,
+                                saved_at: now
+                            }
+                        });
+                        totalSaved++;
+                    }
+                }
+            } catch (err) {
+                console.error(`[Shuffle] Dynamic section error for ${section}:`, err);
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary, startExam, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
@@ -100,7 +100,7 @@ function TestStructure() {
       setExamSummary(summary)
 
       if (status.status === 'active') {
-        // Exam already started — resume
+        // Exam already started â€” resume
         setExamSessionStarted(true)
         setRemainingTime(status.remaining_seconds)
         localStorage.setItem(EXAM_SECURE_MODE_KEY, 'true')
@@ -109,7 +109,7 @@ function TestStructure() {
           try { await document.documentElement.requestFullscreen() } catch {}
         }
       } else {
-        // Not started — auto-start
+        // Not started â€” auto-start
         await autoStartExam(sessionId)
       }
     } catch (err) {
@@ -120,9 +120,13 @@ function TestStructure() {
 
   const autoStartExam = async (sessionId) => {
     try {
-      // Enter fullscreen
+      // Safely attempt fullscreen without letting permission rejections abort the exam
       if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen()
+        try {
+          await document.documentElement.requestFullscreen()
+        } catch (fsErr) {
+          console.warn('Fullscreen gesture deferred:', fsErr)
+        }
       }
 
       const response = await startExam(sessionId)
@@ -135,8 +139,8 @@ function TestStructure() {
       setExamSessionStarted(true)
       setRemainingTime(response.remaining_seconds)
     } catch (err) {
-      console.error('Auto-start failed', err)
-      setInitError('Could not start secure exam. Please allow fullscreen and try again.')
+      console.error('Auto-start exam error:', err)
+      setInitError(err.response?.data?.detail || err.message || 'Could not start exam session. Please try again.')
     }
   }
 

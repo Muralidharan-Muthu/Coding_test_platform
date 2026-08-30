@@ -1,4 +1,4 @@
-import prisma from '../db/prisma';
+﻿import prisma from '../db/prisma';
 import ExcelJS from 'exceljs';
 
 export interface AssessmentFilters {
@@ -69,32 +69,66 @@ export async function getProctoringReportsForDashboard(filters: AssessmentFilter
   const rows = await prisma.assessment.findMany({ where, orderBy: { created_at: 'desc' } });
   if (rows.length === 0) return [];
 
-  const candidateIds = rows.map((row) => row.candidate_id).filter(Boolean);
-  const logs = candidateIds.length
+  // Build full set of possible candidate identifiers
+  const candidateKeys = new Set<string>();
+  rows.forEach((row) => {
+    if (row.candidate_id) {
+      candidateKeys.add(row.candidate_id);
+      const raw = row.candidate_id.replace(/^CAND_/i, '');
+      if (raw) candidateKeys.add(raw);
+    }
+    if (row.user_id) {
+      candidateKeys.add(String(row.user_id));
+      candidateKeys.add(`CAND_${row.user_id}`);
+    }
+    if (row.email) candidateKeys.add(row.email);
+    if (row.name) candidateKeys.add(row.name);
+  });
+
+  const allKeys = Array.from(candidateKeys).filter(Boolean);
+
+  const logs = allKeys.length
     ? await prisma.proctoringLog.findMany({
-        where: { candidate_id: { in: candidateIds } },
+        where: {
+          OR: [
+            { candidate_id: { in: allKeys } },
+            { exam_id: { in: allKeys } },
+          ],
+        },
         orderBy: { timestamp: 'asc' },
       })
     : [];
 
-  const logsByCandidate = new Map<string, typeof logs>();
-  for (const log of logs) {
-    const key = log.candidate_id || '';
-    if (!logsByCandidate.has(key)) logsByCandidate.set(key, []);
-    logsByCandidate.get(key)!.push(log);
-  }
+  return rows.map((row) => {
+    const rowCandId = row.candidate_id || '';
+    const rawId = rowCandId.replace(/^CAND_/i, '');
+    const userIdStr = row.user_id ? String(row.user_id) : '';
 
-  return rows.map((row) => ({
-    ...row,
-    problem_testcases: safeJsonParse(row.problem_testcases_json, {}),
-    problem_scores: safeJsonParse(row.problem_scores_json, {}),
-    logs: (logsByCandidate.get(row.candidate_id) || []).map((log) => ({
-      id: log.id,
-      violation_type: log.violation_type,
-      message: log.message,
-      timestamp: log.timestamp,
-    })),
-  }));
+    const matchingLogs = logs.filter((log) => {
+      const logCand = log.candidate_id || '';
+      const logExam = log.exam_id || '';
+      return (
+        logCand === rowCandId ||
+        (rawId && logCand === rawId) ||
+        (userIdStr && (logCand === userIdStr || logCand === `CAND_${userIdStr}`)) ||
+        (row.email && logCand === row.email) ||
+        (rowCandId && logExam === rowCandId) ||
+        (userIdStr && logExam === userIdStr)
+      );
+    });
+
+    return {
+      ...row,
+      problem_testcases: safeJsonParse(row.problem_testcases_json, {}),
+      problem_scores: safeJsonParse(row.problem_scores_json, {}),
+      logs: matchingLogs.map((log) => ({
+        id: log.id,
+        violation_type: log.violation_type,
+        message: log.message,
+        timestamp: log.timestamp,
+      })),
+    };
+  });
 }
 
 /**

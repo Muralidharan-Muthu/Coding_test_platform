@@ -1,4 +1,4 @@
-import prisma from '../db/prisma';
+﻿import prisma from '../db/prisma';
 
 export const getMcqQuestions = async () => {
   const mcqs = await prisma.mCQQuestion.findMany({
@@ -127,10 +127,39 @@ export const getAllProblems = async (languageFilter?: string) => {
 
 export const getProblemById = async (id: string) => {
   const pyProb = await prisma.pythonProblem.findUnique({ where: { id } });
-  if (pyProb) return pyProb;
+  if (pyProb) {
+    let testCases = [];
+    try { testCases = pyProb.test_cases_json ? JSON.parse(pyProb.test_cases_json) : []; } catch {}
+    return { ...pyProb, test_cases: testCases };
+  }
 
   const sqlProb = await prisma.sqlProblem.findUnique({ where: { id } });
-  if (sqlProb) return sqlProb;
+  if (sqlProb) {
+    let testCases = [];
+    try { testCases = sqlProb.test_cases_json ? JSON.parse(sqlProb.test_cases_json) : []; } catch {}
+    return { ...sqlProb, test_cases: testCases };
+  }
+
+  // Check dynamic custom tables from question_types registry
+  try {
+    const types = await prisma.$queryRawUnsafe<Array<{ table_name: string }>>(`
+      SELECT table_name FROM question_types WHERE is_system = 0;
+    `);
+    for (const t of types) {
+      const rows = await prisma.$queryRawUnsafe<any[]>(`
+        SELECT * FROM "${t.table_name}" WHERE id = ? LIMIT 1;
+      `, id);
+      if (rows && rows.length > 0) {
+        const r = rows[0]!;
+        let testCases = [];
+        try { testCases = r.test_cases_json ? JSON.parse(r.test_cases_json) : []; } catch {}
+        return {
+          ...r,
+          test_cases: testCases
+        };
+      }
+    }
+  } catch {}
 
   return null;
 };

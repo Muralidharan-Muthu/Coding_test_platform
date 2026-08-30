@@ -1,23 +1,19 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import api from '../api'
+import {
+  getQuestionTypes,
+  createQuestionType,
+  deleteQuestionType,
+  getQuestionsByType,
+  createQuestionUnderType,
+  deleteQuestionUnderType,
+} from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
+import { useConfirm } from '../components/ui/ConfirmDialog'
 import { FiZap, FiCopy, FiCheck, FiPlus, FiX } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
 import './QuestionsPage.css'
-
-const BUILTIN_LANGS = ['python', 'sql', 'mcq']
-
-function loadCustomLangs() {
-  try {
-    const saved = localStorage.getItem('custom_question_langs')
-    return saved ? JSON.parse(saved) : []
-  } catch { return [] }
-}
-function saveCustomLangs(langs) {
-  localStorage.setItem('custom_question_langs', JSON.stringify(langs))
-}
 
 const DIFFICULTY_CONFIG = {
   Easy:   { marks: 10, time_limit: 10 },
@@ -136,15 +132,23 @@ function formatIST(isoString) {
 function AddTypeModal({ onAdd, onClose }) {
   const [value, setValue] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    const trimmed = value.trim().toLowerCase()
-    if (!trimmed) { setError('Enter a language name'); return }
+    const trimmed = value.trim()
+    if (!trimmed) { setError('Enter a language or type name'); return }
     if (trimmed.length < 2) { setError('Name too short'); return }
-    if (BUILTIN_LANGS.includes(trimmed)) { setError('This type already exists'); return }
-    if (!/^[a-z0-9_+#]+$/i.test(trimmed)) { setError('Only letters, numbers, _, #, + allowed'); return }
-    onAdd(trimmed)
+    if (!/^[a-z0-9_+#\s]+$/i.test(trimmed)) { setError('Only letters, numbers, _, #, + allowed'); return }
+    
+    setLoading(true)
+    try {
+      await onAdd(trimmed)
+    } catch (err) {
+      setError(err.message || 'Failed to create question type')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -155,19 +159,25 @@ function AddTypeModal({ onAdd, onClose }) {
           <button className="qp-modal-close" onClick={onClose} aria-label="Close"><FiX /></button>
         </div>
         <form onSubmit={handleSubmit}>
-          <p className="qp-modal-desc">Add a custom language like <code>java</code>, <code>c++</code>, <code>javascript</code>.</p>
+          <p className="qp-modal-desc">
+            Enter a custom language like <code>Java</code>, <code>C++</code>, <code>JavaScript</code>.
+            A dedicated database table will be automatically provisioned in Turso.
+          </p>
           <input
             className="qp-modal-input"
             type="text"
             value={value}
             onChange={e => { setValue(e.target.value); setError('') }}
-            placeholder="e.g. java, c++, javascript"
+            placeholder="e.g. Java, C++, JavaScript"
             autoFocus
+            disabled={loading}
           />
           {error && <p className="qp-modal-error">{error}</p>}
           <div className="qp-modal-actions">
-            <button type="button" className="qp-modal-btn-cancel" onClick={onClose}>Cancel</button>
-            <button type="submit" className="qp-modal-btn-add"><FiPlus /> Add Type</button>
+            <button type="button" className="qp-modal-btn-cancel" onClick={onClose} disabled={loading}>Cancel</button>
+            <button type="submit" className="qp-modal-btn-add" disabled={loading}>
+              <FiPlus /> {loading ? 'Creating Table…' : 'Add Type'}
+            </button>
           </div>
         </form>
       </div>
@@ -177,16 +187,18 @@ function AddTypeModal({ onAdd, onClose }) {
 
 function QuestionsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
+  const confirm = useConfirm()
   const [adminName, setAdminName] = useState('')
+  const [questionTypes, setQuestionTypes] = useState([])
   const [problems, setProblems] = useState([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('python')
   const [activeDiffTab, setActiveDiffTab] = useState('easy')
   const [showAdd, setShowAdd] = useState(false)
   const [jsonInput, setJsonInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState('')
-  const [customLangs, setCustomLangs] = useState(loadCustomLangs)
   const [showAddTypeModal, setShowAddTypeModal] = useState(false)
   const [difficulty, setDifficulty] = useState('Easy')
   const [hasQuestion, setHasQuestion] = useState(false)
@@ -195,9 +207,143 @@ function QuestionsPage() {
   const [promptCopied, setPromptCopied] = useState(false)
   const promptRef = useRef(null)
   const [jsonCopied, setJsonCopied] = useState(false)
-  const location = useLocation()
 
-  // Navigation Items matching Manage Candidates tree structure
+  // Compute activeTab from pathname or query param
+  const queryParams = new URLSearchParams(location.search)
+  const queryType = queryParams.get('type') || queryParams.get('lang')
+  
+  let activeTab = 'python'
+  if (location.pathname.includes('/sql_questions') || location.pathname.includes('/sql')) {
+    activeTab = 'sql'
+  } else if (queryType) {
+    activeTab = queryType.toLowerCase()
+  } else if (location.pathname.includes('/python_questions')) {
+    activeTab = 'python'
+  }
+
+  // Load question types from backend
+  const loadQuestionTypes = async () => {
+    try {
+      const types = await getQuestionTypes()
+      setQuestionTypes(types)
+    } catch (err) {
+      console.error('Failed to load question types:', err)
+    }
+  }
+
+  // Load problems for the activeTab from its dedicated table in Turso
+  const loadProblems = async (tabToLoad = activeTab) => {
+    setLoading(true)
+    setError('')
+    try {
+      const data = await getQuestionsByType(tabToLoad)
+      setProblems(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to load questions:', err)
+      setError('Failed to load questions from database')
+      setProblems([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const loggedIn = localStorage.getItem('admin_logged_in')
+    const name = localStorage.getItem('admin_name')
+    if (!loggedIn) {
+      navigate('/admin')
+      return
+    }
+    setAdminName(name || 'Admin User')
+    loadQuestionTypes()
+  }, [navigate])
+
+  useEffect(() => {
+    loadProblems(activeTab)
+    // Update default starter JSON template
+    if (activeTab === 'python') {
+      setJsonInput(buildPythonTemplate('Easy'))
+    } else if (activeTab === 'sql') {
+      setJsonInput(buildSqlTemplate('Easy'))
+    } else {
+      setJsonInput(buildGenericTemplate('Easy', activeTab))
+    }
+    setShowAdd(false)
+  }, [activeTab, location.pathname, location.search])
+
+  const handleCreateType = async (typeName) => {
+    try {
+      const res = await createQuestionType(typeName)
+      toast.success(`Created type "${res.type.display_name}" and provisioned table "${res.type.table_name}" in database!`)
+      setShowAddTypeModal(false)
+      await loadQuestionTypes()
+      navigate(`/admin/questions/python_questions?type=${res.type.slug}`)
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.message || 'Failed to create question type')
+      throw err
+    }
+  }
+
+  const handleRemoveCustomType = async (slug) => {
+    const ok = await confirm({
+      title: 'Delete Question Type',
+      message: `Are you sure you want to delete question type "${slug}"? This will CASCADE DELETE all its questions, student selections, and drop its dedicated table from the database.`,
+      confirmText: 'Delete Type & Table',
+      type: 'danger'
+    })
+    if (!ok) return
+
+    try {
+      await deleteQuestionType(slug)
+      toast.success(`Cascade deleted question type "${slug}" and dropped its database table.`)
+      await loadQuestionTypes()
+      if (activeTab === slug) {
+        navigate('/admin/questions/python_questions')
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || err.message || 'Failed to delete question type')
+    }
+  }
+
+  const handleAddQuestion = async () => {
+    setError('')
+    try {
+      const parsed = JSON.parse(jsonInput)
+      if (!parsed.title) throw new Error('Title is required')
+      parsed.language = activeTab
+
+      await createQuestionUnderType(activeTab, parsed)
+      toast.success(`Question added to ${activeTab.toUpperCase()} table successfully!`)
+      setShowAdd(false)
+      await loadProblems(activeTab)
+      await loadQuestionTypes()
+    } catch (err) {
+      const msg = err.response?.data?.detail || err.message || 'Invalid JSON format'
+      setError(msg)
+      toast.error(msg)
+    }
+  }
+
+  const handleDeleteProblem = async (problem) => {
+    const ok = await confirm({
+      title: 'Delete Question',
+      message: `Are you sure you want to delete "${problem.title}" from the database?`,
+      confirmText: 'Delete Question',
+      type: 'danger'
+    })
+    if (!ok) return
+
+    try {
+      await deleteQuestionUnderType(activeTab, problem.id)
+      toast.success('Question deleted successfully')
+      await loadProblems(activeTab)
+      await loadQuestionTypes()
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to delete question')
+    }
+  }
+
+  // Dynamic navItems driven by Turso question_types registry
   const navItems = [
     {
       label: 'Assessment Dashboard',
@@ -224,13 +370,15 @@ function QuestionsPage() {
           href: '/admin/questions/mcq_questions',
           activePaths: ['/admin/questions/mcq_questions', '/admin/questions/mcq'],
         },
-        ...customLangs.map((lang) => ({
-          label: `${lang.charAt(0).toUpperCase() + lang.slice(1)} Questions`,
-          href: `/admin/questions/python_questions?lang=${lang}`,
-          activePaths: [`/admin/questions/python_questions?lang=${lang}`],
-          isCustom: true,
-          typeKey: lang,
-        })),
+        ...questionTypes
+          .filter(t => t.is_system === 0)
+          .map((t) => ({
+            label: `${t.display_name} Questions`,
+            href: `/admin/questions/python_questions?type=${t.slug}`,
+            activePaths: [`/admin/questions/python_questions?type=${t.slug}`, `/admin/questions/python_questions?lang=${t.slug}`],
+            isCustom: true,
+            typeKey: t.slug,
+          })),
         {
           label: '+ Add Type',
           isAddButton: true,
@@ -256,193 +404,30 @@ function QuestionsPage() {
     },
   ]
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem('admin_logged_in')
-    const name = localStorage.getItem('admin_name')
-    if (!loggedIn) { navigate('/admin'); return }
-    setAdminName(name || 'Admin User')
-    loadProblems()
-  }, [navigate])
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(location.search)
-    const langParam = searchParams.get('lang')
-
-    if (langParam) {
-      setActiveTab(langParam)
-      setShowAdd(false)
-      setError('')
-    } else if (location.pathname.includes('sql')) {
-      setActiveTab('sql')
-      setShowAdd(false)
-      setError('')
-    } else if (location.pathname.includes('python')) {
-      setActiveTab('python')
-      setShowAdd(false)
-      setError('')
-    } else if (location.state?.activeTab) {
-      setActiveTab(location.state.activeTab)
-      setShowAdd(false)
-      setError('')
-    }
-  }, [location.pathname, location.search, location.state])
-
-  const loadProblems = async () => {
-    setLoading(true)
-    try {
-      const response = await api.get('/admin/problems')
-      setProblems(response.data || [])
-    } catch (err) {
-      toast.error('Failed to load questions.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleDelete = async (problemId, title) => {
-    if (!window.confirm(`Delete "${title}"?`)) return
-    try {
-      await api.delete(`/admin/problems/${problemId}`)
-      toast.success(`"${title}" deleted`)
-      loadProblems()
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to delete')
-    }
-  }
-
-  const handleAdd = async () => {
-    setError('')
-    if (!jsonInput.trim()) { setError('Paste the AI-generated JSON here'); return }
-    let parsed
-    try {
-      const sanitized = jsonInput
-        .replace(/[\u201C\u201D\u201E\u201F\u2033\u2036]/g, '"')
-        .replace(/[\u2018\u2019\u201A\u201B\u2032\u2035]/g, "'")
-        .trim()
-      parsed = JSON.parse(sanitized)
-    } catch (e) { setError('Invalid JSON. Please check the format and try again.'); return }
-    if (!parsed.title || !parsed.language) { setError('JSON must have "title" and "language" fields'); return }
-    if (!parsed.id) {
-      const lang = parsed.language === 'sql' ? 'S' : parsed.language === 'python' ? 'P' : parsed.language.charAt(0).toUpperCase()
-      const existing = problems.filter(p => p.language === parsed.language)
-      parsed.id = `${lang}${String(existing.length + 1).padStart(2, '0')}_${Date.now()}`
-    }
-    try {
-      await api.post('/admin/problems', parsed)
-      toast.success(`"${parsed.title}" added successfully!`)
-      setJsonInput('')
-      setShowAdd(false)
-      setGeneratedPrompt('')
-      loadProblems()
-    } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to add problem')
-    }
-  }
-
   const handleLogout = () => {
     localStorage.removeItem('admin_name')
     localStorage.removeItem('admin_logged_in')
     navigate('/admin')
   }
 
-  const openAdd = () => {
-    setShowAdd(true)
-    setJsonInput('')
-    setError('')
-    setGeneratedPrompt('')
-    setDifficulty('Easy')
-    setHasQuestion(false)
-    setQuestionText('')
-  }
+  // Difficulty counts
+  const easyCount = problems.filter(p => (p.difficulty || '').toLowerCase() === 'easy').length
+  const mediumCount = problems.filter(p => (p.difficulty || '').toLowerCase() === 'medium').length
+  const hardCount = problems.filter(p => (p.difficulty || '').toLowerCase() === 'hard').length
 
-  const handleGeneratePrompt = () => {
-    const template = activeTab === 'python' ? buildPythonTemplate(difficulty) : activeTab === 'sql' ? buildSqlTemplate(difficulty) : buildGenericTemplate(difficulty, activeTab)
-    let prompt
-    if (activeTab === 'python') {
-      const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty]
-      const rules = `\nLanguage: python | Difficulty: ${difficulty} | Marks: ${marks} | Time: ${time_limit}min\nReturn ONLY a valid JSON object, no markdown, no code fences.\n`
-      prompt = hasQuestion && questionText.trim()
-        ? `Convert this question to JSON:\n\n${questionText.trim()}\n${rules}\nTemplate:\n${template}`
-        : `Create a NEW Python ${difficulty} coding question.\n${rules}\nTemplate:\n${template}`
-    } else if (activeTab === 'sql') {
-      const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty]
-      const rules = `\nLanguage: sql | Difficulty: ${difficulty} | Marks: ${marks} | Time: ${time_limit}min\nReturn ONLY a valid JSON object, no markdown, no code fences.\n`
-      prompt = hasQuestion && questionText.trim()
-        ? `Convert this SQL question to JSON:\n\n${questionText.trim()}\n${rules}\nTemplate:\n${template}`
-        : `Create a NEW SQL ${difficulty} coding question.\n${rules}\nTemplate:\n${template}`
-    } else {
-      prompt = `Create a NEW ${activeTab.toUpperCase()} ${difficulty} coding question.\nReturn ONLY a valid JSON object.\nTemplate:\n${template}`
-    }
-    setGeneratedPrompt(prompt)
-    setTimeout(() => { if (promptRef.current) promptRef.current.scrollTop = 0 }, 50)
-  }
-
-  const handleCopyPrompt = () => {
-    if (!generatedPrompt) return
-    navigator.clipboard.writeText(generatedPrompt)
-    setPromptCopied(true)
-    setTimeout(() => setPromptCopied(false), 2000)
-  }
-
-  const handleCopyJson = () => {
-    const template = activeTab === 'python' ? buildPythonTemplate(difficulty) : activeTab === 'sql' ? buildSqlTemplate(difficulty) : buildGenericTemplate(difficulty, activeTab)
-    navigator.clipboard.writeText(template)
-    setJsonCopied(true)
-    setTimeout(() => setJsonCopied(false), 2000)
-  }
-
-  const handleAddCustomType = (lang) => {
-    const next = [...customLangs, lang]
-    setCustomLangs(next)
-    saveCustomLangs(next)
-    setShowAddTypeModal(false)
-    toast.success(`"${lang.charAt(0).toUpperCase() + lang.slice(1)} Questions" added!`)
-    setActiveTab(lang)
-    setActiveDiffTab('easy')
-    navigate(`/admin/questions/python_questions?lang=${lang}`)
-  }
-
-  const handleRemoveCustomType = (lang) => {
-    if (!window.confirm(`Remove "${lang}" question type?`)) return
-    const next = customLangs.filter(l => l !== lang)
-    setCustomLangs(next)
-    saveCustomLangs(next)
-    if (activeTab === lang) {
-      setActiveTab('python')
-      navigate('/admin/questions/python_questions')
-    }
-    toast.success(`"${lang}" type removed`)
-  }
-
-  const filtered = problems.filter(p => p.language === activeTab)
-  const easyList   = filtered.filter(p => p.difficulty?.toLowerCase() === 'easy')
-  const mediumList = filtered.filter(p => p.difficulty?.toLowerCase() === 'medium')
-  const hardList   = filtered.filter(p => p.difficulty?.toLowerCase() === 'hard')
-  const diffCountMap = { easy: easyList.length, medium: mediumList.length, hard: hardList.length }
-  const currentDiffList = activeDiffTab === 'easy' ? easyList : activeDiffTab === 'medium' ? mediumList : hardList
-
-  const renderQuestionCard = (p, index) => (
-    <div key={p.id} className="question-item">
-      <div className="question-number">#{index + 1}</div>
-      <div className="question-info">
-        <h3>{p.title}</h3>
-        <div className="question-meta">
-          <span className={`difficulty-badge difficulty-${p.difficulty?.toLowerCase()}`}>{p.difficulty}</span>
-          <span className="marks">{p.marks} marks</span>
-          <span className="time-limit">{p.time_limit} min</span>
-          <span className="added-at">Added: {formatIST(p.created_at)}</span>
-        </div>
-      </div>
-      <div className="question-actions">
-        <button onClick={() => navigate(`/coding/${p.id}?mode=admin-preview`)} className="btn-view">View</button>
-        <button onClick={() => handleDelete(p.id, p.title)} className="btn-delete">Delete</button>
-      </div>
-    </div>
-  )
+  const filteredProblems = problems.filter((p) => {
+    const matchesDiff = (p.difficulty || '').toLowerCase() === activeDiffTab
+    if (!matchesDiff) return false
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (p.title || '').toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q)
+  })
+  const activeTypeObj = questionTypes.find(t => t.slug === activeTab)
+  const currentDisplayName = activeTypeObj?.display_name || (activeTab.charAt(0).toUpperCase() + activeTab.slice(1))
 
   return (
     <AdminSidebarLayout
-      className="questions-page"
+      className="questions-page-layout"
       adminName={adminName || 'Admin User'}
       navItems={navItems}
       onNavigate={(href) => navigate(href)}
@@ -450,151 +435,180 @@ function QuestionsPage() {
       onAddType={() => setShowAddTypeModal(true)}
       onRemoveCustomType={handleRemoveCustomType}
     >
-      <div className="questions-content">
-
-        {/* ── Compact Toolbar: Difficulty Navbar + Add Question Button ── */}
-        {!showAdd && (
-          <div className="qp-toolbar">
-            <div className="qp-diff-tabs" role="tablist" aria-label="Filter by difficulty">
-              {DIFFICULTY_TABS.map(dt => (
-                <button
-                  key={dt.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeDiffTab === dt.id}
-                  className={`qp-diff-tab${activeDiffTab === dt.id ? ' active' : ''} qp-diff-${dt.id}`}
-                  onClick={() => setActiveDiffTab(dt.id)}
-                >
-                  <span className="qp-diff-label">{dt.label}</span>
-                  <span className="qp-diff-count">{diffCountMap[dt.id]}</span>
-                </button>
-              ))}
-            </div>
-
-            <button onClick={openAdd} className="btn-add">
-              <FiPlus size={14} /> Add Question
+      <div className="qp-content">
+        {/* ── Toolbar: Difficulty Navigation Bar on Left, Search in Middle, Add Question on Right ── */}
+        <div className="qp-toolbar">
+          <div className="qp-diff-tabs" role="tablist" aria-label="Difficulty navigation">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeDiffTab === 'easy'}
+              className={`qp-diff-tab easy ${activeDiffTab === 'easy' ? 'active' : ''}`}
+              onClick={() => setActiveDiffTab('easy')}
+            >
+              <span>Easy</span>
+              <span className="qp-diff-badge">{easyCount}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeDiffTab === 'medium'}
+              className={`qp-diff-tab medium ${activeDiffTab === 'medium' ? 'active' : ''}`}
+              onClick={() => setActiveDiffTab('medium')}
+            >
+              <span>Medium</span>
+              <span className="qp-diff-badge">{mediumCount}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeDiffTab === 'hard'}
+              className={`qp-diff-tab hard ${activeDiffTab === 'hard' ? 'active' : ''}`}
+              onClick={() => setActiveDiffTab('hard')}
+            >
+              <span>Hard</span>
+              <span className="qp-diff-badge">{hardCount}</span>
             </button>
           </div>
-        )}
 
-        {/* ── AI Prompt Builder / Add Section ── */}
+          {/* Search bar */}
+          <div className="ctt-search-wrapper" style={{ maxWidth: '320px' }}>
+            <input
+              type="text"
+              className="ctt-search-input"
+              style={{ paddingLeft: '14px' }}
+              placeholder={`Search ${currentDisplayName} questions...`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="ctt-search-clear-btn"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <FiX size={14} />
+              </button>
+            )}
+          </div>
+
+          <button
+            type="button"
+            className="qp-btn-add"
+            onClick={() => setShowAdd((prev) => !prev)}
+          >
+            <FiPlus size={15} />
+            <span>{showAdd ? 'Close' : 'Add Question'}</span>
+          </button>
+        </div>
+
+        {/* ── Add Question Panel ── */}
         {showAdd && (
-          <div className="add-section">
-            <div className="add-header">
-              <h3>Add {activeTab.toUpperCase()} Question</h3>
-              <button onClick={() => { setShowAdd(false); setGeneratedPrompt('') }} className="btn-cancel">Cancel</button>
-            </div>
-            <div className="prompt-builder">
-              <div className="pb-step-label">
-                <span className="pb-step-badge">Step 1</span>
-                Build an AI Prompt — paste it into ChatGPT, Claude, or Gemini
-              </div>
-              <div className="pb-row">
-                <span className="pb-field-label">Difficulty</span>
-                <div className="difficulty-selector">
-                  {['Easy', 'Medium', 'Hard'].map(d => (
-                    <button key={d} className={`diff-btn diff-${d.toLowerCase()} ${difficulty === d ? 'selected' : ''}`} onClick={() => { setDifficulty(d); setGeneratedPrompt('') }}>
-                      {d}<span className="diff-meta">{DIFFICULTY_CONFIG[d].marks} marks · {DIFFICULTY_CONFIG[d].time_limit} min</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="pb-row">
-                <label className="pb-checkbox-label">
-                  <input type="checkbox" checked={hasQuestion} onChange={e => { setHasQuestion(e.target.checked); setGeneratedPrompt('') }} className="pb-checkbox" />
-                  <span>I already have a question — convert it to JSON</span>
-                </label>
-              </div>
-              {hasQuestion && (
-                <div className="pb-row">
-                  <label className="pb-field-label">Paste your question</label>
-                  <textarea className="pb-textarea" rows={5} placeholder="Paste the question text here..." value={questionText} onChange={e => { setQuestionText(e.target.value); setGeneratedPrompt('') }} />
-                </div>
-              )}
-              <div className="pb-actions">
-                <button className="btn-generate-prompt" onClick={handleGeneratePrompt}><FiZap /> Generate AI Prompt</button>
-                {generatedPrompt && (
-                  <button className={`btn-copy-prompt ${promptCopied ? 'copied' : ''}`} onClick={handleCopyPrompt}>
-                    {promptCopied ? <><FiCheck /> Copied!</> : <><FiCopy /> Copy Prompt</>}
-                  </button>
-                )}
-              </div>
-              {generatedPrompt && (
-                <div className="pb-prompt-output">
-                  <div className="pb-prompt-header">
-                    <span>Generated Prompt — Copy and paste into any AI</span>
-                    <div className="pb-prompt-tags">
-                      <span className="ai-tag">ChatGPT</span>
-                      <span className="ai-tag">Claude</span>
-                      <span className="ai-tag">Gemini</span>
-                    </div>
-                  </div>
-                  <pre className="pb-prompt-text" ref={promptRef}>{generatedPrompt}</pre>
-                </div>
-              )}
+          <div className="qp-add-panel">
+            <div className="qp-add-panel-header">
+              <h3>Add {currentDisplayName} Question (Database Table: <code>{activeTypeObj?.table_name || `${activeTab}_problems`}</code>)</h3>
+              <button type="button" className="qp-btn-close-panel" onClick={() => setShowAdd(false)}>
+                <FiX size={16} />
+              </button>
             </div>
 
-            <div className="prompt-builder prompt-builder-template" style={{ marginTop: '16px' }}>
-              <div className="pb-step-label">
-                <span className="pb-step-badge step2">Step 2</span>
-                <span className="pb-step-title">JSON Template</span>
-                JSON Template (for reference — AI fills this for you)
-                <button className={`btn-copy-json ${jsonCopied ? 'copied' : ''}`} onClick={handleCopyJson}>
-                  {jsonCopied ? <><FiCheck /> Copied!</> : 'Copy Template'}
-                </button>
-              </div>
-              <pre className="template-code">{ activeTab === 'python' ? buildPythonTemplate(difficulty) : activeTab === 'sql' ? buildSqlTemplate(difficulty) : buildGenericTemplate(difficulty, activeTab)}</pre>
+            <div className="qp-json-editor-wrap">
+              <label className="qp-json-label">Question Specification (JSON):</label>
+              <textarea
+                className="qp-json-textarea"
+                rows={12}
+                value={jsonInput}
+                onChange={(e) => setJsonInput(e.target.value)}
+                placeholder="Paste question JSON here..."
+              />
             </div>
 
-            <div className="prompt-builder" style={{ marginTop: '16px' }}>
-              <div className="pb-step-label">
-                <span className="pb-step-badge step3">Step 3</span>
-                Paste the AI-generated JSON below
-              </div>
-              <div className="paste-section">
-                <textarea value={jsonInput} onChange={(e) => setJsonInput(e.target.value)} placeholder="Paste the JSON returned by AI here..." rows={12} className="json-input" />
-                {error && <div className="error-msg">{error}</div>}
-                <button onClick={handleAdd} className="btn-submit"><FiPlus /> Add Question</button>
-              </div>
+            {error && <div className="qp-error-banner">{error}</div>}
+
+            <div className="qp-add-panel-actions">
+              <button type="button" className="qp-btn-cancel" onClick={() => setShowAdd(false)}>
+                Cancel
+              </button>
+              <button type="button" className="qp-btn-save" onClick={handleAddQuestion}>
+                <FiPlus size={14} /> Save Question to Database
+              </button>
             </div>
           </div>
         )}
 
-        {/* ── Active Difficulty Question List ── */}
-        {!showAdd && (
-          <>
-            {loading ? (
-              <Spinner label="Loading questions…" size={44} />
-            ) : filtered.length === 0 ? (
-              <p className="no-questions">No {activeTab.toUpperCase()} questions found. Click "+ Add Question" to create one.</p>
-            ) : currentDiffList.length === 0 ? (
-              <div className="qp-empty-diff">
-                <p>No <strong>{activeDiffTab}</strong> {activeTab.toUpperCase()} questions yet.</p>
-                <button className="btn-add" onClick={openAdd}><FiPlus size={14} /> Add One</button>
+        {/* ── Problems Section List ── */}
+        {loading ? (
+          <Spinner label={`Loading ${currentDisplayName} questions from database…`} size={40} />
+        ) : (
+          <div className="qp-section-card">
+            <div className="qp-section-header">
+              <div className="qp-section-title">
+                <span className={`qp-dot ${activeDiffTab}`} />
+                <h3>{activeDiffTab.charAt(0).toUpperCase() + activeDiffTab.slice(1)} {currentDisplayName} Questions</h3>
+              </div>
+              <span className="qp-section-count">
+                {filteredProblems.length} {filteredProblems.length === 1 ? 'question' : 'questions'}
+              </span>
+            </div>
+
+            {filteredProblems.length === 0 ? (
+              <div className="qp-empty">
+                <p>No {activeDiffTab} {currentDisplayName} questions found in database table <code>{activeTypeObj?.table_name || `${activeTab}_problems`}</code>.</p>
+                <button
+                  type="button"
+                  className="qp-btn-add-inline"
+                  onClick={() => setShowAdd(true)}
+                >
+                  <FiPlus size={13} /> Add First {currentDisplayName} Question
+                </button>
               </div>
             ) : (
-              <div className="questions-groups">
-                <div className="difficulty-group">
-                  <div className={`group-header group-${activeDiffTab}`}>
-                    <div className="group-header-left">
-                      <span className={`group-dot dot-${activeDiffTab}`} />
-                      <span className="group-title">{activeDiffTab.charAt(0).toUpperCase() + activeDiffTab.slice(1)} Questions</span>
+              <div className="qp-list">
+                {filteredProblems.map((p, idx) => (
+                  <div key={p.id || idx} className="qp-card">
+                    <span className="qp-card-num">#{idx + 1}</span>
+                    <div className="qp-card-body">
+                      <div className="qp-card-top">
+                        <span className="qp-card-title">{p.title}</span>
+                      </div>
+                      <div className="qp-card-chips">
+                        <span className={`qp-chip diff ${p.difficulty?.toLowerCase()}`}>{p.difficulty}</span>
+                        <span className="qp-chip marks">{p.marks || 10} marks</span>
+                        <span className="qp-chip time">{p.time_limit || 15} min</span>
+                        <span className="qp-chip date">Added: {formatIST(p.created_at)}</span>
+                      </div>
                     </div>
-                    <span className="group-count">{currentDiffList.length} question{currentDiffList.length !== 1 ? 's' : ''}</span>
+                    <div className="qp-card-actions">
+                      <button
+                        type="button"
+                        className="qp-btn-view"
+                        onClick={() => navigate(`/admin/problem/${p.id}`)}
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        className="qp-btn-delete"
+                        onClick={() => handleDeleteProblem(p)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
-                  <div className="questions-list">
-                    {currentDiffList.map((p, i) => renderQuestionCard(p, i))}
-                  </div>
-                </div>
+                ))}
               </div>
             )}
-          </>
+          </div>
+        )}
+
+        {showAddTypeModal && (
+          <AddTypeModal
+            onAdd={handleCreateType}
+            onClose={() => setShowAddTypeModal(false)}
+          />
         )}
       </div>
-
-      {showAddTypeModal && (
-        <AddTypeModal onAdd={handleAddCustomType} onClose={() => setShowAddTypeModal(false)} />
-      )}
     </AdminSidebarLayout>
   )
 }

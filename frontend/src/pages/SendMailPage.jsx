@@ -76,31 +76,12 @@ function SendMailPage() {
     }
   }
 
-  const isExpired = (expiresAt) => {
-    if (!expiresAt) return true
-    return new Date() > new Date(expiresAt)
-  }
-
-  const getStatusBadge = (candidate) => {
-    if (!candidate.otp_code) {
-      return <span className="otp-status-badge pending">No OTP</span>
-    }
-    if (isExpired(candidate.expires_at)) {
-      return <span className="otp-status-badge expired">Expired</span>
-    }
-    return <span className="otp-status-badge active">Active</span>
-  }
-
   const handleSendEmail = async (candidate) => {
     setSending((prev) => ({ ...prev, [candidate.email]: true }))
     try {
       const response = await sendOTPEmail(candidate.username, candidate.email)
       if (response.delivered) {
-        toast.success(
-          response.otp_regenerated
-            ? `Email sent to ${candidate.email} with fresh OTP`
-            : `Email sent to ${candidate.email}`
-        )
+        toast.success(`Access pass & OTP sent successfully to ${candidate.email}`)
       } else if (response.status === 'warning') {
         const manualDetails = [
           response.message,
@@ -109,7 +90,7 @@ function SendMailPage() {
         ].filter(Boolean).join(' ')
         toast.warning(manualDetails, { duration: Infinity })
       } else {
-        toast.success(`Email sent to ${candidate.email}`)
+        toast.success(`Access email dispatched to ${candidate.email}`)
       }
       await loadCandidates()
     } catch (err) {
@@ -142,7 +123,7 @@ function SendMailPage() {
               <h3 className="mc-card-title">Candidate Credentials & Mail ({dedupedCandidates.rows.length})</h3>
               <p className="mc-card-subtitle" style={{ marginTop: '2px' }}>
                 {dedupedCandidates.duplicateCount > 0 ? `${dedupedCandidates.duplicateCount} duplicate rows hidden — ` : ''}
-                Send access emails with automatically generated OTP credentials to candidates.
+                Send instant access passes with automatically generated OTP credentials.
               </p>
             </div>
           </div>
@@ -163,10 +144,9 @@ function SendMailPage() {
                     <th style={{ width: '50px' }}>#</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th style={{ width: '100px' }}>OTP</th>
-                    <th>Generated</th>
-                    <th>Expires</th>
-                    <th style={{ width: '90px', textAlign: 'center' }}>Status</th>
+                    <th style={{ width: '110px' }}>OTP</th>
+                    <th>Generated Date & Time</th>
+                    <th>Expires Date & Time</th>
                     <th style={{ width: '130px', textAlign: 'center' }}>Send Mail</th>
                     <th style={{ width: '70px', textAlign: 'center' }}>View</th>
                   </tr>
@@ -180,9 +160,12 @@ function SendMailPage() {
                       <td>
                         <span className="sm-otp-code">{candidate.otp_code || '—'}</span>
                       </td>
-                      <td style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>{formatDate(candidate.created_at)}</td>
-                      <td style={{ fontSize: '11.5px', color: 'var(--color-text-muted)' }}>{formatDate(candidate.expires_at)}</td>
-                      <td style={{ textAlign: 'center' }}>{getStatusBadge(candidate)}</td>
+                      <td style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {formatDate(candidate.created_at)}
+                      </td>
+                      <td style={{ fontSize: '12px', color: 'var(--color-text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
+                        {formatDate(candidate.expires_at)}
+                      </td>
                       <td style={{ textAlign: 'center' }}>
                         <button
                           type="button"

@@ -1,3 +1,11 @@
+﻿import {
+  getQuestionTypes,
+  createQuestionType,
+  deleteQuestionType,
+  getQuestionsByType,
+  createQuestionUnderType,
+  deleteQuestionUnderType
+} from '../services/questionTypeService';
 import { Router, Request, Response } from 'express';
 import {
   getMcqQuestions,
@@ -297,6 +305,75 @@ router.post('/mcq-questions', async (req: Request, res: Response) => {
 router.delete('/mcq-questions/:id', async (req: Request, res: Response) => {
   try {
     const result = await deleteMcqQuestion(req.params.id);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+
+// ------------------------------------------------------------------
+// DYNAMIC QUESTION TYPE & PER-TYPE QUESTION MANAGEMENT
+// ------------------------------------------------------------------
+
+// GET /admin/question-types
+router.get('/question-types', async (req: Request, res: Response) => {
+  try {
+    const types = await getQuestionTypes();
+    return res.json({ status: 'success', types });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /admin/question-types
+router.post('/question-types', async (req: Request, res: Response) => {
+  try {
+    const { name = '' } = req.body;
+    if (!name.trim()) {
+      return res.status(400).json({ detail: 'Language / Question type name is required.' });
+    }
+    const created = await createQuestionType(name.trim());
+    return res.json({ status: 'success', type: created });
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// DELETE /admin/question-types/:slug
+router.delete('/question-types/:slug', async (req: Request, res: Response) => {
+  try {
+    const result = await deleteQuestionType(req.params.slug);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /admin/questions-by-type/:type
+router.get('/questions-by-type/:type', async (req: Request, res: Response) => {
+  try {
+    const questions = await getQuestionsByType(req.params.type);
+    return res.json(questions);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// POST /admin/questions-by-type/:type
+router.post('/questions-by-type/:type', async (req: Request, res: Response) => {
+  try {
+    const newQuestion = await createQuestionUnderType(req.params.type, req.body);
+    return res.json(newQuestion);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// DELETE /admin/questions-by-type/:type/:id
+router.delete('/questions-by-type/:type/:id', async (req: Request, res: Response) => {
+  try {
+    const result = await deleteQuestionUnderType(req.params.type, req.params.id);
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
