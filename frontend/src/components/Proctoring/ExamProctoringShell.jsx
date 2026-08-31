@@ -6,7 +6,7 @@ import { ProctoringProvider } from './ProctoringProvider'
 import { ProctoringStatus } from './ProctoringStatus'
 import { CameraPreview } from './CameraPreview'
 import { useProctoring } from './useProctoring'
-import { submitExam, analyzeProctorFrame } from '../../api'
+import { submitExam, analyzeProctorFrame, applyExamPenalty } from '../../api'
 import './ExamProctoringShell.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
@@ -245,10 +245,15 @@ function ExamProctoringShellInner({ children }) {
 
     const penalize = ['SCREENSHOT_ATTEMPT', 'DEVTOOLS_ATTEMPT', 'APP_SWITCH_ATTEMPT', 'TAB_SWITCH', 'FULLSCREEN_EXIT']
     if (penalize.includes(v.type)) {
+      const sessionId = localStorage.getItem('session_id')
+      if (sessionId) {
+        applyExamPenalty(sessionId, 60, v.type).catch(err => console.error('Penalty sync failed:', err))
+      }
       const curr = parseInt(localStorage.getItem('exam_remaining') || '0', 10)
       if (curr > 0) {
-        localStorage.setItem('exam_remaining', Math.max(0, curr - 60).toString())
-        window.dispatchEvent(new CustomEvent('exam_time_penalty', { detail: { penaltySeconds: 60, reason: v.type } }))
+        const next = Math.max(0, curr - 60)
+        localStorage.setItem('exam_remaining', next.toString())
+        window.dispatchEvent(new CustomEvent('exam_time_penalty', { detail: { penaltySeconds: 60, reason: v.type, remainingSeconds: next } }))
       }
       showWarning(`⚠️ ${v.type.replace(/_/g, ' ')} — 60s time penalty`)
       // Trigger AI scan on violation to see candidate screen/action

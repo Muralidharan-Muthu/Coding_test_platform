@@ -1,10 +1,11 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import {
   getExamSummary,
   getExamStatus,
   startExam,
   saveExamAnswer,
   submitExam,
+  applyTimePenalty,
 } from '../services/examService';
 
 const router = Router();
@@ -46,6 +47,20 @@ router.post('/start', async (req: Request, res: Response) => {
   }
 });
 
+// POST /exam/penalty
+router.post('/penalty', async (req: Request, res: Response) => {
+  try {
+    const sessionId = String(req.body.session_id || '');
+    const penaltySeconds = Number(req.body.penalty_seconds) || 60;
+    if (!sessionId) return res.status(400).json({ detail: 'session_id is required.' });
+    const result = await applyTimePenalty(sessionId, penaltySeconds);
+    return res.json(result);
+  } catch (err: any) {
+    console.error('[Exam] Failed to apply penalty:', err);
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
 // POST /exam/save-answer?session_id=...&problem_id=...&code=...
 router.post('/save-answer', async (req: Request, res: Response) => {
   try {
@@ -80,4 +95,3 @@ router.post('/submit', async (req: Request, res: Response) => {
 });
 
 export default router;
-

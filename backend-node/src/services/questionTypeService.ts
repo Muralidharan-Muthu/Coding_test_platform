@@ -197,9 +197,22 @@ export async function deleteQuestionType(slugOrId: string): Promise<{ status: st
   return { status: 'deleted', slug: target.slug };
 }
 
+function resolveTargetTable(typeSlug: string, fallbackLanguage = ''): { normalized: string; tableName: string } {
+  let raw = (typeSlug || fallbackLanguage || 'python').trim().toLowerCase();
+  raw = raw.replace(/\$\{[^}]*\}/g, '').replace(/[^a-z0-9_]/g, '');
+  raw = raw.replace(/_questions$/, '').replace(/_problems$/, '') || 'python';
+
+  let tableName = `${raw}_problems`;
+  if (raw === 'python') tableName = 'python_problems';
+  else if (raw === 'sql') tableName = 'sql_problems';
+  else if (raw === 'mcq') tableName = 'mcq_questions';
+
+  return { normalized: raw, tableName };
+}
+
 export async function getQuestionsByType(typeSlug: string): Promise<any[]> {
   await ensureQuestionTypesRegistry();
-  const normalized = typeSlug.trim().toLowerCase().replace(/_questions$/, '').replace(/_problems$/, '');
+  const { normalized, tableName } = resolveTargetTable(typeSlug);
 
   // Handle MCQ
   if (normalized === 'mcq') {
@@ -219,12 +232,29 @@ export async function getQuestionsByType(typeSlug: string): Promise<any[]> {
     }));
   }
 
-  // Find table from registry
-  const types = await prisma.$queryRawUnsafe<QuestionTypeRecord[]>(`
-    SELECT * FROM question_types WHERE slug = ? OR name = ? LIMIT 1;
-  `, normalized, normalized);
-
-  const tableName = types && types.length > 0 ? types[0]!.table_name : `${normalized}_problems`;
+  // Ensure table exists
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "${tableName}" (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      language TEXT NOT NULL,
+      difficulty TEXT DEFAULT 'Medium',
+      marks INTEGER DEFAULT 10,
+      time_limit INTEGER DEFAULT 15,
+      statement TEXT,
+      description TEXT,
+      input_format TEXT,
+      output_format TEXT,
+      sample_input TEXT,
+      sample_output TEXT,
+      starter_code TEXT,
+      test_cases_json TEXT,
+      schema_sql TEXT,
+      seed_sql TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT NOT NULL
+    );
+  `).catch(() => {});
 
   try {
     const rows = await prisma.$queryRawUnsafe<any[]>(`
@@ -242,41 +272,87 @@ export async function getQuestionsByType(typeSlug: string): Promise<any[]> {
 
 export async function createQuestionUnderType(typeSlug: string, data: any): Promise<any> {
   await ensureQuestionTypesRegistry();
-  const normalized = typeSlug.trim().toLowerCase().replace(/_questions$/, '').replace(/_problems$/, '');
+  const { normalized, tableName } = resolveTargetTable(typeSlug, data?.language);
 
-  const types = await prisma.$queryRawUnsafe<QuestionTypeRecord[]>(`
-    SELECT * FROM question_types WHERE slug = ? OR name = ? LIMIT 1;
-  `, normalized, normalized);
-
-  const tableName = types && types.length > 0 ? types[0]!.table_name : `${normalized}_problems`;
+  // Auto-provision table if not exists
+  await prisma.$executeRawUnsafe(`
+    CREATE TABLE IF NOT EXISTS "${tableName}" (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      language TEXT NOT NULL,
+      difficulty TEXT DEFAULT 'Medium',
+      marks INTEGER DEFAULT 10,
+      time_limit INTEGER DEFAULT 15,
+      statement TEXT,
+      description TEXT,
+      input_format TEXT,
+      output_format TEXT,
+      sample_input TEXT,
+      sample_output TEXT,
+      starter_code TEXT,
+      test_cases_json TEXT,
+      schema_sql TEXT,
+      seed_sql TEXT,
+      is_active INTEGER DEFAULT 1,
+      created_at TEXT NOT NULL
+    );
+  `);
 
   const id = data.id || `${normalized.substring(0, 3)}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
   const now = new Date().toISOString();
   const testCasesJson = Array.isArray(data.test_cases) ? JSON.stringify(data.test_cases) : (data.test_cases_json || '[]');
 
-  await prisma.$executeRawUnsafe(`
-    INSERT INTO "${tableName}" (
-      id, title, language, difficulty, marks, time_limit, statement, description,
-      input_format, output_format, sample_input, sample_output, starter_code, test_cases_json,
-      is_active, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?);
-  `,
-    id,
-    data.title || 'Untitled Problem',
-    normalized,
-    data.difficulty || 'Medium',
-    Number(data.marks) || 10,
-    Number(data.time_limit) || 15,
-    data.statement || data.description || '',
-    data.description || data.statement || '',
-    typeof data.input_format === 'object' ? JSON.stringify(data.input_format) : (data.input_format || ''),
-    typeof data.output_format === 'object' ? JSON.stringify(data.output_format) : (data.output_format || ''),
-    data.sample_input || '',
-    data.sample_output || '',
-    data.starter_code || `// Solution for ${data.title || 'Problem'}\n`,
-    testCasesJson,
-    now
-  );
+  if (tableName === 'python_problems') {
+    await prisma.$executeRawUnsafe(`
+      INSERT OR REPLACE INTO python_problems (
+        id, title, language, difficulty, marks, time_limit, statement, description,
+        input_format, output_format, sample_input, sample_output, starter_code, test_cases_json,
+        is_active, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?);
+    `,
+      id,
+      data.title || 'Untitled Problem',
+      'python',
+      data.difficulty || 'Medium',
+      Number(data.marks) || 10,
+      Number(data.time_limit) || 15,
+      data.statement || data.description || '',
+      data.description || data.statement || '',
+      typeof data.input_format === 'object' ? JSON.stringify(data.input_format) : (data.input_format || ''),
+      typeof data.output_format === 'object' ? JSON.stringify(data.output_format) : (data.output_format || ''),
+      data.sample_input || '',
+      data.sample_output || '',
+      data.starter_code || `// Solution for ${data.title || 'Problem'}\n`,
+      testCasesJson,
+      now
+    );
+  } else {
+    await prisma.$executeRawUnsafe(`
+      INSERT OR REPLACE INTO "${tableName}" (
+        id, title, language, difficulty, marks, time_limit, statement, description,
+        input_format, output_format, sample_input, sample_output, starter_code, test_cases_json,
+        schema_sql, seed_sql, is_active, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?);
+    `,
+      id,
+      data.title || 'Untitled Problem',
+      normalized,
+      data.difficulty || 'Medium',
+      Number(data.marks) || 10,
+      Number(data.time_limit) || 15,
+      data.statement || data.description || '',
+      data.description || data.statement || '',
+      typeof data.input_format === 'object' ? JSON.stringify(data.input_format) : (data.input_format || ''),
+      typeof data.output_format === 'object' ? JSON.stringify(data.output_format) : (data.output_format || ''),
+      data.sample_input || '',
+      data.sample_output || '',
+      data.starter_code || `// Solution for ${data.title || 'Problem'}\n`,
+      testCasesJson,
+      data.schema_sql || null,
+      data.seed_sql || null,
+      now
+    );
+  }
 
   return {
     id,

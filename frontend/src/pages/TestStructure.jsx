@@ -100,7 +100,7 @@ function TestStructure() {
       setExamSummary(summary)
 
       if (status.status === 'active') {
-        // Exam already started â€” resume
+        // Exam already started — resume
         setExamSessionStarted(true)
         setRemainingTime(status.remaining_seconds)
         localStorage.setItem(EXAM_SECURE_MODE_KEY, 'true')
@@ -109,7 +109,7 @@ function TestStructure() {
           try { await document.documentElement.requestFullscreen() } catch {}
         }
       } else {
-        // Not started â€” auto-start
+        // Not started — auto-start
         await autoStartExam(sessionId)
       }
     } catch (err) {

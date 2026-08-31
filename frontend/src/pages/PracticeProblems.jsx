@@ -90,13 +90,13 @@ function PracticeProblems() {
   }
 
   if (loading) {
-    return <Spinner label="Loading practice questions�" size={40} fullPage />
+    return <Spinner label="Loading practice questions...�" size={40} fullPage />
   }
 
   const activeProblems = problems[activeTab] || []
 
   return (
-    <div className={section-problems-page }>
+    <div className="section-problems-page">
       <header className="header">
         <div className="header-left">
           <h1>Practice Sandbox</h1>
@@ -115,7 +115,7 @@ function PracticeProblems() {
             key={key}
             role="tab"
             aria-selected={activeTab === key}
-            className={practice-tab }
+            className={`practice-tab ${activeTab === key ? "active" : ""}`}
             onClick={() => setActiveTab(key)}
           >
             <Icon size={16} />
@@ -193,7 +193,7 @@ function PracticeProblems() {
                     <div className="mcq-question-number">{index + 1}</div>
                     <div className="mcq-question-main">
                       <div className="mcq-question-heading">
-                        <h3>{question.title || question.question_title || Question }</h3>
+                        <h3>{question.title || question.question_title || ("Question " + (index + 1))}</h3>
                         {isAnswered && (
                           <span className={'practice-result-badge ' + (isCorrect ? 'correct' : 'incorrect')}>
                             {isCorrect ? <><FiCheckCircle /> Correct</> : <><FiXCircle /> Incorrect</>}

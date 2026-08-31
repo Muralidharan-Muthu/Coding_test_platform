@@ -1,4 +1,4 @@
-import 'dotenv/config';
+﻿import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth';
@@ -36,11 +36,9 @@ app.get('/health', (req, res) => {
 // Server entry point - updated with random problem routes and professional email templates
 const PORT = process.env.PORT || 8000;
 
-if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`[Backend] Node.js server started on http://localhost:${PORT}`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`[Backend] Node.js server started on http://localhost:${PORT}`);
+});
 
 export default app;
 

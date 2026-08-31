@@ -321,3 +321,38 @@ export async function submitExam(
     submitted_at: new Date().toISOString(),
   };
 }
+/**
+ * Apply time penalty to an active exam session (e.g. 60 seconds for violation)
+ */
+export async function applyTimePenalty(sessionId: string, penaltySeconds = 60) {
+  let attempt = await prisma.serverExamSession.findUnique({ where: { session_id: sessionId } });
+  if (!attempt) {
+    const session = await getSession(sessionId);
+    if (session) {
+      attempt = await prisma.serverExamSession.findFirst({
+        where: { user_id: session.user_id || '1' },
+        orderBy: { start_time: 'desc' }
+      });
+    }
+  }
+
+  if (!attempt) {
+    return { status: 'not_found', penalty_seconds: penaltySeconds, remaining_seconds: EXAM_DURATION_SECONDS };
+  }
+
+  const currentStart = new Date(attempt.start_time).getTime();
+  const adjustedStart = new Date(currentStart - penaltySeconds * 1000);
+
+  await prisma.serverExamSession.update({
+    where: { id: attempt.id },
+    data: { start_time: adjustedStart }
+  });
+
+  const remaining = remainingSecondsFrom(adjustedStart);
+  return {
+    status: 'penalized',
+    penalty_seconds: penaltySeconds,
+    remaining_seconds: remaining,
+    start_time: adjustedStart.toISOString(),
+  };
+}

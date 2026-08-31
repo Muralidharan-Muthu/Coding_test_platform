@@ -1,4 +1,4 @@
-import Editor from '@monaco-editor/react'
+﻿import Editor from '@monaco-editor/react'
 import api, { getExamStatus, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -126,6 +126,7 @@ function CodingPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [submitResult, setSubmitResult] = useState(null)
+  const [runResult, setRunResult] = useState(null)
   const [userName, setUserName] = useState('')
   const [showInputRequired, setShowInputRequired] = useState(false)
   const [remainingTime, setRemainingTime] = useState(0)
@@ -224,11 +225,25 @@ function CodingPage() {
     }
   }, [navigate])
 
+    // Penalty time listener
+  useEffect(() => {
+    const handlePenalty = (e) => {
+      const ps = e.detail?.penaltySeconds || 60
+      setRemainingTime(prev => {
+        const next = Math.max(0, prev - ps)
+        localStorage.setItem('exam_remaining', next.toString())
+        return next
+      })
+    }
+    window.addEventListener('exam_time_penalty', handlePenalty)
+    return () => window.removeEventListener('exam_time_penalty', handlePenalty)
+  }, [])
+
   const handleReturnToExamHub = useCallback(() => {
     navigate('/test-structure')
   }, [navigate])
 
-  // ─── Effects ───────────────────────────────────────────────────────────────
+  // --- Effects ---------------------------------------------------------------
 
   useEffect(() => {
     if (isPracticeMode) {
@@ -309,7 +324,7 @@ function CodingPage() {
     return () => { if (autoSaveRef.current) clearTimeout(autoSaveRef.current) }
   }, [code, isExamMode, problemId, problem, starterCode])
 
-  // ─── Handlers ──────────────────────────────────────────────────────────────
+  // --- Handlers --------------------------------------------------------------
 
   const checkExamStatus = async () => {
     try {
@@ -411,7 +426,7 @@ function CodingPage() {
   }
 
   const handleRun = async () => {
-    setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setShowInputRequired(false)
+    setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setRunResult(null); setShowInputRequired(false)
     setBottomTab('result')
     try {
       if (problem.language === 'sql') {
@@ -450,7 +465,7 @@ function CodingPage() {
     const sessionId = localStorage.getItem('session_id')
     if (!problem) { setError('Problem not loaded. Please refresh the page.'); return }
     if (!sessionId && !isStatelessMode) { navigate('/'); return }
-    setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setShowInputRequired(false)
+    setLoading(true); setOutput(''); setError(''); setSubmitResult(null); setRunResult(null); setShowInputRequired(false)
     setBottomTab('result')
     try {
       let result
@@ -505,7 +520,7 @@ function CodingPage() {
     navigate('/')
   }
 
-  // ─── SQL Helpers (unchanged) ───────────────────────────────────────────────
+  // --- SQL Helpers (unchanged) -----------------------------------------------
 
   const parseSqlInputFormat = (inputFormat, schemaSql, seedSql, tables) => {
     if (tables && Array.isArray(tables) && tables.length > 0) {
@@ -606,7 +621,7 @@ function CodingPage() {
     return { columns: [], rows: [] }
   }
 
-  // ─── Derived state ─────────────────────────────────────────────────────────
+  // --- Derived state ---------------------------------------------------------
 
   const showExamGate = isExamMode && !isExamActive
   const showExamWorkspace = !isExamMode || isExamActive
@@ -618,10 +633,10 @@ function CodingPage() {
     : (problem?.sample_input ? [{ input: problem.sample_input, expected_output: problem.sample_output }] : [])
 
   if (!problem) {
-    return <Spinner label="Loading problem…" size={40} fullPage />
+    return <Spinner label="Loading problem..." size={40} fullPage />
   }
 
-  // ─── Render Helpers ────────────────────────────────────────────────────────
+  // --- Render Helpers --------------------------------------------------------
 
   const renderSqlInputFormat = () => {
     const tables = problem.tables || []
@@ -762,7 +777,7 @@ function CodingPage() {
     return null
   }
 
-  // ─── Render ────────────────────────────────────────────────────────────────
+  // --- Render ----------------------------------------------------------------
 
   const proctoringSessionId = localStorage.getItem('session_id') || 'session_default'
   const proctoringCandidateId = localStorage.getItem('user_id') || userName || 'candidate_default'
@@ -774,7 +789,7 @@ function CodingPage() {
       enabled={isExamMode && isExamActive}
     >
       <div className="coding-page">
-        {/* ═══ Top Toolbar ═══ */}
+        {/* === Top Toolbar === */}
         <div className="coding-toolbar">
           <div className="toolbar-left">
             {(isExamMode || isStatelessMode) && (
@@ -784,8 +799,8 @@ function CodingPage() {
             {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
             {problemList.length > 0 && (
               <div className="toolbar-nav-arrows">
-                <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">‹</button>
-                <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">›</button>
+                <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">"¹</button>
+                <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">"º</button>
                 <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
               </div>
             )}
@@ -825,7 +840,7 @@ function CodingPage() {
         {/* Modular Camera Preview Overlay */}
         
 
-      {/* ═══ Main Content ═══ */}
+      {/* === Main Content === */}
       {showExamGate ? (
         <div style={examGateContainerStyle}>
           <div style={examGateCardStyle}>
@@ -851,7 +866,7 @@ function CodingPage() {
         </div>
       ) : showExamWorkspace ? (
         <div className="main-split">
-          {/* ═══ Left Panel — Description ═══ */}
+          {/* === Left Panel — Description === */}
           <div 
   className="left-panel" 
   style={{ width: `${leftWidth}%` }}
@@ -907,14 +922,14 @@ function CodingPage() {
             </div>
           </div>
 
-          {/* ═══ Horizontal Resizer ═══ */}
+          {/* === Horizontal Resizer === */}
           <div
             className="resizer-horizontal"
             onMouseDown={handleHorizontalResizeStart}
             title="Drag to resize description panel"
           />
 
-          {/* ═══ Right Panel — Editor + Bottom Panel ═══ */}
+          {/* === Right Panel — Editor + Bottom Panel === */}
           <div className="right-panel">
             {/* Code Header */}
             <div className="code-header">
@@ -969,7 +984,7 @@ function CodingPage() {
               />
             </div>
 
-            {/* ═══ Vertical Resizer ═══ */}
+            {/* === Vertical Resizer === */}
             {!bottomCollapsed && (
               <div
                 className="resizer-vertical"
@@ -978,7 +993,7 @@ function CodingPage() {
               />
             )}
 
-            {/* ═══ Bottom Panel — Testcase / Test Result ═══ */}
+            {/* === Bottom Panel — Testcase / Test Result === */}
             <div
               className={`bottom-panel${bottomCollapsed ? ' is-collapsed' : ''}`}
               style={{ height: bottomCollapsed ? '38px' : `${bottomHeight}px` }}
@@ -1008,7 +1023,7 @@ function CodingPage() {
 
               {!bottomCollapsed && (
                 <div className="bottom-panel-content">
-                {/* ─── Testcase Tab ─── */}
+                {/* --- Testcase Tab --- */}
                 {bottomTab === 'testcase' && (
                   <>
                     {problem.language === 'python' && displayTestCases.length > 0 && (
@@ -1058,7 +1073,7 @@ function CodingPage() {
                   </>
                 )}
 
-                {/* ─── Test Result Tab ─── */}
+                {/* --- Test Result Tab --- */}
                 {bottomTab === 'result' && (
                   <>
                     {error && <div className="error-output" role="alert">{error}</div>}
@@ -1072,7 +1087,46 @@ function CodingPage() {
                       </div>
                     )}
 
-                    {outputType === 'submit' && submitResult ? (
+                    {outputType === 'run' && runResult ? (
+                      <div className="leetcode-run-result">
+                        <div className={`result-status-line ${runResult.status === 'Accepted' ? 'pass' : 'fail'}`}>
+                          {runResult.status === 'Accepted' ? <FiCheck /> : <FiX />} {runResult.status}
+                        </div>
+
+                        {runResult.input && (
+                          <div className="leetcode-field-group">
+                            <label>Input</label>
+                            <pre className="acp-code-block">{runResult.input}</pre>
+                          </div>
+                        )}
+
+                        {runResult.stdout && (
+                          <div className="leetcode-field-group">
+                            <label>Stdout (print)</label>
+                            <pre className="acp-code-block stdout-text">{runResult.stdout}</pre>
+                          </div>
+                        )}
+
+                        <div className="leetcode-field-group">
+                          <label>Output (return value)</label>
+                          <pre className="acp-code-block">{runResult.output}</pre>
+                        </div>
+
+                        {runResult.expected && (
+                          <div className="leetcode-field-group">
+                            <label>Expected</label>
+                            <pre className="acp-code-block">{runResult.expected}</pre>
+                          </div>
+                        )}
+
+                        {runResult.error && (
+                          <div className="leetcode-field-group">
+                            <label>Runtime Error</label>
+                            <pre className="acp-error-block">{runResult.error}</pre>
+                          </div>
+                        )}
+                      </div>
+                    ) : outputType === 'submit' && submitResult ? (
                       <>
                         {/* Verdict Summary */}
                         <div className="result-summary">

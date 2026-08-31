@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+﻿import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import api, { getProblem, runCode, runSql, previewSubmitCode, previewSubmitSql } from '../api'
@@ -17,7 +17,10 @@ import {
   FiCheck,
   FiX,
   FiTerminal,
-  FiAward
+  FiAward,
+  FiLayers,
+  FiSearch,
+  FiCopy
 } from 'react-icons/fi'
 import './AdminCodingPage.css'
 
@@ -32,6 +35,7 @@ function PracticeCodingPage() {
   const [loading, setLoading] = useState(true)
   const [code, setCode] = useState('')
   const [starterCode, setStarterCode] = useState('')
+  const [activeLeftTab, setActiveLeftTab] = useState('description')
   const [activeBottomTab, setActiveBottomTab] = useState('testcase')
   const [selectedTestCaseIndex, setSelectedTestCaseIndex] = useState(0)
   const [customInput, setCustomInput] = useState('')
@@ -40,6 +44,17 @@ function PracticeCodingPage() {
   const [submitting, setSubmitting] = useState(false)
   const [runResult, setRunResult] = useState(null)
   const [submitResult, setSubmitResult] = useState(null)
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const [tcSearch, setTcSearch] = useState('')
+  const [selectedTcFilter, setSelectedTcFilter] = useState('all')
+
+  // ── Drag & Resize Dimensions ──
+  const [leftWidthPercent, setLeftWidthPercent] = useState(46)
+  const [consoleHeightPx, setConsoleHeightPx] = useState(250)
+  const [isDraggingV, setIsDraggingV] = useState(false)
+  const [isDraggingH, setIsDraggingH] = useState(false)
+  const containerRef = useRef(null)
+  const rightPanelRef = useRef(null)
 
   useEffect(() => {
     if (localStorage.getItem('practice_logged_in') !== 'true') {
@@ -68,6 +83,54 @@ function PracticeCodingPage() {
       setLoading(false)
     }
   }
+
+  // ── Vertical Drag Handler ──
+  const startDragV = useCallback((e) => {
+    e.preventDefault()
+    setIsDraggingV(true)
+
+    const onMouseMove = (moveEvent) => {
+      if (!containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const newPercent = ((moveEvent.clientX - rect.left) / rect.width) * 100
+      if (newPercent >= 24 && newPercent <= 76) {
+        setLeftWidthPercent(newPercent)
+      }
+    }
+
+    const onMouseUp = () => {
+      setIsDraggingV(false)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }, [])
+
+  // ── Horizontal Drag Handler ──
+  const startDragH = useCallback((e) => {
+    e.preventDefault()
+    setIsDraggingH(true)
+
+    const onMouseMove = (moveEvent) => {
+      if (!rightPanelRef.current) return
+      const rect = rightPanelRef.current.getBoundingClientRect()
+      const newHeight = rect.bottom - moveEvent.clientY
+      if (newHeight >= 110 && newHeight <= 540) {
+        setConsoleHeightPx(newHeight)
+      }
+    }
+
+    const onMouseUp = () => {
+      setIsDraggingH(false)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('mouseup', onMouseUp)
+    }
+
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('mouseup', onMouseUp)
+  }, [])
 
   const handleReset = async () => {
     const ok = await confirm({
@@ -106,25 +169,50 @@ function PracticeCodingPage() {
         inputToUse = problem?.sample_input || ''
       }
 
+      const expectedToCompare = testCases[selectedTestCaseIndex]?.expected_output || problem?.sample_output || ''
       let res
       if (isSql) {
         res = await runSql(problem.id, code)
+        setRunResult({
+          status: res.status === 'success' ? 'Finished' : 'Error',
+          output: JSON.stringify(res.rows || []),
+          error: res.error,
+        })
       } else {
-        res = await runCode(problem.id, code, inputToUse)
+        res = await runCode(code, inputToUse)
+        const actual = (res.return_value !== undefined && res.return_value !== 'None' && res.return_value !== '')
+          ? String(res.return_value).trim()
+          : ''
+        const expNorm = (expectedToCompare || '').trim()
+        const isAccepted = Boolean(
+          expNorm && actual && (
+            actual === expNorm ||
+            actual.replace(/\s+/g, '') === expNorm.replace(/\s+/g, '') ||
+            actual.toLowerCase() === expNorm.toLowerCase()
+          )
+        )
+        const status = res.stderr ? 'Runtime Error' : (isAccepted ? 'Accepted' : (expNorm ? 'Wrong Answer' : 'Finished'))
+        setRunResult({
+          status,
+          output: actual || 'None (no return value)',
+          stdout: res.stdout || '',
+          expected: expectedToCompare,
+          error: res.stderr || '',
+        })
       }
 
-      setRunResult(res)
-      if (res.status === 'Accepted' || res.passed) {
-        toast.success('Testcase Passed!')
+      if (res.status === 'Accepted' || !res.stderr) {
+        toast.success('Code executed successfully!')
       } else {
-        toast.warning(res.status || 'Execution failed')
+        toast.warning('Execution finished with issues')
       }
     } catch (err) {
+      console.error('Run error:', err)
       setRunResult({
         status: 'Runtime Error',
         error: err.response?.data?.detail || err.message || 'Execution failed'
       })
-      toast.error('Execution error')
+      toast.error('Failed to run code')
     } finally {
       setRunning(false)
     }
@@ -132,7 +220,7 @@ function PracticeCodingPage() {
 
   const handleSubmit = async () => {
     if (!code.trim()) {
-      toast.warning('Please write code before submitting')
+      toast.warning('Please enter some code to submit')
       return
     }
     setSubmitting(true)
@@ -150,20 +238,28 @@ function PracticeCodingPage() {
       }
 
       setSubmitResult(res)
-      if (res.status === 'Accepted' || res.passed_count === res.total_count) {
-        toast.success(`🎉 Excellent! Passed all ${res.total_count || 0} test cases!`)
+      const isAccepted = res.verdict === 'Accepted' || (res.total_tests > 0 && res.passed_tests === res.total_tests)
+      if (isAccepted) {
+        toast.success(`🎉 Excellent! Passed all ${res.total_tests || 0} test cases (100%)!`)
       } else {
-        toast.info(`Passed ${res.passed_count || 0} of ${res.total_count || 0} test cases.`)
+        toast.info(`Passed ${res.passed_tests || 0} of ${res.total_tests || 0} test cases (${res.score?.toFixed(0) || 0}%).`)
       }
     } catch (err) {
       setSubmitResult({
-        status: 'Submission Error',
+        verdict: 'Submission Error',
         error: err.response?.data?.detail || err.message || 'Evaluation failed'
       })
       toast.error('Failed to submit practice code')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  const handleCopyText = (text, idx) => {
+    navigator.clipboard.writeText(text)
+    setCopiedIndex(idx)
+    toast.success('Copied to clipboard!')
+    setTimeout(() => setCopiedIndex(null), 1800)
   }
 
   const handleLogout = () => {
@@ -189,8 +285,17 @@ function PracticeCodingPage() {
   const testCases = problem.test_cases || []
   const isSql = (problem.language || '').toLowerCase() === 'sql'
 
+  const filteredTestCases = testCases.filter((tc, idx) => {
+    if (selectedTcFilter !== 'all' && Number(selectedTcFilter) !== idx) return false
+    if (!tcSearch.trim()) return true
+    const searchLower = tcSearch.toLowerCase()
+    const inp = (tc.input || '').toLowerCase()
+    const exp = (typeof tc.expected_output === 'string' ? tc.expected_output : JSON.stringify(tc.expected_output || '')).toLowerCase()
+    return `case ${idx + 1}`.includes(searchLower) || inp.includes(searchLower) || exp.includes(searchLower)
+  })
+
   return (
-    <div className="acp-container">
+    <div className={`acp-container ${isDraggingV || isDraggingH ? 'is-resizing' : ''}`}>
       {/* ── Top Header ── */}
       <header className="acp-header">
         <div className="acp-header-left">
@@ -200,12 +305,12 @@ function PracticeCodingPage() {
             onClick={() => navigate('/practice/problems')}
             title="Back to Practice Problems"
           >
-            <FiArrowLeft size={16} />
+            <FiArrowLeft size={15} />
             <span>Practice</span>
           </button>
           <div className="acp-divider" />
           <h1 className="acp-title">{problem.title}</h1>
-          <span className="acp-badge acp-badge-preview" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
+          <span className="acp-badge acp-badge-preview" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', borderColor: 'rgba(16, 185, 129, 0.35)' }}>
             Practice Mode
           </span>
           <span className={`acp-badge acp-badge-diff ${problem.difficulty?.toLowerCase()}`}>
@@ -218,7 +323,9 @@ function PracticeCodingPage() {
         <div className="acp-header-right">
           <ThemeToggle />
           <div className="acp-user-chip" title={userName}>
-            <span className="acp-avatar" style={{ background: '#10b981' }}>{(userName || 'L').charAt(0).toUpperCase()}</span>
+            <span className="acp-avatar" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+              {(userName || 'L').charAt(0).toUpperCase()}
+            </span>
             <span className="acp-user-name">{userName}</span>
           </div>
           <button type="button" className="acp-logout-btn" onClick={handleLogout}>
@@ -227,79 +334,207 @@ function PracticeCodingPage() {
         </div>
       </header>
 
-      {/* ── Split Workspace ── */}
-      <div className="acp-body">
-        {/* ── Left Column: Problem Statement ── */}
-        <div className="acp-panel acp-left-panel">
+      {/* ── Main Resizable Workspace ── */}
+      <div className="acp-body" ref={containerRef}>
+        {/* ── Left Column: Problem Details & Testcases ── */}
+        <div
+          className="acp-panel acp-left-panel"
+          style={{ width: `${leftWidthPercent}%`, flexShrink: 0 }}
+        >
           <div className="acp-tabs">
-            <button type="button" className="acp-tab active">
+            <button
+              type="button"
+              className={`acp-tab ${activeLeftTab === 'description' ? 'active' : ''}`}
+              onClick={() => setActiveLeftTab('description')}
+            >
               <FiFileText size={14} /> Problem Description
+            </button>
+            <button
+              type="button"
+              className={`acp-tab ${activeLeftTab === 'testcases' ? 'active' : ''}`}
+              onClick={() => setActiveLeftTab('testcases')}
+            >
+              <FiLayers size={14} /> Configured Test Cases ({testCases.length})
             </button>
           </div>
 
           <div className="acp-panel-content">
-            <div className="acp-desc-view">
-              <div className="acp-desc-header">
-                <h2>{problem.title}</h2>
-                <div className="acp-desc-meta">
-                  <span><strong>Difficulty:</strong> {problem.difficulty}</span>
-                  <span><strong>Estimated Time:</strong> {problem.time_limit || 15} mins</span>
+            {activeLeftTab === 'description' && (
+              <div className="acp-desc-view">
+                <div className="acp-desc-header">
+                  <h2>{problem.title}</h2>
+                  <div className="acp-desc-meta">
+                    <span><strong>Difficulty:</strong> {problem.difficulty}</span>
+                    <span><strong>Estimated Time:</strong> {problem.time_limit || 15} mins</span>
+                  </div>
                 </div>
+
+                <div className="acp-section">
+                  <h4>Description</h4>
+                  <div className="acp-desc-text">
+                    {problem.description || problem.statement || 'No description provided.'}
+                  </div>
+                </div>
+
+                {problem.input_format && (
+                  <div className="acp-section">
+                    <h4>Input Format</h4>
+                    <pre className="acp-pre">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
+                  </div>
+                )}
+
+                {problem.output_format && (
+                  <div className="acp-section">
+                    <h4>Output Format</h4>
+                    <pre className="acp-pre">{typeof problem.output_format === 'string' ? problem.output_format : JSON.stringify(problem.output_format, null, 2)}</pre>
+                  </div>
+                )}
+
+                {problem.sample_input && (
+                  <div className="acp-section">
+                    <h4>Sample Input</h4>
+                    <pre className="acp-code-block">{problem.sample_input}</pre>
+                  </div>
+                )}
+
+                {problem.sample_output && (
+                  <div className="acp-section">
+                    <h4>Sample Output</h4>
+                    <pre className="acp-code-block">{problem.sample_output}</pre>
+                  </div>
+                )}
               </div>
+            )}
 
-              <div className="acp-section">
-                <h4>Description</h4>
-                <div className="acp-desc-text">
-                  {problem.description || problem.statement || 'No description provided.'}
+            {activeLeftTab === 'testcases' && (
+              <div className="acp-testcases-view">
+                {/* ── Testcase Filter & Search Bar ── */}
+                <div className="acp-tc-toolbar">
+                  <div className="acp-tc-search-box">
+                    <FiSearch size={13} className="acp-search-icon" />
+                    <input
+                      type="text"
+                      className="acp-tc-search-input"
+                      placeholder="Search testcases..."
+                      value={tcSearch}
+                      onChange={(e) => setTcSearch(e.target.value)}
+                    />
+                    {tcSearch && (
+                      <button type="button" className="acp-tc-clear-btn" onClick={() => setTcSearch('')}>
+                        <FiX size={12} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="acp-tc-pills-bar">
+                    <button
+                      type="button"
+                      className={`acp-tc-pill ${selectedTcFilter === 'all' ? 'active' : ''}`}
+                      onClick={() => setSelectedTcFilter('all')}
+                    >
+                      All ({testCases.length})
+                    </button>
+                    {testCases.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`acp-tc-pill ${Number(selectedTcFilter) === idx ? 'active' : ''}`}
+                        onClick={() => setSelectedTcFilter(String(idx))}
+                      >
+                        #{idx + 1}
+                      </button>
+                    ))}
+                  </div>
                 </div>
+
+                {filteredTestCases.length === 0 ? (
+                  <p className="acp-empty-text">No matching test cases found.</p>
+                ) : (
+                  <div className="acp-tc-list">
+                    {filteredTestCases.map((tc, originalIdx) => {
+                      const realIndex = testCases.indexOf(tc)
+                      const formattedExp = typeof tc.expected_output === 'string'
+                        ? tc.expected_output
+                        : JSON.stringify(tc.expected_output, null, 2)
+
+                      return (
+                        <div key={realIndex} className="acp-tc-card">
+                          <div className="acp-tc-card-header">
+                            <div className="acp-tc-card-title">
+                              <span className="acp-tc-badge">Test Case #{realIndex + 1}</span>
+                              <span className="acp-tc-validated-pill">
+                                <FiCheck size={11} /> Configured
+                              </span>
+                            </div>
+                            <div className="acp-tc-card-actions">
+                              <button
+                                type="button"
+                                className="acp-btn-copy-tc"
+                                onClick={() => handleCopyText(tc.input || '', `tc_inp_${realIndex}`)}
+                                title="Copy Input"
+                              >
+                                {copiedIndex === `tc_inp_${realIndex}` ? <FiCheck size={12} color="#10b981" /> : <FiCopy size={12} />}
+                                <span>{copiedIndex === `tc_inp_${realIndex}` ? 'Copied' : 'Copy'}</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="acp-tc-grid">
+                            <div className="acp-tc-block">
+                              <div className="acp-tc-label">
+                                <span>Input Argument(s)</span>
+                              </div>
+                              <pre className="acp-tc-box input-box">{tc.input || '(empty input)'}</pre>
+                            </div>
+                            <div className="acp-tc-block">
+                              <div className="acp-tc-label">
+                                <span>Expected Output</span>
+                              </div>
+                              <pre className="acp-tc-box expected-box">{formattedExp || '(empty)'}</pre>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
-
-              {problem.input_format && (
-                <div className="acp-section">
-                  <h4>Input Format</h4>
-                  <pre className="acp-pre">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
-                </div>
-              )}
-
-              {problem.output_format && (
-                <div className="acp-section">
-                  <h4>Output Format</h4>
-                  <pre className="acp-pre">{typeof problem.output_format === 'string' ? problem.output_format : JSON.stringify(problem.output_format, null, 2)}</pre>
-                </div>
-              )}
-
-              {problem.sample_input && (
-                <div className="acp-section">
-                  <h4>Sample Input</h4>
-                  <pre className="acp-code-block">{problem.sample_input}</pre>
-                </div>
-              )}
-
-              {problem.sample_output && (
-                <div className="acp-section">
-                  <h4>Sample Output</h4>
-                  <pre className="acp-code-block">{problem.sample_output}</pre>
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
 
-        {/* ── Right Column: Code Editor & Runner ── */}
-        <div className="acp-panel acp-right-panel">
+        {/* ── Draggable Vertical Resizer Divider ── */}
+        <div
+          className={`acp-resizer-v ${isDraggingV ? 'active' : ''}`}
+          onMouseDown={startDragV}
+          title="Drag to resize panels"
+        >
+          <div className="acp-resizer-line" />
+        </div>
+
+        {/* ── Right Column: Monaco Editor & Console ── */}
+        <div
+          className="acp-panel acp-right-panel"
+          ref={rightPanelRef}
+          style={{ width: `calc(${100 - leftWidthPercent}% - 8px)`, flex: 1 }}
+        >
           <div className="acp-editor-header">
             <div className="acp-editor-title">
-              <FiCode size={15} />
-              <span>Solution Editor ({isSql ? 'SQL' : 'Python 3'})</span>
+              <FiCode size={14} /> Solution Editor ({isSql ? 'SQL' : 'Python 3'})
             </div>
-            <div className="acp-editor-actions">
-              <button type="button" className="acp-btn-tool" onClick={handleReset} title="Reset to template">
-                <FiRefreshCw size={13} /> Reset
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className="acp-btn-tool"
+                onClick={handleReset}
+                title="Reset to initial template"
+              >
+                <FiRefreshCw size={12} /> Reset
               </button>
             </div>
           </div>
 
-          <div className="acp-editor-container">
+          <div className="acp-editor-container" style={{ height: `calc(100% - ${consoleHeightPx}px - 38px - 6px)` }}>
             <Editor
               height="100%"
               language={isSql ? 'sql' : 'python'}
@@ -318,8 +553,17 @@ function PracticeCodingPage() {
             />
           </div>
 
+          {/* ── Draggable Horizontal Resizer ── */}
+          <div
+            className={`acp-resizer-h ${isDraggingH ? 'active' : ''}`}
+            onMouseDown={startDragH}
+            title="Drag to resize console"
+          >
+            <div className="acp-resizer-h-line" />
+          </div>
+
           {/* ── Console / Execution Panel ── */}
-          <div className="acp-console">
+          <div className="acp-console" style={{ height: `${consoleHeightPx}px` }}>
             <div className="acp-console-header">
               <div className="acp-console-tabs">
                 <button
@@ -334,14 +578,13 @@ function PracticeCodingPage() {
                   className={`acp-tab ${activeBottomTab === 'result' ? 'active' : ''}`}
                   onClick={() => setActiveBottomTab('result')}
                 >
-                  <FiCheck size={13} /> Result
-                  {(runResult || submitResult) && (
-                    <span className={`acp-status-dot ${(runResult?.status === 'Accepted' || submitResult?.status === 'Accepted') ? 'pass' : 'fail'}`} />
-                  )}
+                  <FiCheck size={13} /> Test Result
+                  {runResult && <span className={`acp-status-dot ${runResult.status === 'Accepted' ? 'pass' : 'fail'}`} />}
+                  {submitResult && <span className={`acp-status-dot ${submitResult.verdict === 'Accepted' ? 'pass' : 'fail'}`} />}
                 </button>
               </div>
 
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
                 <button
                   type="button"
                   className="acp-btn-run"
@@ -352,12 +595,11 @@ function PracticeCodingPage() {
                 </button>
                 <button
                   type="button"
-                  className="acp-btn-run"
-                  style={{ background: 'var(--color-accent)' }}
+                  className="acp-btn-submit"
                   onClick={handleSubmit}
                   disabled={running || submitting}
                 >
-                  <FiUploadCloud size={13} /> {submitting ? 'Submitting...' : 'Submit'}
+                  <FiUploadCloud size={13} /> {submitting ? 'Evaluating...' : 'Submit Solution'}
                 </button>
               </div>
             </div>
@@ -366,14 +608,14 @@ function PracticeCodingPage() {
               {activeBottomTab === 'testcase' && (
                 <div className="acp-testcase-inputs">
                   <div className="acp-case-selector">
-                    {testCases.slice(0, 3).map((_, i) => (
+                    {testCases.map((_, i) => (
                       <button
                         key={i}
                         type="button"
                         className={`acp-case-chip ${!useCustomInput && selectedTestCaseIndex === i ? 'selected' : ''}`}
                         onClick={() => { setSelectedTestCaseIndex(i); setUseCustomInput(false) }}
                       >
-                        Sample Case {i + 1}
+                        Case {i + 1}
                       </button>
                     ))}
                     <button
@@ -406,62 +648,80 @@ function PracticeCodingPage() {
               {activeBottomTab === 'result' && (
                 <div className="acp-result-view">
                   {!runResult && !submitResult && !running && !submitting && (
-                    <p className="acp-empty-text">Click "Run Code" to test on sample cases or "Submit" to evaluate all test cases.</p>
+                    <p className="acp-empty-text">Click "Run Code" to compile on sample case or "Submit Solution" to evaluate against the entire testcase suite.</p>
                   )}
                   {(running || submitting) && (
                     <div className="acp-running-box">
-                      <Spinner label={running ? 'Running code…' : 'Evaluating test cases…'} size={24} />
+                      <Spinner label={running ? 'Executing code in sandbox…' : 'Evaluating against all test cases…'} size={24} />
                     </div>
                   )}
 
+                  {/* ── Submit All Results ── */}
                   {submitResult && !submitting && (
                     <div className="acp-result-content">
-                      <div className={`acp-result-status-badge ${submitResult.status === 'Accepted' || submitResult.passed_count === submitResult.total_count ? 'success' : 'error'}`}>
+                      <div className={`acp-result-status-badge ${submitResult.verdict === 'Accepted' || (submitResult.total_tests > 0 && submitResult.passed_tests === submitResult.total_tests) ? 'success' : 'error'}`}>
                         <FiAward style={{ marginRight: '5px' }} />
-                        {submitResult.status || (submitResult.passed_count === submitResult.total_count ? 'Accepted' : 'Partial Score')}
-                        {' — '}Passed {submitResult.passed_count || 0} / {submitResult.total_count || 0} Testcases
+                        {submitResult.verdict || (submitResult.passed_tests === submitResult.total_tests ? 'Accepted' : 'Failed')}
+                        {' — '}Passed {submitResult.passed_tests ?? 0} / {submitResult.total_tests ?? 0} Testcases ({submitResult.score?.toFixed(0) ?? 0}%)
                       </div>
 
-                      {submitResult.details && Array.isArray(submitResult.details) && (
+                      {submitResult.failed_details && submitResult.failed_details.length > 0 && (
                         <div className="acp-result-section">
-                          <label>Testcase Breakdown:</label>
-                          {submitResult.details.map((d, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '8px', fontSize: '12px', marginTop: '4px' }}>
-                              <span>Testcase #{i + 1}:</span>
-                              <strong style={{ color: d.passed ? 'var(--color-success)' : 'var(--color-error)' }}>
-                                {d.passed ? 'Passed ✓' : 'Failed ✗'}
-                              </strong>
+                          <label>Failed Testcases:</label>
+                          {submitResult.failed_details.slice(0, 5).map((d, i) => (
+                            <div key={i} className="failed-case-card" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239,68,68,0.2)', padding: '10px 14px', borderRadius: '6px', marginTop: '8px', fontSize: '12px' }}>
+                              <div style={{ fontWeight: 600, color: 'var(--color-error)', marginBottom: '4px' }}>
+                                Case #{d.test_case} Failed
+                              </div>
+                              {d.input && <div><strong>Input:</strong> <code style={{ color: 'var(--color-text-primary)' }}>{d.input}</code></div>}
+                              {d.expected && <div><strong>Expected:</strong> <code style={{ color: '#10b981' }}>{d.expected}</code></div>}
+                              {d.actual && <div><strong>Actual (return):</strong> <code style={{ color: '#ef4444' }}>{d.actual}</code></div>}
+                              {d.stdout && <div><strong>Stdout:</strong> <code className="stdout-text">{d.stdout}</code></div>}
+                              {d.error && <div style={{ color: 'var(--color-error)', marginTop: '2px' }}><strong>Error:</strong> {d.error}</div>}
                             </div>
                           ))}
+                          {submitResult.failed_details.length > 5 && (
+                            <p style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '6px' }}>
+                              + {submitResult.failed_details.length - 5} more failed test cases
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
                   )}
 
+                  {/* ── Single Run Result ── */}
                   {runResult && !running && !submitResult && (
                     <div className="acp-result-content">
                       <div className={`acp-result-status-badge ${runResult.status === 'Accepted' || runResult.passed ? 'success' : 'error'}`}>
                         {runResult.status || (runResult.passed ? 'Accepted' : 'Failed')}
                       </div>
 
+                      {runResult.stdout && (
+                        <div className="acp-result-section">
+                          <label>Stdout:</label>
+                          <pre className="acp-code-block stdout-text">{runResult.stdout}</pre>
+                        </div>
+                      )}
+
                       {runResult.output !== undefined && (
                         <div className="acp-result-section">
-                          <label>Output:</label>
+                          <label>Output (Return Value):</label>
                           <pre className="acp-code-block">{runResult.output || '(empty output)'}</pre>
                         </div>
                       )}
 
-                      {runResult.expected !== undefined && (
+                      {runResult.expected && (
                         <div className="acp-result-section">
                           <label>Expected Output:</label>
-                          <pre className="acp-code-block">{runResult.expected}</pre>
+                          <pre className="acp-code-block expected-text">{runResult.expected}</pre>
                         </div>
                       )}
 
                       {runResult.error && (
                         <div className="acp-result-section">
-                          <label>Error:</label>
-                          <pre className="acp-error-block">{runResult.error}</pre>
+                          <label>Runtime Error:</label>
+                          <pre className="acp-code-block error-text">{runResult.error}</pre>
                         </div>
                       )}
                     </div>

@@ -1,4 +1,4 @@
-/* ─── Coding Page — LeetCode-inspired Layout ─── */
+﻿/* --- Coding Page — LeetCode-inspired Layout --- */
 .coding-page {
   display: flex;
   flex-direction: column;
@@ -9,7 +9,7 @@
   overflow: hidden;
 }
 
-/* ─── Top Toolbar ─── */
+/* --- Top Toolbar --- */
 .coding-toolbar {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
@@ -229,7 +229,7 @@
 .global-timer.critical { border-color: var(--color-error); background: var(--color-error-bg); animation: pulse 1.2s ease-in-out infinite; }
 .global-timer.critical .timer-value { color: var(--color-error); }
 
-/* ─── Main Split Layout ─── */
+/* --- Main Split Layout --- */
 .main-split {
   display: flex;
   flex: 1;
@@ -238,7 +238,7 @@
   position: relative;
 }
 
-/* ─── Left Panel (Description) ─── */
+/* --- Left Panel (Description) --- */
 .left-panel {
   min-width: 250px;
   max-width: 80%;
@@ -250,7 +250,7 @@
   transition: background var(--transition-theme), border-color var(--transition-theme);
 }
 
-/* ─── Resizers ─── */
+/* --- Resizers --- */
 .resizer-horizontal {
   width: 7px;
   cursor: col-resize;
@@ -525,7 +525,7 @@
 .sample-table tr:nth-child(even) { background: var(--color-surface-3); }
 .sample-table tr:hover { background: var(--color-accent-light); }
 
-/* ─── Right Panel (Editor + Bottom Panel) ─── */
+/* --- Right Panel (Editor + Bottom Panel) --- */
 .right-panel {
   flex: 1;
   display: flex;
@@ -650,7 +650,7 @@
   background: #1e1e1e;
 }
 
-/* ─── Bottom Panel (Testcase / Test Result) ─── */
+/* --- Bottom Panel (Testcase / Test Result) --- */
 .bottom-panel {
   border-top: 2px solid var(--color-border);
   background: var(--color-surface);
@@ -744,7 +744,7 @@
   padding: 12px 16px;
 }
 
-/* ─── Testcase Tab Content ─── */
+/* --- Testcase Tab Content --- */
 .testcase-pills {
   display: flex;
   align-items: center;
@@ -838,7 +838,7 @@
   box-shadow: 0 0 0 2px var(--color-accent-light);
 }
 
-/* ─── Test Result Tab Content ─── */
+/* --- Test Result Tab Content --- */
 .result-summary {
   display: flex;
   align-items: center;
@@ -1075,7 +1075,7 @@
 .sql-results-table tbody tr:last-child td { border-bottom: none; }
 .sql-results-table tbody tr:nth-child(even) { background: var(--color-surface-3); }
 
-/* ─── Loading ─── */
+/* --- Loading --- */
 .loading {
   display: flex;
   align-items: center;
@@ -1103,7 +1103,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ─── Proctoring ─── */
+/* --- Proctoring --- */
 @keyframes pulse {
   0% {
     transform: scale(0.95);
@@ -1240,7 +1240,7 @@
   }
 }
 
-/* ─── Practice mode badge ─── */
+/* --- Practice mode badge --- */
 .practice-mode-badge {
   flex-shrink: 0;
   padding: 2px 8px;
@@ -1259,7 +1259,7 @@
   .practice-mode-badge { display: none; }
 }
 
-/* ─── Empty state ─── */
+/* --- Empty state --- */
 .empty-result {
   display: flex;
   align-items: center;
@@ -1325,4 +1325,26 @@
   z-index: 500;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
   pointer-events: none;
+}
+
+/* ─── LeetCode Run & Stdout Display ─── */
+.leetcode-run-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 8px;
+}
+
+.leetcode-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stdout-text {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(56, 189, 248, 0.25) !important;
+  color: #38bdf8 !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
 }

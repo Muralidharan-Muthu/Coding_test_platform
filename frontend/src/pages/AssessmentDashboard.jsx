@@ -15,7 +15,7 @@ import { exportAssessmentResults, getProctoringReports } from '../services/asses
 import { FiBarChart2, FiX, FiFileText, FiShield, FiTrendingUp, FiCheckSquare, FiLayers } from 'react-icons/fi'
 import './AssessmentDashboard.css'
 
-/* â”€â”€â”€ Nav Items (matches AdminDashboard) â”€â”€â”€ */
+/* --- Nav Items (matches AdminDashboard) --- */
 const TABLE_TABS = [
   { id: 'summary', label: 'Test Summary', icon: FiFileText },
   { id: 'proctoring', label: 'Trust & Proctoring', icon: FiShield },
@@ -359,7 +359,7 @@ function AssessmentDashboard() {
       onLogout={handleLogout}
     >
 
-      {/* â”€â”€ Filter Bar â”€â”€ */}
+      {/* -- Filter Bar -- */}
       <FilterBar
         filters={filters}
         setFilters={setFilters}
@@ -371,13 +371,13 @@ function AssessmentDashboard() {
         totalCount={totalCount}
       />
 
-      {/* â”€â”€ Page Content â”€â”€ */}
+      {/* -- Page Content -- */}
       <main className="asd-content">
 
         {/* Page Heading */}
 
         {loading ? (
-          <Spinner label="Loading assessment dataâ€¦" size={44} />
+          <Spinner label="Loading assessment data..." size={44} />
         ) : results.length === 0 ? (
           <div className="asd-empty">
             <div className="asd-empty-icon" aria-hidden="true"><FiBarChart2 /></div>

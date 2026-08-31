@@ -1,4 +1,4 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
 
@@ -29,14 +29,19 @@ export const adminLogin = async (email, password) => {
   return response.data
 }
 
-
 export const getProblem = async (problemId) => {
   const response = await api.get(`/problems/${problemId}`)
   return response.data
 }
 
-export const runCode = async (code, customInput) => {
-  const response = await api.post('/run', { code, custom_input: customInput })
+export const runCode = async (arg1, arg2, arg3) => {
+  let code = arg1
+  let customInput = arg2
+  if (arg3 !== undefined) {
+    code = arg2
+    customInput = arg3
+  }
+  const response = await api.post('/run', { code, custom_input: customInput || '' })
   return response.data
 }
 
@@ -126,8 +131,18 @@ export const getExamStatus = async (sessionId) => {
   return response.data
 }
 
-export const saveExamAnswer = async (sessionId, problemId, code) => {
-  const response = await api.post(`/exam/save-answer?session_id=${sessionId}&problem_id=${problemId}&code=${encodeURIComponent(code)}`)
+export const applyExamPenalty = async (sessionId, penaltySeconds = 60, reason = '') => {
+  const response = await api.post('/exam/penalty', {
+    session_id: sessionId,
+    penalty_seconds: penaltySeconds,
+    reason: reason,
+  })
+  return response.data
+}
+
+export const saveExamAnswer = async (sessionId, problemId, code, language) => {
+  const langSuffix = language ? `&language=${encodeURIComponent(language)}` : ''
+  const response = await api.post(`/exam/save-answer?session_id=${sessionId}&problem_id=${problemId}&code=${encodeURIComponent(code)}${langSuffix}`)
   return response.data
 }
 
@@ -220,7 +235,6 @@ export const deleteMcqQuestion = async (questionId) => {
   return response.data
 }
 
-
 // Dynamic Question Types & per-type question management
 export const getQuestionTypes = async () => {
   const response = await api.get('/admin/question-types')
@@ -243,7 +257,7 @@ export const getQuestionsByType = async (type) => {
 }
 
 export const createQuestionUnderType = async (type, payload) => {
-  const response = await api.post(`/admin/questions-by-type/${type}`, payload)
+  const response = await api.post('/admin/questions-by-type/${type}', payload)
   return response.data
 }
 

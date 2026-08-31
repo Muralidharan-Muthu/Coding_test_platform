@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+﻿import { Router, Request, Response } from 'express';
 import prisma from '../db/prisma';
 import {
   executePython,
@@ -30,7 +30,7 @@ async function getSqlProblem(id: string) {
   return problem;
 }
 
-// ─── 1. Run Python Code (/run) ───
+// --- 1. Run Python Code (/run) ---
 router.post('/run', async (req: Request, res: Response) => {
   try {
     const { code, custom_input } = req.body;
@@ -44,13 +44,18 @@ router.post('/run', async (req: Request, res: Response) => {
     }
 
     const result = await executePython(code, String(custom_input));
-    return res.json(result);
+    return res.json({
+      status: result.status,
+      stdout: result.stdout,
+      return_value: result.returnValue || result.stdout,
+      stderr: result.stderr,
+    });
   } catch (err: any) {
     return res.status(500).json({ detail: err.message || 'Execution failed' });
   }
 });
 
-// ─── 2. Submit Python Code (/submit) ───
+// --- 2. Submit Python Code (/submit) ---
 router.post('/submit', async (req: Request, res: Response) => {
   try {
     const { session_id, problem_id, code, time_taken } = req.body;
@@ -107,7 +112,7 @@ router.post('/submit', async (req: Request, res: Response) => {
   }
 });
 
-// ─── 3. Admin Preview Submit Python Code (/admin/preview/submit) ───
+// --- 3. Admin Preview Submit Python Code (/admin/preview/submit) ---
 router.post('/admin/preview/submit', async (req: Request, res: Response) => {
   try {
     const { problem_id, code } = req.body;
@@ -136,7 +141,7 @@ router.post('/admin/preview/submit', async (req: Request, res: Response) => {
   }
 });
 
-// ─── 4. Run SQL Query (/sql/run) ───
+// --- 4. Run SQL Query (/sql/run) ---
 router.post('/sql/run', async (req: Request, res: Response) => {
   try {
     const { problem_id, query, dialect } = req.body;
@@ -160,7 +165,7 @@ router.post('/sql/run', async (req: Request, res: Response) => {
   }
 });
 
-// ─── 5. Submit SQL Query (/sql/submit) ───
+// --- 5. Submit SQL Query (/sql/submit) ---
 router.post('/sql/submit', async (req: Request, res: Response) => {
   try {
     const { session_id, problem_id, query, time_taken, dialect } = req.body;
@@ -218,7 +223,7 @@ router.post('/sql/submit', async (req: Request, res: Response) => {
   }
 });
 
-// ─── 6. Admin Preview Submit SQL Query (/admin/preview/sql-submit) ───
+// --- 6. Admin Preview Submit SQL Query (/admin/preview/sql-submit) ---
 router.post('/admin/preview/sql-submit', async (req: Request, res: Response) => {
   try {
     const { problem_id, query, dialect } = req.body;

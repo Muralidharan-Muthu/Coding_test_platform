@@ -28,89 +28,132 @@ const DIFFICULTY_TABS = [
 ]
 
 function buildPythonTemplate(difficulty) {
-  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty]
+  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 15 }
+  const test_cases = [
+    { input: "[2, 7, 11, 15]\n9", expected_output: "[0, 1]" },
+    { input: "[3, 2, 4]\n6", expected_output: "[1, 2]" },
+    { input: "[3, 3]\n6", expected_output: "[0, 1]" },
+    { input: "[-1, -2, -3, -4, -5]\n-8", expected_output: "[2, 4]" },
+    { input: "[0, 4, 3, 0]\n0", expected_output: "[0, 3]" },
+    { input: "[1, 5, 10, 20, 50, 100]\n150", expected_output: "[4, 5]" },
+    { input: "[10, 20, 30, 40, 50]\n70", expected_output: "[2, 3]" },
+    { input: "[-10, 7, 19, 15]\n9", expected_output: "[0, 2]" },
+    { input: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n19", expected_output: "[8, 9]" },
+    { input: "[100, 200, 500, 1000]\n1200", expected_output: "[1, 3]" },
+    { input: "[5, 75, 25]\n100", expected_output: "[1, 2]" },
+    { input: "[-3, 4, 3, 90]\n0", expected_output: "[0, 2]" },
+    { input: "[2, 5, 5, 11]\n10", expected_output: "[1, 2]" },
+    { input: "[1, 3, 4, 2]\n6", expected_output: "[2, 3]" },
+    { input: "[11, 15, 2, 7]\n9", expected_output: "[2, 3]" },
+    { input: "[1, 1, 1, 1, 1, 4, 7, 8]\n11", expected_output: "[5, 6]" },
+    { input: "[10, -5, 20, -15]\n5", expected_output: "[0, 1]" },
+    { input: "[1000000, 500000, 500000]\n1000000", expected_output: "[1, 2]" },
+    { input: "[-100, -200, 300, 400]\n200", expected_output: "[1, 3]" },
+    { input: "[8, 3, 5, 2]\n7", expected_output: "[2, 3]" }
+  ]
+
   return JSON.stringify({
-    title: "",
+    title: "Two Sum",
     language: "python",
     difficulty,
     marks,
     time_limit,
-    description: "",
-    input_format: "",
-    output_format: "",
-    sample_input: "",
-    sample_output: "",
-    starter_code: "import sys\ninput = sys.stdin.readline\n\ndef solve():\n    # Read input\n    # Write your logic here\n    pass\n\nsolve()",
-    test_cases: [
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" }
-    ]
+    description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+    input_format: "Line 1: array of integers nums\nLine 2: integer target",
+    output_format: "Return a list of two indices [index1, index2].",
+    sample_input: "[2, 7, 11, 15]\n9",
+    sample_output: "[0, 1]",
+    starter_code: "class Solution:\n    def twoSum(self, nums: List[int], target: int) -> List[int]:\n        # Write your solution here\n        pass",
+    test_cases
+  }, null, 2)
+}
+
+function buildJavaTemplate(difficulty) {
+  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 15 }
+  const test_cases = [
+    { input: "[2, 7, 11, 15]\n9", expected_output: "[0, 1]" },
+    { input: "[3, 2, 4]\n6", expected_output: "[1, 2]" },
+    { input: "[3, 3]\n6", expected_output: "[0, 1]" },
+    { input: "[-1, -2, -3, -4, -5]\n-8", expected_output: "[2, 4]" },
+    { input: "[0, 4, 3, 0]\n0", expected_output: "[0, 3]" },
+    { input: "[1, 5, 10, 20, 50, 100]\n150", expected_output: "[4, 5]" },
+    { input: "[10, 20, 30, 40, 50]\n70", expected_output: "[2, 3]" },
+    { input: "[-10, 7, 19, 15]\n9", expected_output: "[0, 2]" },
+    { input: "[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]\n19", expected_output: "[8, 9]" },
+    { input: "[100, 200, 500, 1000]\n1200", expected_output: "[1, 3]" },
+    { input: "[5, 75, 25]\n100", expected_output: "[1, 2]" },
+    { input: "[-3, 4, 3, 90]\n0", expected_output: "[0, 2]" },
+    { input: "[2, 5, 5, 11]\n10", expected_output: "[1, 2]" },
+    { input: "[1, 3, 4, 2]\n6", expected_output: "[2, 3]" },
+    { input: "[11, 15, 2, 7]\n9", expected_output: "[2, 3]" },
+    { input: "[1, 1, 1, 1, 1, 4, 7, 8]\n11", expected_output: "[5, 6]" },
+    { input: "[10, -5, 20, -15]\n5", expected_output: "[0, 1]" },
+    { input: "[1000000, 500000, 500000]\n1000000", expected_output: "[1, 2]" },
+    { input: "[-100, -200, 300, 400]\n200", expected_output: "[1, 3]" },
+    { input: "[8, 3, 5, 2]\n7", expected_output: "[2, 3]" }
+  ]
+
+  return JSON.stringify({
+    title: "Two Sum",
+    language: "java",
+    difficulty,
+    marks,
+    time_limit,
+    description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.\n\nYou may assume that each input would have exactly one solution, and you may not use the same element twice.\n\nYou can return the answer in any order.",
+    input_format: "Line 1: integer array nums\nLine 2: integer target",
+    output_format: "Return an integer array containing the two indices [index1, index2].",
+    sample_input: "[2, 7, 11, 15]\n9",
+    sample_output: "[0, 1]",
+    starter_code: "class Solution {\n    public int[] twoSum(int[] nums, int target) {\n        // Write your solution here\n        return new int[]{};\n    }\n}",
+    test_cases
   }, null, 2)
 }
 
 function buildSqlTemplate(difficulty) {
-  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty]
+  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 15 }
+  const test_cases = Array.from({ length: 20 }, () => ({
+    expected_output: {
+      columns: ["product_id"],
+      rows: [["1"], ["4"], ["8"], ["11"], ["14"], ["17"], ["20"]]
+    }
+  }))
+
   return JSON.stringify({
-    title: "",
+    title: "Recyclable and Low Fat Products",
     language: "sql",
     difficulty,
     marks,
     time_limit,
-    statement: "",
-    description: "",
-    input_format: {
-      tables: [
-        {
-          table_name: "employees",
-          columns: ["id", "name", "department", "salary"],
-          rows: [
-            ["1", "Alice", "Engineering", "72000"],
-            ["2", "Bob", "Marketing", "45000"]
-          ]
-        }
-      ]
-    },
-    expected_output: {
-      columns: ["column1", "column2"],
-      rows: [["value1", "value2"]]
-    },
-    starter_code: "SELECT * FROM table_name;",
-    schema_sql: "CREATE TABLE employees (\n  id INTEGER PRIMARY KEY,\n  name TEXT NOT NULL,\n  department TEXT NOT NULL,\n  salary INTEGER NOT NULL\n);",
-    seed_sql: "INSERT INTO employees VALUES\n(1, 'Alice', 'Engineering', 72000),\n(2, 'Bob', 'Marketing', 45000);",
-    test_cases: [
-      { expected_output: { columns: ["column1", "column2"], rows: [["value1", "value2"]] } },
-      { expected_output: { columns: ["column1", "column2"], rows: [["value3", "value4"]] } },
-      { expected_output: { columns: ["column1", "column2"], rows: [["value5", "value6"]] } },
-      { expected_output: { columns: ["column1", "column2"], rows: [["value7", "value8"]] } },
-      { expected_output: { columns: ["column1", "column2"], rows: [["value9", "value10"]] } }
-    ]
+    description: "Write an SQL query to find the product_id of every product that is both low fat and recyclable. A product is low fat when low_fats is 'Y' and recyclable when recyclable is 'Y'. Return the product_id values in any order.",
+    sample_input: "Products table with columns product_id, low_fats, and recyclable.",
+    sample_output: "product_id values where low_fats = 'Y' AND recyclable = 'Y'.",
+    starter_code: "SELECT product_id FROM Products WHERE low_fats = 'Y' AND recyclable = 'Y';",
+    schema_sql: "CREATE TABLE Products (\n  product_id INTEGER PRIMARY KEY,\n  low_fats TEXT CHECK(low_fats IN ('Y', 'N')),\n  recyclable TEXT CHECK(recyclable IN ('Y', 'N'))\n);",
+    seed_sql: "INSERT INTO Products VALUES\n(1, 'Y', 'Y'),\n(2, 'Y', 'N'),\n(3, 'N', 'Y'),\n(4, 'Y', 'Y'),\n(5, 'N', 'N'),\n(6, 'Y', 'N'),\n(7, 'N', 'Y'),\n(8, 'Y', 'Y'),\n(9, 'N', 'N'),\n(10, 'Y', 'N'),\n(11, 'Y', 'Y'),\n(12, 'N', 'Y'),\n(13, 'N', 'N'),\n(14, 'Y', 'Y'),\n(15, 'Y', 'N'),\n(16, 'N', 'Y'),\n(17, 'Y', 'Y'),\n(18, 'N', 'N'),\n(19, 'N', 'Y'),\n(20, 'Y', 'Y');",
+    test_cases
   }, null, 2)
 }
 
 function buildGenericTemplate(difficulty, language) {
-  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty]
+  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 15 }
+  const test_cases = Array.from({ length: 20 }, (_, i) => ({
+    input: `case_${i + 1}_input_data`,
+    expected_output: `case_${i + 1}_expected_return_value`
+  }))
+
   return JSON.stringify({
-    title: "",
+    title: `${language.toUpperCase()} Problem Title`,
     language: language.toLowerCase(),
     difficulty,
     marks,
     time_limit,
-    description: "",
-    input_format: "",
-    output_format: "",
-    sample_input: "",
-    sample_output: "",
-    starter_code: `// ${language} solution\nfunction solve() {\n  // Write logic here\n}\n`,
-    test_cases: [
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" },
-      { input: "", expected_output: "" }
-    ]
+    description: `Write a solution in ${language} to solve the problem.`,
+    input_format: "Input arguments format.",
+    output_format: "Expected return value format.",
+    sample_input: "sample_input",
+    sample_output: "sample_output",
+    starter_code: `class Solution {\n    // Write your ${language} solution here\n}`,
+    test_cases
   }, null, 2)
 }
 
@@ -263,6 +306,8 @@ function QuestionsPage() {
     // Update default starter JSON template
     if (activeTab === 'python') {
       setJsonInput(buildPythonTemplate('Easy'))
+    } else if (activeTab === 'java') {
+      setJsonInput(buildJavaTemplate('Easy'))
     } else if (activeTab === 'sql') {
       setJsonInput(buildSqlTemplate('Easy'))
     } else {
@@ -514,7 +559,35 @@ function QuestionsPage() {
             </div>
 
             <div className="qp-json-editor-wrap">
-              <label className="qp-json-label">Question Specification (JSON):</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="qp-json-label" style={{ margin: 0 }}>Question Specification (JSON):</label>
+                <button
+                  type="button"
+                  className="qp-btn-copy-json"
+                  onClick={() => {
+                    navigator.clipboard.writeText(jsonInput)
+                    setJsonCopied(true)
+                    toast.success('Question JSON copied to clipboard!')
+                    setTimeout(() => setJsonCopied(false), 2000)
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy JSON</>}
+                </button>
+              </div>
               <textarea
                 className="qp-json-textarea"
                 rows={12}

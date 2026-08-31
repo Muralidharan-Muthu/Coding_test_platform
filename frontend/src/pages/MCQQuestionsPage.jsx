@@ -10,7 +10,7 @@ import api, {
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
-import { FiPlus, FiX } from 'react-icons/fi'
+import { FiPlus, FiX, FiCopy, FiCheck } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
 import './MCQQuestionsPage.css'
 import './QuestionsPage.css'
@@ -138,6 +138,7 @@ function MCQQuestionsPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [jsonInput, setJsonInput] = useState('')
+  const [jsonCopied, setJsonCopied] = useState(false)
   const [error, setError] = useState('')
   const [expandedQuestions, setExpandedQuestions] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -440,7 +441,35 @@ function MCQQuestionsPage() {
             </div>
 
             <div className="qp-json-editor-wrap">
-              <label className="qp-json-label">Question Specification (JSON):</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <label className="qp-json-label" style={{ margin: 0 }}>Question Specification (JSON):</label>
+                <button
+                  type="button"
+                  className="qp-btn-copy-json"
+                  onClick={() => {
+                    navigator.clipboard.writeText(jsonInput)
+                    setJsonCopied(true)
+                    toast.success('MCQ JSON copied to clipboard!')
+                    setTimeout(() => setJsonCopied(false), 2000)
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    border: '1px solid var(--color-border)',
+                    background: 'var(--color-surface)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy JSON</>}
+                </button>
+              </div>
               <textarea
                 className="qp-json-textarea"
                 rows={12}
