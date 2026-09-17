@@ -1,4 +1,4 @@
-﻿import './ProblemDetailTable.css'
+import './ProblemDetailTable.css'
 
 const PYTHON_SLOT_COUNT = 5
 const SQL_SLOT_COUNT = 5
@@ -94,7 +94,7 @@ function ProblemDetailTable({ data }) {
             const scores = normalizeProblemScores(row)
 
             return (
-              <tr key={row.candidate_id || idx}>
+              <tr key={row.id ? `detail_${row.id}` : `${row.candidate_id || 'cand'}_${idx}`}>
                 <td className="id-cell">{row.candidate_id}</td>
                 <td className="name-cell">{row.name}</td>
                 {Array.from({ length: PYTHON_SLOT_COUNT }, (_, index) => (

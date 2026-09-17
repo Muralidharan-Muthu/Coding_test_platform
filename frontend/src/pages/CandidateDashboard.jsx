@@ -1,4 +1,5 @@
-﻿import { useEffect, useRef, useState, useMemo } from 'react'
+﻿import { formatTimeWithLabel } from '../utils/timeUtils'
+import { useEffect, useRef, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import { getExamStatus, getExamSummary } from '../api'
@@ -149,7 +150,9 @@ function CandidateDashboard() {
             <div className="cd-stat">
               <ClockIcon size={18} />
               <div>
-                <span className="cd-stat-val">150 min</span>
+                <span className="cd-stat-val">
+                  {examSummary?.total_duration_minutes ? `${examSummary.total_duration_minutes} min` : '60 min'}
+                </span>
                 <span className="cd-stat-lbl">Duration</span>
               </div>
             </div>
@@ -218,7 +221,7 @@ function CandidateDashboard() {
             </div>
             <div className="cd-rule">
               <FiClock size={16} />
-              <span><b>Timed Auto-Submission:</b> When the 150-minute exam timer reaches zero or upon manual completion, your assessment is automatically submitted.</span>
+              <span><b>Timed Auto-Submission:</b> When the {examSummary?.total_duration_minutes || 60}-minute exam timer reaches zero or upon manual completion, your assessment is automatically submitted.</span>
             </div>
           </div>
 
@@ -228,7 +231,7 @@ function CandidateDashboard() {
               <h4>Assigned Questions Overview</h4>
               <table className="cd-table">
                 <thead>
-                  <tr><th>Title</th><th>Type</th><th>Level</th><th>Marks</th></tr>
+                  <tr><th>Title</th><th>Type</th><th>Level</th><th>Time Limit</th><th>Marks</th></tr>
                 </thead>
                 <tbody>
                   {examSummary.problems.map((p) => (
@@ -236,7 +239,8 @@ function CandidateDashboard() {
                       <td>{p.title}</td>
                       <td>{renderLangBadge(p.language)}</td>
                       <td><span className="cd-diff" style={{ background: getDifficultyColor(p.difficulty) }}>{p.difficulty}</span></td>
-                      <td>{p.marks}</td>
+                      <td><span style={{ fontSize: '12px', color: 'var(--color-text-secondary, #94a3b8)' }}>{formatTimeWithLabel(p.time_limit, p.language !== 'mcq')}</span></td>
+                      <td><strong>{p.marks}</strong></td>
                     </tr>
                   ))}
                 </tbody>

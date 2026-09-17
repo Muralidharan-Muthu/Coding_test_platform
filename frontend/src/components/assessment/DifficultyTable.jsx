@@ -1,4 +1,4 @@
-﻿import './DifficultyTable.css'
+import './DifficultyTable.css'
 
 function SolvedScore({ solved, total }) {
   if (total === 0) return <span className="solved-score score-gray">—</span>
@@ -63,7 +63,7 @@ function DifficultyTable({ data }) {
             const totalTests   = easyTotal + mediumTotal + hardTotal
 
             return (
-              <tr key={row.candidate_id || idx}>
+              <tr key={row.id ? `difficulty_${row.id}` : `${row.candidate_id || 'cand'}_${idx}`}>
                 <td className="id-cell">{row.candidate_id}</td>
                 <td className="name-cell">{row.name}</td>
                 <td><SolvedScore solved={easySolved}   total={easyTotal} /></td>

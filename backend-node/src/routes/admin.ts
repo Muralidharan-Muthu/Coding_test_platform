@@ -1,4 +1,4 @@
-﻿import {
+import {
   getQuestionTypes,
   createQuestionType,
   deleteQuestionType,
@@ -64,7 +64,7 @@ router.delete('/candidates/clear', async (req: Request, res: Response) => {
 // DELETE /admin/candidates/:email
 router.delete('/candidates/:email', async (req: Request, res: Response) => {
   try {
-    const result = await deleteCandidateByEmail(decodeURIComponent(req.params.email));
+    const result = await deleteCandidateByEmail(decodeURIComponent(String(req.params.email)));
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -74,7 +74,7 @@ router.delete('/candidates/:email', async (req: Request, res: Response) => {
 // PUT /admin/candidates/:email
 router.put('/candidates/:email', async (req: Request, res: Response) => {
   try {
-    const currentEmail = decodeURIComponent(req.params.email);
+    const currentEmail = decodeURIComponent(String(req.params.email));
     const { username = '', email = '' } = req.body;
     const updated = await updateCandidateDetails(currentEmail, username, email);
     if (!updated) {
@@ -274,7 +274,7 @@ router.post('/problems', async (req: Request, res: Response) => {
 // DELETE /admin/problems/:id
 router.delete('/problems/:id', async (req: Request, res: Response) => {
   try {
-    const result = await deleteProblem(req.params.id);
+    const result = await deleteProblem(String(req.params.id));
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -304,7 +304,7 @@ router.post('/mcq-questions', async (req: Request, res: Response) => {
 // DELETE /admin/mcq-questions/:id
 router.delete('/mcq-questions/:id', async (req: Request, res: Response) => {
   try {
-    const result = await deleteMcqQuestion(req.params.id);
+    const result = await deleteMcqQuestion(String(req.params.id));
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -343,7 +343,7 @@ router.post('/question-types', async (req: Request, res: Response) => {
 // DELETE /admin/question-types/:slug
 router.delete('/question-types/:slug', async (req: Request, res: Response) => {
   try {
-    const result = await deleteQuestionType(req.params.slug);
+    const result = await deleteQuestionType(String(req.params.slug));
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -353,7 +353,7 @@ router.delete('/question-types/:slug', async (req: Request, res: Response) => {
 // GET /admin/questions-by-type/:type
 router.get('/questions-by-type/:type', async (req: Request, res: Response) => {
   try {
-    const questions = await getQuestionsByType(req.params.type);
+    const questions = await getQuestionsByType(String(req.params.type));
     return res.json(questions);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -363,7 +363,7 @@ router.get('/questions-by-type/:type', async (req: Request, res: Response) => {
 // POST /admin/questions-by-type/:type
 router.post('/questions-by-type/:type', async (req: Request, res: Response) => {
   try {
-    const newQuestion = await createQuestionUnderType(req.params.type, req.body);
+    const newQuestion = await createQuestionUnderType(String(req.params.type), req.body);
     return res.json(newQuestion);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });
@@ -373,7 +373,7 @@ router.post('/questions-by-type/:type', async (req: Request, res: Response) => {
 // DELETE /admin/questions-by-type/:type/:id
 router.delete('/questions-by-type/:type/:id', async (req: Request, res: Response) => {
   try {
-    const result = await deleteQuestionUnderType(req.params.type, req.params.id);
+    const result = await deleteQuestionUnderType(String(req.params.type), String(req.params.id));
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });

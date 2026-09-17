@@ -1,4 +1,4 @@
-﻿import prisma from '../db/prisma';
+import prisma from '../db/prisma';
 
 export const getMcqQuestions = async () => {
   const mcqs = await prisma.mCQQuestion.findMany({
@@ -23,6 +23,13 @@ export const getMcqQuestions = async () => {
       correctIndex = charCode >= 65 && charCode <= 68 ? charCode - 65 : 0;
     }
 
+    const diff = (q.difficulty || 'easy').toLowerCase();
+    const defaultTime = diff === 'hard' ? 60 : diff === 'medium' ? 45 : 30;
+    const defaultMarks = diff === 'hard' ? 5 : diff === 'medium' ? 3 : 1;
+
+    const timeVal = typeof q.time === 'number' && q.time > 0 ? q.time : defaultTime;
+    const marksVal = typeof q.marks === 'number' && q.marks > 0 ? q.marks : defaultMarks;
+
     return {
       id: q.id,
       title: q.title || q.question_title || 'MCQ Question',
@@ -35,11 +42,12 @@ export const getMcqQuestions = async () => {
       option_d: q.option_d,
       options,
       options_json: q.options_json || JSON.stringify(options),
-      correct_option: q.correct_option || 'A',
+      correct_option: q.correct_option || String.fromCharCode(65 + correctIndex),
       correct_answer: correctIndex,
-      difficulty: q.difficulty || 'easy',
-      marks: q.marks || 10,
-      time: q.time || 10,
+      difficulty: diff,
+      marks: marksVal,
+      time: timeVal,
+      time_limit: timeVal,
       topic: q.topic || 'Python',
       explanation: q.explanation || '',
       created_at: q.created_at
@@ -56,8 +64,25 @@ export const createMcqQuestion = async (data: any) => {
   const optionB = data.option_b || options[1] || '';
   const optionC = data.option_c || options[2] || '';
   const optionD = data.option_d || options[3] || '';
-  const correctOption = data.correct_option || 'A';
-  const correctAnswer = typeof data.correct_answer === 'number' ? data.correct_answer : 0;
+
+  let correctAnswer = 0;
+  let correctOption = 'A';
+
+  if (typeof data.correct_answer === 'number') {
+    correctAnswer = data.correct_answer;
+    correctOption = String.fromCharCode(65 + correctAnswer);
+  } else if (typeof data.correct_option === 'string' && data.correct_option.trim()) {
+    correctOption = data.correct_option.trim().toUpperCase();
+    correctAnswer = Math.max(0, correctOption.charCodeAt(0) - 65);
+  }
+
+  const diff = String(data.difficulty || 'easy').toLowerCase();
+  const defaultTime = diff === 'hard' ? 60 : diff === 'medium' ? 45 : 30;
+  const defaultMarks = diff === 'hard' ? 5 : diff === 'medium' ? 3 : 1;
+
+  const rawTime = data.time_limit !== undefined && data.time_limit !== null ? data.time_limit : data.time;
+  const timeVal = Number(rawTime) > 0 ? Number(rawTime) : defaultTime;
+  const marksVal = Number(data.marks) > 0 ? Number(data.marks) : defaultMarks;
 
   const newQuestion = await prisma.mCQQuestion.create({
     data: {
@@ -73,9 +98,9 @@ export const createMcqQuestion = async (data: any) => {
       options_json: JSON.stringify([optionA, optionB, optionC, optionD]),
       correct_option: correctOption,
       correct_answer: correctAnswer,
-      difficulty: data.difficulty || 'easy',
-      marks: Number(data.marks) || 10,
-      time: Number(data.time) || 10,
+      difficulty: diff,
+      marks: marksVal,
+      time: timeVal,
       topic: data.topic || 'Python',
       explanation: data.explanation || '',
       created_at: new Date().toISOString()
@@ -115,7 +140,7 @@ export const getProblemsByLanguage = async (language: string) => {
   }
 };
 
-export const getAllProblems = async (languageFilter?: string) => {
+export const getAllProblems = async (languageFilter?: string): Promise<any[]> => {
   if (languageFilter) {
     return await getProblemsByLanguage(languageFilter);
   }

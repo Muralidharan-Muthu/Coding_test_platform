@@ -1,0 +1,152 @@
+﻿/* ==========================================================================
+   FormattedQuestionText - Real IDE Code Box Styling
+   ========================================================================== */
+
+.fqt-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.fqt-prose {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--color-text, #f1f5f9);
+  margin: 0;
+}
+
+.fqt-paragraph {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.fqt-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Real IDE Code Card ─── */
+.fqt-code-card {
+  background: #080c14;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  margin: 4px 0 8px 0;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.fqt-code-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  background: #0e1626;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.fqt-code-lang-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #60a5fa;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fqt-code-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.fqt-code-copy-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.fqt-code-body {
+  display: flex;
+  padding: 12px 0;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.fqt-line-numbers {
+  display: flex;
+  flex-direction: column;
+  padding: 0 12px 0 14px;
+  user-select: none;
+  text-align: right;
+  color: #475569;
+  font-size: 12px;
+  border-right: 1px solid rgba(148, 163, 184, 0.1);
+  min-width: 20px;
+}
+
+.fqt-line-numbers span {
+  height: 22.4px;
+  line-height: 22.4px;
+}
+
+.fqt-pre {
+  margin: 0;
+  padding: 0 16px;
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  color: #e2e8f0;
+  white-space: pre;
+  tab-size: 4;
+}
+
+.fqt-pre code {
+  font-family: inherit;
+}
+
+/* ─── Syntax Highlighting Tokens ─── */
+.fqt-keyword {
+  color: #f43f5e;
+  font-weight: 600;
+}
+
+.fqt-builtin {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.fqt-sql-keyword {
+  color: #a855f7;
+  font-weight: 700;
+}
+
+.fqt-str {
+  color: #34d399;
+}
+
+.fqt-num {
+  color: #fb923c;
+}
+
+.fqt-comment {
+  color: #64748b;
+  font-style: italic;
+}
+
+.fqt-bool {
+  color: #fbbf24;
+  font-weight: 600;
+}

@@ -1,4 +1,4 @@
-﻿import prisma from '../db/prisma';
+import prisma from '../db/prisma';
 import ExcelJS from 'exceljs';
 
 export interface AssessmentFilters {
@@ -135,14 +135,18 @@ export async function getProctoringReportsForDashboard(filters: AssessmentFilter
  * Persist a new assessment result (POST /api/assessment/results).
  */
 export async function createAssessmentResult(data: any) {
+  if (!data?.email || !String(data.email).trim()) {
+    throw new Error('Candidate email is required to record assessment result.');
+  }
+  const emailClean = String(data.email).trim().toLowerCase();
   const now = new Date().toISOString();
 
-  let user = await prisma.user.findUnique({ where: { email: data.email } });
+  let user = await prisma.user.findUnique({ where: { email: emailClean } });
   if (!user) {
     user = await prisma.user.create({
       data: {
         name: data.name || 'Candidate',
-        email: data.email,
+        email: emailClean,
         test_location: data.test_location || 'home',
         created_at: now,
       },

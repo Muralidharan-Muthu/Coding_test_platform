@@ -712,3 +712,92 @@
     justify-content: flex-end;
   }
 }
+
+/* ─── AI Prompt & Copy JSON Action Styles ─── */
+.qp-ai-tip-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.08));
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.qp-ai-tip-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.qp-ai-tip-text {
+  font-size: 12.5px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+.qp-ai-tip-text strong {
+  color: #e2e8f0;
+}
+
+.qp-json-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.qp-json-actions-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.qp-btn-copy-prompt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(129, 140, 248, 0.45);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22), rgba(168, 85, 247, 0.18));
+  color: #c7d2fe;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.qp-btn-copy-prompt:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(168, 85, 247, 0.28));
+  border-color: rgba(165, 180, 252, 0.7);
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.qp-btn-copy-json {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border, rgba(148, 163, 184, 0.25));
+  background: var(--color-surface, #131b2a);
+  color: var(--color-text-primary, #e2e8f0);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.qp-btn-copy-json:hover {
+  background: var(--color-surface-2, #1e293b);
+  border-color: rgba(148, 163, 184, 0.5);
+  color: #ffffff;
+}

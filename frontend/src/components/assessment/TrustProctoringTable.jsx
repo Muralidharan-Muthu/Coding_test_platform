@@ -1,4 +1,4 @@
-﻿import './TestSummaryTable.css'
+import './TestSummaryTable.css'
 import './TrustProctoringTable.css'
 
 const MAX_TRUST_SCORE = 100
@@ -138,7 +138,7 @@ function TrustProctoringTable({ data, onViewLogs }) {
             const trustScore = getTrustScoreFromLogs(row.logs || [])
 
             return (
-              <tr key={row.candidate_id || idx}>
+              <tr key={row.id ? `trust_${row.id}` : `${row.candidate_id || 'cand'}_${idx}`}>
                 <td className="id-cell">{row.candidate_id}</td>
                 <td className="name-cell">{row.name}</td>
                 <td className="trust-col">

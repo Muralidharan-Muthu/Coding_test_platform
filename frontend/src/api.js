@@ -1,6 +1,6 @@
-﻿import axios from 'axios'
+import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_API_URL) || 'http://127.0.0.1:8000'
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -257,7 +257,7 @@ export const getQuestionsByType = async (type) => {
 }
 
 export const createQuestionUnderType = async (type, payload) => {
-  const response = await api.post('/admin/questions-by-type/${type}', payload)
+  const response = await api.post(`/admin/questions-by-type/${type}`, payload)
   return response.data
 }
 

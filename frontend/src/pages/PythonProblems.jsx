@@ -1,3 +1,4 @@
+﻿import { formatTimeWithLabel } from '../utils/timeUtils'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPythonProblems, getExamStatus, submitExam } from '../api'
@@ -145,7 +146,7 @@ function PythonProblems() {
   }
 
   if (loading) {
-    return <Spinner label="Loading problems…" size={40} fullPage />
+    return <Spinner label="Loading problemsâ€¦" size={40} fullPage />
   }
 
   return (
@@ -190,7 +191,7 @@ function PythonProblems() {
                     {problem.difficulty}
                   </span>
                   <span className="marks">{problem.marks} marks</span>
-                  <span className="time-limit">{problem.time_limit} mins</span>
+                  <span className="time-limit">{formatTimeWithLabel(problem.time_limit, true)}</span>
                 </div>
               </div>
               <div className="problem-status">

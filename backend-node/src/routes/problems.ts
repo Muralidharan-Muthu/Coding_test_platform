@@ -126,7 +126,7 @@ router.get('/practice/problems', async (req: Request, res: Response) => {
 // GET /problems/:id
 router.get('/problems/:id', async (req: Request, res: Response) => {
   try {
-    const problem = await getProblemById(req.params.id);
+    const problem = await getProblemById(String(req.params.id));
     if (!problem) {
       return res.status(404).json({ detail: 'Problem not found' });
     }

@@ -70,7 +70,7 @@ router.post('/session/end', async (req: Request, res: Response) => {
 // ──────────────────────────────────────────────────────────────────
 router.get('/session/:id', async (req: Request, res: Response) => {
   try {
-    const result = await getProctoringSessionById(req.params.id);
+    const result = await getProctoringSessionById(String(req.params.id));
     if (!result) {
       return res.status(404).json({ detail: 'Session not found.' });
     }

@@ -1,4 +1,5 @@
-﻿import { useCallback, useEffect, useState } from 'react'
+﻿import { formatTimeWithLabel } from '../utils/timeUtils'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPracticeProblems } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
@@ -159,7 +160,7 @@ function PracticeProblems() {
                       {problem.difficulty}
                     </span>
                     <span className="marks">{problem.marks} marks</span>
-                    <span className="time-limit">{problem.time_limit || 15} mins est.</span>
+                    <span className="time-limit">{formatTimeWithLabel(problem.time_limit, true)}</span>
                   </div>
                 </div>
                 <button className="btn-solve" tabIndex={-1} aria-hidden="true">

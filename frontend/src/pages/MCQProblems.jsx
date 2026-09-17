@@ -1,3 +1,5 @@
+﻿import FormattedQuestionText from '../components/ui/FormattedQuestionText'
+import { formatTimeWithLabel } from '../utils/timeUtils'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getMcqProblems, submitExam } from '../api'
@@ -165,7 +167,7 @@ function MCQProblems() {
   }
 
   if (loading) {
-    return <Spinner label="Loading MCQ questions…" size={40} fullPage />
+    return <Spinner label="Loading MCQ questionsâ€¦" size={40} fullPage />
   }
 
   return (
@@ -219,10 +221,10 @@ function MCQProblems() {
                             {question.difficulty}
                           </span>
                           <span className="marks">{question.marks} marks</span>
-                          <span className="time-limit">{question.time_limit || question.time} mins</span>
+                          <span className="time-limit">{formatTimeWithLabel(question.time_limit || question.time, false)}</span>
                           <span className="mcq-topic-pill">{question.topic}</span>
                         </div>
-                        <p className="mcq-question-text">{question.question}</p>
+                        <FormattedQuestionText text={question.question} className="mcq-question-text" />
                       </div>
                     </div>
 

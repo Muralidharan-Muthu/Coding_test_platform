@@ -169,7 +169,11 @@ function PracticeCodingPage() {
         inputToUse = problem?.sample_input || ''
       }
 
-      const expectedToCompare = testCases[selectedTestCaseIndex]?.expected_output || problem?.sample_output || ''
+      const expectedRaw = testCases[selectedTestCaseIndex]?.expected_output ?? problem?.sample_output ?? ''
+      const expectedToCompare = typeof expectedRaw === 'object' && expectedRaw !== null
+        ? JSON.stringify(expectedRaw)
+        : String(expectedRaw ?? '')
+
       let res
       if (isSql) {
         res = await runSql(problem.id, code)
@@ -180,21 +184,32 @@ function PracticeCodingPage() {
         })
       } else {
         res = await runCode(code, inputToUse)
-        const actual = (res.return_value !== undefined && res.return_value !== 'None' && res.return_value !== '')
-          ? String(res.return_value).trim()
-          : ''
-        const expNorm = (expectedToCompare || '').trim()
+        const rawReturn = res.return_value !== undefined && res.return_value !== null ? res.return_value : ''
+        const actual = typeof rawReturn === 'object' ? JSON.stringify(rawReturn) : String(rawReturn).trim()
+        const expNorm = expectedToCompare.trim()
+
         const isAccepted = Boolean(
-          expNorm && actual && (
+          expNorm && actual && actual !== 'None' && (
             actual === expNorm ||
             actual.replace(/\s+/g, '') === expNorm.replace(/\s+/g, '') ||
             actual.toLowerCase() === expNorm.toLowerCase()
           )
         )
-        const status = res.stderr ? 'Runtime Error' : (isAccepted ? 'Accepted' : (expNorm ? 'Wrong Answer' : 'Finished'))
+
+        let status = 'Finished'
+        if (res.stderr) {
+          status = 'Runtime Error'
+        } else if (isAccepted) {
+          status = 'Accepted'
+        } else if (expNorm && actual && actual !== 'None') {
+          status = 'Wrong Answer'
+        } else if (actual === 'None' || !actual) {
+          status = expNorm ? 'Wrong Answer' : 'Finished'
+        }
+
         setRunResult({
           status,
-          output: actual || 'None (no return value)',
+          output: actual && actual !== 'None' ? actual : 'None (no return value)',
           stdout: res.stdout || '',
           expected: expectedToCompare,
           error: res.stderr || '',
@@ -365,7 +380,7 @@ function PracticeCodingPage() {
                   <h2>{problem.title}</h2>
                   <div className="acp-desc-meta">
                     <span><strong>Difficulty:</strong> {problem.difficulty}</span>
-                    <span><strong>Estimated Time:</strong> {problem.time_limit || 15} mins</span>
+                    <span><strong>Estimated Time:</strong> {formatTimeWithLabel(problem.time_limit, true)}</span>
                   </div>
                 </div>
 

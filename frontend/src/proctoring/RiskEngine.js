@@ -59,9 +59,9 @@ export class RiskEngine {
 
     // Check cooldown
     const cooldownMs = this.#config.cooldowns?.[type] ?? this.#config.defaultCooldownMs ?? 5000
-    const lastScored = this.#lastScoredAt[type] || 0
+    const lastScored = this.#lastScoredAt[type]
 
-    if (timestamp - lastScored < cooldownMs) {
+    if (lastScored !== undefined && timestamp - lastScored < cooldownMs) {
       return null // Deduplicated — too soon
     }
 

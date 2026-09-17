@@ -21,7 +21,7 @@ FRONTEND_PID=$!
 echo ""
 echo "✅ Both servers are running!"
 echo "   Backend  → http://localhost:8000"
-echo "   Frontend → http://localhost:5173"
+echo "   Frontend → http://localhost:3005"
 echo ""
 echo "Press Ctrl+C to stop both servers."
 

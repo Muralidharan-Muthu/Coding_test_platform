@@ -1,4 +1,47 @@
-﻿import { useEffect, useState } from 'react'
+﻿import FormattedQuestionText from '../components/ui/FormattedQuestionText'
+function buildMcqAiPrompt(difficulty = 'Easy') {
+  const diffNorm = (difficulty || 'easy').toLowerCase()
+  const timeSeconds = diffNorm === 'hard' ? 60 : diffNorm === 'medium' ? 45 : 30
+  const timeLabel = diffNorm === 'hard' ? '00:01:00 (1 min = 60s)' : diffNorm === 'medium' ? '00:00:45 (45s)' : '00:00:30 (30s)'
+  const marks = diffNorm === 'hard' ? 5 : diffNorm === 'medium' ? 3 : 1
+
+  return `You are an expert technical examiner. Generate a multiple-choice question in JSON format for an assessment platform.
+
+CRITICAL INSTRUCTIONS FOR AI:
+1. OUTPUT FORMAT: Output ONLY a single, 100% valid, ONE-TIME COPIABLE raw JSON code block (enclosed in \`\`\`json ... \`\`\`). Do NOT include any conversation, greetings, markdown comments, or text outside the JSON. The admin will copy and paste this directly into the system without editing.
+2. TIME LIMIT & MARKS (SECONDS AS PRIMARY STANDARD):
+   - For Easy: time_limit = 30 (30 seconds = 00:00:30), marks = 1
+   - For Medium: time_limit = 45 (45 seconds = 00:00:45), marks = 3
+   - For Hard: time_limit = 60 (60 seconds = 00:01:00 = 1 min), marks = 5
+   Current Setting: "difficulty": "${diffNorm}", "time_limit": ${timeSeconds} (${timeLabel}), "marks": ${marks}.
+3. OPTIONS & CORRECT ANSWER:
+   - Provide 4 clear, unambiguous options in the "options" array.
+   - Set "correct_answer" to the 0-indexed integer (0 for Option A, 1 for Option B, 2 for Option C, 3 for Option D).
+   - Provide a comprehensive "explanation" for why the answer is correct.
+
+REQUIRED JSON SCHEMA:
+{
+  "question_title": "<Concise Question Title>",
+  "question": "<Detailed Question Statement>",
+  "difficulty": "${diffNorm}",
+  "marks": ${marks},
+  "time_limit": ${timeSeconds},
+  "topic": "<Topic Name e.g. Python, SQL, Java, DSA, Computer Networks, OS, Aptitude>",
+  "options": [
+    "<Option A Text>",
+    "<Option B Text>",
+    "<Option C Text>",
+    "<Option D Text>"
+  ],
+  "correct_answer": 0,
+  "explanation": "<Clear, concise explanation of why the correct answer is right>"
+}
+
+Now generate an MCQ question for: [ENTER YOUR TOPIC / TOPIC AREA HERE]
+Return ONLY a single one-time copiable raw JSON block.`
+}
+
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api, {
   createMcqQuestion,
@@ -10,10 +53,11 @@ import api, {
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
-import { FiPlus, FiX, FiCopy, FiCheck } from 'react-icons/fi'
+import { FiPlus, FiX, FiCopy, FiCheck, FiCpu } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
 import './MCQQuestionsPage.css'
 import './QuestionsPage.css'
+import { formatTimeWithLabel, formatTimeHHMMSS } from '../utils/timeUtils'
 
 const DIFFICULTY_TABS = [
   { id: 'easy',   label: 'Easy'   },
@@ -21,21 +65,27 @@ const DIFFICULTY_TABS = [
   { id: 'hard',   label: 'Hard'   },
 ]
 
-const MCQ_TEMPLATE = JSON.stringify(
-  {
-    question_title: 'Check Prime Number',
-    question: 'Which of the following numbers is a prime number?',
-    options: ['4', '6', '7', '9'],
-    correct_answer: 2,
-    difficulty: 'easy',
-    marks: 10,
-    time: 10,
-    topic: 'Aptitude',
-    explanation: '7 is divisible only by 1 and itself.',
-  },
-  null,
-  2
-)
+function buildMcqTemplate(difficulty = 'easy') {
+  const diffNorm = (difficulty || 'easy').toLowerCase()
+  const timeSeconds = diffNorm === 'hard' ? 60 : diffNorm === 'medium' ? 45 : 30
+  const marks = diffNorm === 'hard' ? 5 : diffNorm === 'medium' ? 3 : 1
+
+  return JSON.stringify(
+    {
+      question_title: 'Check Prime Number',
+      question: 'Which of the following numbers is a prime number?',
+      options: ['4', '6', '7', '9'],
+      correct_answer: 2,
+      difficulty: diffNorm,
+      marks: marks,
+      time_limit: timeSeconds,
+      topic: 'Aptitude',
+      explanation: '7 is divisible only by 1 and itself.',
+    },
+    null,
+    2
+  )
+}
 
 function formatIST(isoString) {
   if (!isoString) return '—'
@@ -56,17 +106,29 @@ function formatIST(isoString) {
 }
 
 function normalizeMcqQuestion(rawQuestion) {
+  const diff = String(rawQuestion?.difficulty ?? 'easy').trim().toLowerCase()
+  const defaultTime = diff === 'hard' ? 60 : diff === 'medium' ? 45 : 30
+  const defaultMarks = diff === 'hard' ? 5 : diff === 'medium' ? 3 : 1
+
+  const rawTime = rawQuestion?.time_limit !== undefined && rawQuestion?.time_limit !== null
+    ? rawQuestion.time_limit
+    : rawQuestion?.time
+  const timeVal = Number(rawTime) > 0 ? Number(rawTime) : defaultTime
+  const marksVal = Number(rawQuestion?.marks) > 0 ? Number(rawQuestion.marks) : defaultMarks
+
   return {
-    question_title: String(rawQuestion?.question_title ?? rawQuestion?.questionTitle ?? '').trim(),
-    question: String(rawQuestion?.question ?? '').trim(),
+    question_title: String(rawQuestion?.question_title ?? rawQuestion?.title ?? rawQuestion?.questionTitle ?? '').trim(),
+    question: String(rawQuestion?.question ?? rawQuestion?.question_text ?? '').trim(),
     options: Array.isArray(rawQuestion?.options)
       ? rawQuestion.options.map((option) => String(option ?? '').trim())
       : [],
     correct_answer: Number(rawQuestion?.correct_answer ?? rawQuestion?.correctAnswer ?? 0),
-    difficulty: String(rawQuestion?.difficulty ?? 'easy').trim().toLowerCase(),
-    marks: rawQuestion?.marks == null ? undefined : Number(rawQuestion.marks),
-    time: rawQuestion?.time == null ? undefined : Number(rawQuestion.time),
-    topic: String(rawQuestion?.topic ?? '').trim(),
+    correct_option: rawQuestion?.correct_option ? String(rawQuestion.correct_option).trim().toUpperCase() : undefined,
+    difficulty: diff,
+    marks: marksVal,
+    time: timeVal,
+    time_limit: timeVal,
+    topic: String(rawQuestion?.topic ?? 'Python').trim(),
     explanation: String(rawQuestion?.explanation ?? '').trim(),
   }
 }
@@ -130,6 +192,7 @@ function AddTypeModal({ onAdd, onClose }) {
 function MCQQuestionsPage() {
   const navigate = useNavigate()
   const toast = useToast()
+  const confirm = useConfirm()
   const [questions, setQuestions] = useState([])
   const [questionTypes, setQuestionTypes] = useState([])
   const [adminName, setAdminName] = useState('')
@@ -139,6 +202,7 @@ function MCQQuestionsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [jsonInput, setJsonInput] = useState('')
   const [jsonCopied, setJsonCopied] = useState(false)
+  const [promptCopied, setPromptCopied] = useState(false)
   const [error, setError] = useState('')
   const [expandedQuestions, setExpandedQuestions] = useState({})
   const [submitting, setSubmitting] = useState(false)
@@ -180,6 +244,10 @@ function MCQQuestionsPage() {
     loadQuestions()
     loadQuestionTypes()
   }, [navigate])
+
+  useEffect(() => {
+    setJsonInput(buildMcqTemplate(activeDiffTab))
+  }, [activeDiffTab])
 
   const handleCreateType = async (typeName) => {
     try {
@@ -420,7 +488,7 @@ function MCQQuestionsPage() {
             onClick={() => {
               setShowAdd((prev) => {
                 const next = !prev
-                if (next && !jsonInput) setJsonInput(MCQ_TEMPLATE)
+                if (next && !jsonInput) setJsonInput(buildMcqTemplate(activeDiffTab))
                 return next
               })
             }}
@@ -441,34 +509,45 @@ function MCQQuestionsPage() {
             </div>
 
             <div className="qp-json-editor-wrap">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div className="qp-ai-tip-banner">
+                <span className="qp-ai-tip-icon">💡</span>
+                <div className="qp-ai-tip-text">
+                  <strong>Generate with AI (ChatGPT / Claude / Gemini):</strong> Click <strong>"Copy AI Prompt (ChatGPT)"</strong> below, paste it into ChatGPT with your topic to generate 100% compliant MCQ questions with options & explanations, then paste the JSON below.
+                </div>
+              </div>
+
+              <div className="qp-json-header-row">
                 <label className="qp-json-label" style={{ margin: 0 }}>Question Specification (JSON):</label>
-                <button
-                  type="button"
-                  className="qp-btn-copy-json"
-                  onClick={() => {
-                    navigator.clipboard.writeText(jsonInput)
-                    setJsonCopied(true)
-                    toast.success('MCQ JSON copied to clipboard!')
-                    setTimeout(() => setJsonCopied(false), 2000)
-                  }}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '5px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-surface)',
-                    color: 'var(--color-text-primary)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy JSON</>}
-                </button>
+                <div className="qp-json-actions-group">
+                  <button
+                    type="button"
+                    className="qp-btn-copy-prompt"
+                    onClick={() => {
+                      const prompt = buildMcqAiPrompt(activeDiffTab)
+                      navigator.clipboard.writeText(prompt)
+                      setPromptCopied(true)
+                      toast.success('MCQ AI Prompt copied! Paste into ChatGPT/Claude to generate valid MCQ questions.')
+                      setTimeout(() => setPromptCopied(false), 2500)
+                    }}
+                    title="Copy prompt for ChatGPT / Claude to generate valid MCQ questions"
+                  >
+                    {promptCopied ? <><FiCheck style={{ color: '#34d399' }} /> Prompt Copied!</> : <><FiCpu /> Copy AI Prompt (ChatGPT)</>}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="qp-btn-copy-json"
+                    onClick={() => {
+                      navigator.clipboard.writeText(jsonInput)
+                      setJsonCopied(true)
+                      toast.success('MCQ JSON template copied to clipboard!')
+                      setTimeout(() => setJsonCopied(false), 2000)
+                    }}
+                    title="Copy sample MCQ JSON structure"
+                  >
+                    {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy Sample JSON</>}
+                  </button>
+                </div>
               </div>
               <textarea
                 className="qp-json-textarea"
@@ -514,7 +593,7 @@ function MCQQuestionsPage() {
                   type="button"
                   className="qp-btn-add-inline"
                   onClick={() => {
-                    setJsonInput(MCQ_TEMPLATE)
+                    setJsonInput(buildMcqTemplate(activeDiffTab))
                     setShowAdd(true)
                   }}
                 >
@@ -539,18 +618,20 @@ function MCQQuestionsPage() {
                         <div className="qp-card-chips">
                           <span className={`qp-chip diff ${q.difficulty?.toLowerCase()}`}>{q.difficulty}</span>
                           <span className="qp-chip marks">{q.marks || 10} marks</span>
-                          <span className="qp-chip time">{q.time || 10} min</span>
+                          <span className="qp-chip time">{formatTimeWithLabel(q.time_limit || q.time, false)}</span>
                           {q.topic && <span className="qp-chip topic">{q.topic}</span>}
                           <span className="qp-chip date">Added: {formatIST(q.created_at)}</span>
                         </div>
 
                         {isExpanded && (
                           <div className="mcq-card-details">
-                            <p className="mcq-question-text">{q.question || q.question_text}</p>
+                            <FormattedQuestionText text={q.question || q.question_text} className="mcq-question-text" />
                             <div className="mcq-options-grid">
                               {options.map((option, optIdx) => {
-                                const isCorrect = q.correct_answer === optIdx ||
-                                  (q.correct_option && q.correct_option.toUpperCase() === String.fromCharCode(65 + optIdx))
+                                const correctIdx = typeof q.correct_answer === 'number'
+                                  ? q.correct_answer
+                                  : (q.correct_option ? q.correct_option.toUpperCase().charCodeAt(0) - 65 : 0)
+                                const isCorrect = optIdx === correctIdx
                                 return (
                                   <div
                                     key={optIdx}

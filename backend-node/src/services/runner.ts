@@ -1,4 +1,4 @@
-﻿import { spawn } from 'child_process';
+import { spawn } from 'child_process';
 import { createClient } from '@libsql/client';
 import prisma from '../db/prisma';
 
@@ -259,8 +259,8 @@ export async function executePython(code: string, stdinInput: string = ''): Prom
         const delimiter = '---__FUNCTION_RETURN_VALUE__---';
         if (rawStdout.includes(delimiter)) {
           const parts = rawStdout.split(delimiter);
-          const userStdout = parts[0].trim();
-          const returnVal = parts[1].trim();
+          const userStdout = (parts[0] ?? '').trim();
+          const returnVal = (parts[1] ?? '').trim();
           resolve({
             status: exitCode === 0 ? 'success' : 'error',
             stdout: userStdout,

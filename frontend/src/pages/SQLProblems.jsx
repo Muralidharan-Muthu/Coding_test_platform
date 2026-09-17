@@ -1,3 +1,4 @@
+﻿import { formatTimeWithLabel } from '../utils/timeUtils'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getSqlProblems, getExamStatus, submitExam } from '../api'
@@ -111,7 +112,7 @@ function SQLProblems() {
     return !!answers[problemId]
   }
 
-  if (loading) return <Spinner label="Loading problems…" size={40} fullPage />
+  if (loading) return <Spinner label="Loading problemsâ€¦" size={40} fullPage />
 
   return (
     <div className="section-problems-page sql-section">
@@ -152,7 +153,7 @@ function SQLProblems() {
                     {problem.difficulty}
                   </span>
                   <span className="marks">{problem.marks} marks</span>
-                  <span className="time-limit">{problem.time_limit} mins</span>
+                  <span className="time-limit">{formatTimeWithLabel(problem.time_limit, true)}</span>
                 </div>
               </div>
               <div className="problem-status">

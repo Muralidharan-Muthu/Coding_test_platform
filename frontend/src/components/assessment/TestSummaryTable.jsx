@@ -97,7 +97,7 @@ function TestSummaryTable({ data, onViewCode }) {
             const overallScoreMax = Number(row.max_possible_score) > 0 ? Number(row.max_possible_score) : 200
 
             return (
-            <tr key={row.candidate_id || idx}>
+            <tr key={row.id ? `summary_${row.id}` : `${row.candidate_id || 'cand'}_${idx}`}>
               <td className="id-cell">{row.candidate_id}</td>
               <td className="name-cell">{row.name}</td>
               <td>{row.email}</td>

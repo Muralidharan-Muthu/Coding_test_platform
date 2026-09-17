@@ -1,4 +1,165 @@
-﻿import { useEffect, useRef, useState } from 'react'
+﻿function buildAiPrompt(language, difficulty = 'Easy') {
+  const lang = (language || 'python').toLowerCase()
+  const diffNorm = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()
+  // Seconds as Primary Standard: 10m = 600s, 20m = 1200s, 30m = 1800s
+  const timeLimitSec = diffNorm === 'Hard' ? 1800 : diffNorm === 'Medium' ? 1200 : 600
+  const timeLimitLabel = diffNorm === 'Hard' ? '00:30:00 (30 mins = 1800s)' : diffNorm === 'Medium' ? '00:20:00 (20 mins = 1200s)' : '00:10:00 (10 mins = 600s)'
+  const marks = diffNorm === 'Hard' ? 40 : diffNorm === 'Medium' ? 20 : 10
+
+  if (lang === 'sql') {
+    return `You are an expert database engineer and technical examiner. Generate a complete SQL coding problem in JSON format for an assessment platform.
+
+CRITICAL INSTRUCTIONS FOR AI:
+1. OUTPUT FORMAT: Output ONLY a single, 100% valid, ONE-TIME COPIABLE raw JSON code block (enclosed in \`\`\`json ... \`\`\`). Do NOT include any conversational text, greetings, markdown comments, or text outside the JSON. The admin will click copy and paste it directly into the platform without editing.
+2. TIME LIMIT & MARKS (SECONDS AS PRIMARY STANDARD):
+   - For Easy: time_limit = 600 (600 seconds = 00:10:00 = 10 mins), marks = 10
+   - For Medium: time_limit = 1200 (1200 seconds = 00:20:00 = 20 mins), marks = 20
+   - For Hard: time_limit = 1800 (1800 seconds = 00:30:00 = 30 mins), marks = 40
+   Current Setting: "difficulty": "${diffNorm}", "time_limit": ${timeLimitSec} (${timeLimitLabel}), "marks": ${marks}.
+3. SCHEMA & SEED:
+   - Provide complete SQLite-compatible DDL in "schema_sql" (e.g. CREATE TABLE ...).
+   - Provide realistic sample rows in "seed_sql" (e.g. INSERT INTO ... VALUES ...).
+4. STARTER CODE:
+   - Provide a starter query template (e.g. "SELECT product_id FROM Products WHERE ...;").
+5. TEST CASES (EXACTLY 20 TEST CASES REQUIRED):
+   - Provide exactly 20 test cases where each testcase has "expected_output" matching the expected table result:
+     "expected_output": {
+       "columns": ["column_name"],
+       "rows": [["val1"], ["val2"], ...]
+     }
+
+REQUIRED JSON SCHEMA:
+{
+  "title": "<Problem Title>",
+  "language": "sql",
+  "difficulty": "${diffNorm}",
+  "marks": ${marks},
+  "time_limit": ${timeLimitSec},
+  "description": "<Clear problem statement>",
+  "sample_input": "<Description of table schema and sample data>",
+  "sample_output": "<Description of expected query output>",
+  "starter_code": "SELECT ... FROM ... WHERE ...;",
+  "schema_sql": "CREATE TABLE TableName (\n  col1 INTEGER PRIMARY KEY,\n  col2 TEXT\n);",
+  "seed_sql": "INSERT INTO TableName VALUES\n(1, 'val1'),\n(2, 'val2');",
+  "test_cases": [
+    {
+      "expected_output": {
+        "columns": ["col1"],
+        "rows": [["1"], ["2"]]
+      }
+    }
+    // ... exactly 20 test cases
+  ]
+}
+
+Now generate the SQL problem for: [ENTER YOUR TOPIC / PROBLEM REQUIREMENT HERE]
+Return ONLY a single one-time copiable raw JSON block.`
+  }
+
+  if (lang === 'java') {
+    return `You are an expert technical interviewer. Generate a complete Java coding problem in JSON format for an assessment platform.
+
+CRITICAL INSTRUCTIONS FOR AI:
+1. OUTPUT FORMAT: Output ONLY a single, 100% valid, ONE-TIME COPIABLE raw JSON code block (enclosed in \`\`\`json ... \`\`\`). Do NOT include any conversation, greetings, or text outside the JSON. The admin will click copy and paste it directly into the platform.
+2. TIME LIMIT & MARKS (SECONDS AS PRIMARY STANDARD):
+   - For Easy: time_limit = 600 (600 seconds = 00:10:00 = 10 mins), marks = 10
+   - For Medium: time_limit = 1200 (1200 seconds = 00:20:00 = 20 mins), marks = 20
+   - For Hard: time_limit = 1800 (1800 seconds = 00:30:00 = 30 mins), marks = 40
+   Current Setting: "difficulty": "${diffNorm}", "time_limit": ${timeLimitSec} (${timeLimitLabel}), "marks": ${marks}.
+3. OUTPUT EVALUATION IS BY FUNCTION RETURN VALUE ONLY:
+   - The solution method MUST RETURN the answer (e.g. return new int[]{0, 1}; return true; return "result";).
+   - NEVER print the result with System.out.println() for evaluation. (Printing is strictly candidate debug output).
+   - "output_format" must state: "Return ..." NOT "Print ...".
+4. STARTER CODE:
+   - Must use standard class Solution:
+     class Solution {
+         public <ReturnType> <methodName>(<args>) {
+             // Write your solution here
+             return ...;
+         }
+     }
+5. TEST CASES (EXACTLY 20 TEST CASES REQUIRED):
+   - Provide exactly 20 comprehensive test cases covering standard, edge, boundary, zero, negative, and large cases.
+   - "input" format: For multi-parameter methods, put ONE argument per line in exact parameter order.
+   - "expected_output": Must match the exact return value.
+
+REQUIRED JSON SCHEMA:
+{
+  "title": "<Problem Title>",
+  "language": "java",
+  "difficulty": "${diffNorm}",
+  "marks": ${marks},
+  "time_limit": ${timeLimitSec},
+  "description": "<Problem statement. Must explicitly instruct to 'Return' the answer>",
+  "input_format": "<Line-by-line parameter format>",
+  "output_format": "<Expected return value format>",
+  "sample_input": "<Line-by-line input for testcase 1>",
+  "sample_output": "<Expected return value for testcase 1>",
+  "starter_code": "class Solution {\n    public int[] solve(int[] nums, int target) {\n        // Write your solution here\n        return new int[]{};\n    }\n}",
+  "test_cases": [
+    { "input": "[2, 7, 11, 15]\n9", "expected_output": "[0, 1]" }
+    // ... exactly 20 test cases
+  ]
+}
+
+Now generate the Java problem for: [ENTER YOUR TOPIC / PROBLEM REQUIREMENT HERE]
+Return ONLY a single one-time copiable raw JSON block.`
+  }
+
+  // Default Python Prompt
+  return `You are an expert technical interviewer and problem creator. Generate a complete Python 3 coding problem in JSON format for an assessment platform.
+
+CRITICAL INSTRUCTIONS FOR AI:
+1. OUTPUT FORMAT: Output ONLY a single, 100% valid, ONE-TIME COPIABLE raw JSON code block (enclosed in \`\`\`json ... \`\`\`). Do NOT include any conversational filler, greetings, markdown comments, or text outside the JSON. The admin will click copy and paste it directly into the platform without editing.
+2. TIME LIMIT & MARKS (SECONDS AS PRIMARY STANDARD):
+   - For Easy: time_limit = 600 (600 seconds = 00:10:00 = 10 mins), marks = 10
+   - For Medium: time_limit = 1200 (1200 seconds = 00:20:00 = 20 mins), marks = 20
+   - For Hard: time_limit = 1800 (1800 seconds = 00:30:00 = 30 mins), marks = 40
+   Current Setting: "difficulty": "${diffNorm}", "time_limit": ${timeLimitSec} (${timeLimitLabel}), "marks": ${marks}.
+3. OUTPUT EVALUATION IS BY FUNCTION RETURN VALUE ONLY:
+   - The solution method MUST RETURN the answer (e.g. return "Even", return nums, return [0, 1], return True).
+   - NEVER use print() to return results. (Printing is strictly candidate debug output).
+   - "description" and "output_format" MUST clearly state: "Return the result..." NOT "Print the result...".
+4. STARTER CODE:
+   - Must use standard LeetCode class format:
+     class Solution:
+         def <methodName>(self, <params>) -> <ReturnType>:
+             # Write your solution here
+             pass
+5. TEST CASES (EXACTLY 20 TEST CASES REQUIRED):
+   - Provide exactly 20 diverse, high-quality test cases covering:
+     * Standard test cases
+     * Edge / Boundary cases
+     * Zeros, negative numbers, odd/even edge cases
+     * Empty / Single element cases (if applicable)
+     * Duplicate values / Large arrays
+   - "input" format: For multiple parameters, put ONE argument per line in exact function parameter order (e.g. Line 1: [2, 7, 11, 15], Line 2: 9).
+   - "expected_output": Must match the exact function return value (e.g. "Even", 42, true, [0, 1]).
+
+REQUIRED JSON SCHEMA:
+{
+  "title": "<Problem Title>",
+  "language": "python",
+  "difficulty": "${diffNorm}",
+  "marks": ${marks},
+  "time_limit": ${timeLimitSec},
+  "description": "<Clear problem statement. Must explicitly say 'Return ...' not 'Print'>",
+  "input_format": "<Describe line-by-line input argument format>",
+  "output_format": "<Describe return value type and format>",
+  "sample_input": "<Sample stdin input matching test_cases[0].input>",
+  "sample_output": "<Sample expected return value matching test_cases[0].expected_output>",
+  "starter_code": "class Solution:\n    def solve(self, ...) -> ...:\n        # Write your solution here\n        pass",
+  "test_cases": [
+    { "input": "<arg1>\n<arg2>", "expected_output": "<exact_return_value>" }
+    // ... exactly 20 test cases
+  ]
+}
+
+Now generate the Python problem for: [ENTER YOUR TOPIC / PROBLEM REQUIREMENT HERE]
+Return ONLY a single one-time copiable raw JSON block.`
+}
+
+import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   getQuestionTypes,
@@ -11,14 +172,15 @@ import {
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
-import { FiZap, FiCopy, FiCheck, FiPlus, FiX } from 'react-icons/fi'
+import { FiZap, FiCopy, FiCheck, FiPlus, FiX, FiCpu } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
 import './QuestionsPage.css'
+import { formatTimeWithLabel, formatTimeHHMMSS } from '../utils/timeUtils'
 
 const DIFFICULTY_CONFIG = {
-  Easy:   { marks: 10, time_limit: 10 },
-  Medium: { marks: 20, time_limit: 15 },
-  Hard:   { marks: 40, time_limit: 25 },
+  Easy:   { marks: 10, time_limit: 600 },
+  Medium: { marks: 20, time_limit: 1200 },
+  Hard:   { marks: 40, time_limit: 1800 },
 }
 
 const DIFFICULTY_TABS = [
@@ -247,9 +409,9 @@ function QuestionsPage() {
   const [hasQuestion, setHasQuestion] = useState(false)
   const [questionText, setQuestionText] = useState('')
   const [generatedPrompt, setGeneratedPrompt] = useState('')
-  const [promptCopied, setPromptCopied] = useState(false)
   const promptRef = useRef(null)
   const [jsonCopied, setJsonCopied] = useState(false)
+  const [promptCopied, setPromptCopied] = useState(false)
 
   // Compute activeTab from pathname or query param
   const queryParams = new URLSearchParams(location.search)
@@ -559,34 +721,45 @@ function QuestionsPage() {
             </div>
 
             <div className="qp-json-editor-wrap">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div className="qp-ai-tip-banner">
+                <span className="qp-ai-tip-icon">💡</span>
+                <div className="qp-ai-tip-text">
+                  <strong>Generate with AI (ChatGPT / Claude / Gemini):</strong> Click <strong>"Copy AI Prompt (ChatGPT)"</strong> below, paste it into ChatGPT with your problem topic to generate a 100% compliant question (guaranteed <strong>function return value</strong> and <strong>20 test cases</strong>), then paste the JSON below.
+                </div>
+              </div>
+
+              <div className="qp-json-header-row">
                 <label className="qp-json-label" style={{ margin: 0 }}>Question Specification (JSON):</label>
-                <button
-                  type="button"
-                  className="qp-btn-copy-json"
-                  onClick={() => {
-                    navigator.clipboard.writeText(jsonInput)
-                    setJsonCopied(true)
-                    toast.success('Question JSON copied to clipboard!')
-                    setTimeout(() => setJsonCopied(false), 2000)
-                  }}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '5px 12px',
-                    borderRadius: '6px',
-                    border: '1px solid var(--color-border)',
-                    background: 'var(--color-surface)',
-                    color: 'var(--color-text-primary)',
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                >
-                  {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy JSON</>}
-                </button>
+                <div className="qp-json-actions-group">
+                  <button
+                    type="button"
+                    className="qp-btn-copy-prompt"
+                    onClick={() => {
+                      const prompt = buildAiPrompt(activeTab, activeDiffTab.charAt(0).toUpperCase() + activeDiffTab.slice(1))
+                      navigator.clipboard.writeText(prompt)
+                      setPromptCopied(true)
+                      toast.success('AI Generation Prompt copied! Paste into ChatGPT/Claude to generate 100% return-evaluated questions with 20 test cases.')
+                      setTimeout(() => setPromptCopied(false), 2500)
+                    }}
+                    title="Copy prompt for ChatGPT / Claude to generate a return-evaluated 20-testcase problem"
+                  >
+                    {promptCopied ? <><FiCheck style={{ color: '#34d399' }} /> Prompt Copied!</> : <><FiCpu /> Copy AI Prompt (ChatGPT)</>}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="qp-btn-copy-json"
+                    onClick={() => {
+                      navigator.clipboard.writeText(jsonInput)
+                      setJsonCopied(true)
+                      toast.success('Question JSON template copied to clipboard!')
+                      setTimeout(() => setJsonCopied(false), 2000)
+                    }}
+                    title="Copy sample JSON structure"
+                  >
+                    {jsonCopied ? <><FiCheck style={{ color: 'var(--color-success)' }} /> Copied!</> : <><FiCopy /> Copy Sample JSON</>}
+                  </button>
+                </div>
               </div>
               <textarea
                 className="qp-json-textarea"
@@ -648,7 +821,7 @@ function QuestionsPage() {
                       <div className="qp-card-chips">
                         <span className={`qp-chip diff ${p.difficulty?.toLowerCase()}`}>{p.difficulty}</span>
                         <span className="qp-chip marks">{p.marks || 10} marks</span>
-                        <span className="qp-chip time">{p.time_limit || 15} min</span>
+                        <span className="qp-chip time">{formatTimeWithLabel(p.time_limit, true)}</span>
                         <span className="qp-chip date">Added: {formatIST(p.created_at)}</span>
                       </div>
                     </div>
