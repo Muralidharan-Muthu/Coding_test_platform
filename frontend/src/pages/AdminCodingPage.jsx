@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Editor from '@monaco-editor/react'
 import api, { getProblem, runCode, runSql, previewSubmitCode, previewSubmitSql } from '../api'
@@ -25,6 +25,7 @@ import {
   FiAlertCircle,
   FiCpu
 } from 'react-icons/fi'
+import { FormattedContent } from '../components/ui/TableRenderer'
 import './AdminCodingPage.css'
 import { formatTimeWithLabel } from '../utils/timeUtils'
 
@@ -76,7 +77,14 @@ function AdminCodingPage() {
     try {
       const data = await getProblem(problemId)
       setProblem(data)
-      const initialCode = data.starter_code || (data.language === 'sql' ? 'SELECT * FROM employees;' : '# Write your solution here\n')
+      let initialCode = data.starter_code || ''
+      if (data.language === 'sql') {
+        if (!initialCode.trim() || /^\s*SELECT\b/i.test(initialCode.trim())) {
+          initialCode = '-- Write your SQL query here\n'
+        }
+      } else if (!initialCode.trim()) {
+        initialCode = '# Write your solution here\n'
+      }
       setCode(initialCode)
       setStarterCode(initialCode)
       if (data.sample_input) {
@@ -392,35 +400,51 @@ function AdminCodingPage() {
                 <div className="acp-section">
                   <h4>Description</h4>
                   <div className="acp-desc-text">
-                    {problem.description || problem.statement || 'No description provided.'}
+                    <FormattedContent text={problem.description || problem.statement || 'No description provided.'} />
                   </div>
                 </div>
 
                 {problem.input_format && (
                   <div className="acp-section">
                     <h4>Input Format</h4>
-                    <pre className="acp-pre">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
+                    {typeof problem.input_format === 'string' && (problem.input_format.includes('|') || problem.input_format.includes('+')) ? (
+                      <FormattedContent text={problem.input_format} />
+                    ) : (
+                      <pre className="acp-pre">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
+                    )}
                   </div>
                 )}
 
                 {problem.output_format && (
                   <div className="acp-section">
                     <h4>Output Format</h4>
-                    <pre className="acp-pre">{typeof problem.output_format === 'string' ? problem.output_format : JSON.stringify(problem.output_format, null, 2)}</pre>
+                    {typeof problem.output_format === 'string' && (problem.output_format.includes('|') || problem.output_format.includes('+')) ? (
+                      <FormattedContent text={problem.output_format} />
+                    ) : (
+                      <pre className="acp-pre">{typeof problem.output_format === 'string' ? problem.output_format : JSON.stringify(problem.output_format, null, 2)}</pre>
+                    )}
                   </div>
                 )}
 
                 {problem.sample_input && (
                   <div className="acp-section">
                     <h4>Sample Input</h4>
-                    <pre className="acp-code-block">{problem.sample_input}</pre>
+                    {problem.sample_input.includes('|') || problem.sample_input.includes('+') ? (
+                      <FormattedContent text={problem.sample_input} />
+                    ) : (
+                      <pre className="acp-code-block">{problem.sample_input}</pre>
+                    )}
                   </div>
                 )}
 
                 {problem.sample_output && (
                   <div className="acp-section">
                     <h4>Sample Output</h4>
-                    <pre className="acp-code-block">{problem.sample_output}</pre>
+                    {problem.sample_output.includes('|') || problem.sample_output.includes('+') ? (
+                      <FormattedContent text={problem.sample_output} />
+                    ) : (
+                      <pre className="acp-code-block">{problem.sample_output}</pre>
+                    )}
                   </div>
                 )}
               </div>

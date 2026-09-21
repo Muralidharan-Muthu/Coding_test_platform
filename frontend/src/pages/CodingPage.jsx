@@ -1,4 +1,4 @@
-﻿import Editor from '@monaco-editor/react'
+import Editor from '@monaco-editor/react'
 import api, { getExamStatus, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -11,6 +11,7 @@ import { ProctoringProvider } from '../components/Proctoring/ProctoringProvider'
 import { useProctoring } from '../components/Proctoring/useProctoring'
 
 import { ProctoringStatus } from '../components/Proctoring/ProctoringStatus'
+import { FormattedContent, parseSqlFromDdlDml } from '../components/ui/TableRenderer'
 import './CodingPage.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
@@ -382,7 +383,14 @@ function CodingPage() {
       }
 
       const rawStarter = data.starter_code || ''
-      const cleanStarter = data.language === 'python' ? stripDriver(rawStarter) : rawStarter
+      let cleanStarter = rawStarter
+      if (data.language === 'python') {
+        cleanStarter = stripDriver(rawStarter)
+      } else if (data.language === 'sql') {
+        if (!cleanStarter.trim() || /^\s*SELECT\b/i.test(cleanStarter.trim())) {
+          cleanStarter = '-- Write your SQL query here\n'
+        }
+      }
       const savedCode = answers[problemId] ? answers[problemId].code : null
       setCode(savedCode ? (data.language === 'python' ? stripDriver(savedCode) : savedCode) : cleanStarter)
       setStarterCode(cleanStarter)
@@ -649,6 +657,7 @@ function CodingPage() {
                           problem.input_format.tables && problem.input_format.tables.length > 0)
                          ? problem.input_format.tables[0].rows || [] : []
     const fallbackPreview = getFallbackSqlPreview(typeof problem.input_format === 'string' ? problem.input_format : '')
+    const ddlDmlData = parseSqlFromDdlDml(problem.schema_sql, problem.seed_sql)
 
     if (normalizedTables.length > 0) {
       return (
@@ -674,10 +683,28 @@ function CodingPage() {
       )
     }
 
+    // If DDL/DML parsed columns and sample rows from seed_sql exist, prioritize them!
+    if (ddlDmlData.columns.length > 0 && ddlDmlData.rows.length > 0) {
+      return (
+        <div className="sql-input-table-block">
+          {ddlDmlData.tableName && <div className="table-name-header">{ddlDmlData.tableName} table:</div>}
+          <div className="sample-table-container">
+            <table className="sample-table">
+              <thead><tr>{ddlDmlData.columns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
+              <tbody>{ddlDmlData.rows.map((row, ri) => (
+                <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
+              ))}</tbody>
+            </table>
+          </div>
+        </div>
+      )
+    }
+
     const previewColumns = tables.length > 0 && tables[0].columns
       ? tables[0].columns.map(c => c.name || c)
       : backendPreviewColumns.length > 0 ? backendPreviewColumns
       : schemaData.columns.length > 0 ? schemaData.columns.map(c => c.name || c)
+      : ddlDmlData.columns.length > 0 ? ddlDmlData.columns
       : fallbackPreview.columns
     const previewRows = tablesFieldRows.length > 0 ? tablesFieldRows
       : oldFormatRows.length > 0 ? oldFormatRows
@@ -715,6 +742,10 @@ function CodingPage() {
       )
     }
 
+    if (typeof problem.input_format === 'string' && problem.input_format.includes('|')) {
+      return <FormattedContent text={problem.input_format} />
+    }
+
     return <pre className="format-text">{typeof problem.input_format === 'string' ? problem.input_format : JSON.stringify(problem.input_format, null, 2)}</pre>
   }
 
@@ -724,14 +755,23 @@ function CodingPage() {
     const backendOutputColumns = problem.output_preview_columns || []
     const backendOutputRows = problem.output_preview_rows || []
 
-    if (newFormatExpectedOutput && newFormatExpectedOutput.columns.length > 0 && newFormatExpectedOutput.rows.length > 0) {
+    const firstTc = problem.test_cases?.[0]?.expected_output
+    const tcExpOutput = (firstTc && typeof firstTc === 'object' && Array.isArray(firstTc.columns) && Array.isArray(firstTc.rows))
+      ? firstTc
+      : (Array.isArray(firstTc) && firstTc.length > 0 && typeof firstTc[0] === 'object')
+        ? { columns: Object.keys(firstTc[0]), rows: firstTc.map(r => Object.values(r)) }
+        : null
+
+    const expOutputToRender = newFormatExpectedOutput || tcExpOutput
+
+    if (expOutputToRender && expOutputToRender.columns.length > 0 && expOutputToRender.rows.length > 0) {
       return (
         <>
           <h3 className="section-heading">Expected Output</h3>
           <div className="sample-table-container">
             <table className="sample-table">
-              <thead><tr>{newFormatExpectedOutput.columns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
-              <tbody>{newFormatExpectedOutput.rows.map((row, ri) => (
+              <thead><tr>{expOutputToRender.columns.map((col, idx) => <th key={idx}>{col}</th>)}</tr></thead>
+              <tbody>{expOutputToRender.rows.map((row, ri) => (
                 <tr key={ri}>{row.map((cell, ci) => <td key={ci}>{cell !== null ? cell : 'NULL'}</td>)}</tr>
               ))}</tbody>
             </table>
@@ -757,6 +797,14 @@ function CodingPage() {
     }
 
     if (problem.sample_output) {
+      if (problem.sample_output.includes('+') || problem.sample_output.includes('|')) {
+        return (
+          <>
+            <h3 className="section-heading">Expected Output</h3>
+            <FormattedContent text={problem.sample_output} />
+          </>
+        )
+      }
       const parsedTable = parsePipeTable(problem.sample_output)
       if (parsedTable.length > 0) {
         return (
@@ -892,7 +940,7 @@ function CodingPage() {
               </div>
 
               <div className="problem-statement">
-                <pre>{problem.statement}</pre>
+                <FormattedContent text={problem.description || problem.statement} />
               </div>
 
               <h3 className="section-heading">Input Format</h3>

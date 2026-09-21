@@ -1,4 +1,4 @@
-﻿import prisma from '../db/prisma';
+import prisma from '../db/prisma';
 
 export interface QuestionTypeRecord {
   id: string;
@@ -346,7 +346,7 @@ export async function createQuestionUnderType(typeSlug: string, data: any): Prom
       typeof data.output_format === 'object' ? JSON.stringify(data.output_format) : (data.output_format || ''),
       data.sample_input || '',
       data.sample_output || '',
-      data.starter_code || `// Solution for ${data.title || 'Problem'}\n`,
+      data.starter_code || (normalized === 'sql' ? '-- Write your SQL query here\n' : `// Solution for ${data.title || 'Problem'}\n`),
       testCasesJson,
       data.schema_sql || null,
       data.seed_sql || null,

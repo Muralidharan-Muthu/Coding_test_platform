@@ -207,7 +207,7 @@ export const createProblem = async (data: any) => {
     output_format: typeof data.output_format === 'object' ? JSON.stringify(data.output_format) : (data.output_format || ''),
     sample_input: data.sample_input || '',
     sample_output: data.sample_output || '',
-    starter_code: data.starter_code || '',
+    starter_code: data.starter_code || (lang === 'sql' ? '-- Write your SQL query here\n' : ''),
     test_cases_json: Array.isArray(data.test_cases) ? JSON.stringify(data.test_cases) : (data.test_cases_json || '[]'),
     is_active: 1,
     created_at: now

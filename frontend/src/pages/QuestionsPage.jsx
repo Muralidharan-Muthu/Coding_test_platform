@@ -1,4 +1,4 @@
-﻿function buildAiPrompt(language, difficulty = 'Easy') {
+function buildAiPrompt(language, difficulty = 'Easy') {
   const lang = (language || 'python').toLowerCase()
   const diffNorm = difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase()
   // Seconds as Primary Standard: 10m = 600s, 20m = 1200s, 30m = 1800s
@@ -16,11 +16,41 @@ CRITICAL INSTRUCTIONS FOR AI:
    - For Medium: time_limit = 1200 (1200 seconds = 00:20:00 = 20 mins), marks = 20
    - For Hard: time_limit = 1800 (1800 seconds = 00:30:00 = 30 mins), marks = 40
    Current Setting: "difficulty": "${diffNorm}", "time_limit": ${timeLimitSec} (${timeLimitLabel}), "marks": ${marks}.
-3. SCHEMA & SEED:
-   - Provide complete SQLite-compatible DDL in "schema_sql" (e.g. CREATE TABLE ...).
-   - Provide realistic sample rows in "seed_sql" (e.g. INSERT INTO ... VALUES ...).
-4. STARTER CODE:
-   - Provide a starter query template (e.g. "SELECT product_id FROM Products WHERE ...;").
+3. LEETCODE-STYLE SCHEMA & SEED IN DESCRIPTION:
+   - In "description", format the schema and example as clean LeetCode ASCII grid tables:
+     Table: <TableName>
+     +-------------+---------+
+     | Column Name | Type    |
+     +-------------+---------+
+     | col_name    | type    |
+     +-------------+---------+
+     <Column and constraint notes>
+     
+     <Problem statement requirement>
+     
+     Return the result table in any order.
+     
+     Example 1:
+     Input: 
+     <TableName> table:
+     +-------------+----------+
+     | col1        | col2     |
+     +-------------+----------+
+     | val1        | val2     |
+     +-------------+----------+
+     Output: 
+     +-------------+
+     | col1        |
+     +-------------+
+     | val1        |
+     +-------------+
+     Explanation: ...
+   - In "schema_sql", provide complete SQLite-compatible DDL (e.g. CREATE TABLE TableName (...);).
+   - In "seed_sql", provide realistic sample rows matching Example 1 (e.g. INSERT INTO TableName VALUES (...);).
+4. STARTER CODE (WRITE QUERY FROM SCRATCH):
+   - For SQL, do NOT write ANY existing query, partial code, or solution (NEVER include "SELECT ...").
+   - "starter_code" MUST be set to "-- Write your SQL query here\\n" or empty string "".
+   - Candidates must use the description given table to write the entire query from scratch.
 5. TEST CASES (EXACTLY 20 TEST CASES REQUIRED):
    - Provide exactly 20 test cases where each testcase has "expected_output" matching the expected table result:
      "expected_output": {
@@ -35,12 +65,12 @@ REQUIRED JSON SCHEMA:
   "difficulty": "${diffNorm}",
   "marks": ${marks},
   "time_limit": ${timeLimitSec},
-  "description": "<Clear problem statement>",
-  "sample_input": "<Description of table schema and sample data>",
-  "sample_output": "<Description of expected query output>",
-  "starter_code": "SELECT ... FROM ... WHERE ...;",
-  "schema_sql": "CREATE TABLE TableName (\n  col1 INTEGER PRIMARY KEY,\n  col2 TEXT\n);",
-  "seed_sql": "INSERT INTO TableName VALUES\n(1, 'val1'),\n(2, 'val2');",
+  "description": "<LeetCode-style problem statement with Table schema grid, Example 1 input and output grids>",
+  "sample_input": "<ASCII grid matching Example 1 input>",
+  "sample_output": "<ASCII grid matching Example 1 output>",
+  "starter_code": "-- Write your SQL query here\\n",
+  "schema_sql": "CREATE TABLE TableName (\\n  col1 INTEGER PRIMARY KEY,\\n  col2 TEXT\\n);",
+  "seed_sql": "INSERT INTO TableName VALUES\\n(1, 'val1'),\\n(2, 'val2');",
   "test_cases": [
     {
       "expected_output": {
@@ -272,13 +302,57 @@ function buildJavaTemplate(difficulty) {
 }
 
 function buildSqlTemplate(difficulty) {
-  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 15 }
+  const { marks, time_limit } = DIFFICULTY_CONFIG[difficulty] || { marks: 10, time_limit: 600 }
   const test_cases = Array.from({ length: 20 }, () => ({
     expected_output: {
       columns: ["product_id"],
-      rows: [["1"], ["4"], ["8"], ["11"], ["14"], ["17"], ["20"]]
+      rows: [["1"], ["3"]]
     }
   }))
+
+  const description = `Table: Products
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| product_id  | int     |
+| low_fats    | enum    |
+| recyclable  | enum    |
++-------------+---------+
+product_id is the primary key (column with unique values) for this table.
+low_fats is an ENUM (category) of type ('Y', 'N') where 'Y' means this product is low fat and 'N' means it is not.
+recyclable is an ENUM (category) of types ('Y', 'N') where 'Y' means this product is recyclable and 'N' means it is not.
+ 
+
+Write a solution to find the ids of products that are both low fat and recyclable.
+
+Return the result table in any order.
+
+The result format is in the following example.
+
+ 
+
+Example 1:
+
+Input: 
+Products table:
++-------------+----------+------------+
+| product_id  | low_fats | recyclable |
++-------------+----------+------------+
+| 0           | Y        | N          |
+| 1           | Y        | Y          |
+| 2           | N        | Y          |
+| 3           | Y        | Y          |
+| 4           | N        | N          |
++-------------+----------+------------+
+Output: 
++-------------+
+| product_id  |
++-------------+
+| 1           |
+| 3           |
++-------------+
+Explanation: Only products 1 and 3 are both low fat and recyclable.`
 
   return JSON.stringify({
     title: "Recyclable and Low Fat Products",
@@ -286,12 +360,12 @@ function buildSqlTemplate(difficulty) {
     difficulty,
     marks,
     time_limit,
-    description: "Write an SQL query to find the product_id of every product that is both low fat and recyclable. A product is low fat when low_fats is 'Y' and recyclable when recyclable is 'Y'. Return the product_id values in any order.",
-    sample_input: "Products table with columns product_id, low_fats, and recyclable.",
-    sample_output: "product_id values where low_fats = 'Y' AND recyclable = 'Y'.",
-    starter_code: "SELECT product_id FROM Products WHERE low_fats = 'Y' AND recyclable = 'Y';",
+    description,
+    sample_input: "Products table:\n+-------------+----------+------------+\n| product_id  | low_fats | recyclable |\n+-------------+----------+------------+\n| 0           | Y        | N          |\n| 1           | Y        | Y          |\n| 2           | N        | Y          |\n| 3           | Y        | Y          |\n| 4           | N        | N          |\n+-------------+----------+------------+",
+    sample_output: "+-------------+\n| product_id  |\n+-------------+\n| 1           |\n| 3           |\n+-------------+",
+    starter_code: "-- Write your SQL query here\n",
     schema_sql: "CREATE TABLE Products (\n  product_id INTEGER PRIMARY KEY,\n  low_fats TEXT CHECK(low_fats IN ('Y', 'N')),\n  recyclable TEXT CHECK(recyclable IN ('Y', 'N'))\n);",
-    seed_sql: "INSERT INTO Products VALUES\n(1, 'Y', 'Y'),\n(2, 'Y', 'N'),\n(3, 'N', 'Y'),\n(4, 'Y', 'Y'),\n(5, 'N', 'N'),\n(6, 'Y', 'N'),\n(7, 'N', 'Y'),\n(8, 'Y', 'Y'),\n(9, 'N', 'N'),\n(10, 'Y', 'N'),\n(11, 'Y', 'Y'),\n(12, 'N', 'Y'),\n(13, 'N', 'N'),\n(14, 'Y', 'Y'),\n(15, 'Y', 'N'),\n(16, 'N', 'Y'),\n(17, 'Y', 'Y'),\n(18, 'N', 'N'),\n(19, 'N', 'Y'),\n(20, 'Y', 'Y');",
+    seed_sql: "INSERT INTO Products VALUES\n(0, 'Y', 'N'),\n(1, 'Y', 'Y'),\n(2, 'N', 'Y'),\n(3, 'Y', 'Y'),\n(4, 'N', 'N');",
     test_cases
   }, null, 2)
 }
@@ -518,6 +592,13 @@ function QuestionsPage() {
       const parsed = JSON.parse(jsonInput)
       if (!parsed.title) throw new Error('Title is required')
       parsed.language = activeTab
+
+      // For SQL, ensure starter code has no pre-filled solution
+      if (activeTab === 'sql') {
+        if (!parsed.starter_code || typeof parsed.starter_code !== 'string' || !parsed.starter_code.trim()) {
+          parsed.starter_code = '-- Write your SQL query here\n'
+        }
+      }
 
       await createQuestionUnderType(activeTab, parsed)
       toast.success(`Question added to ${activeTab.toUpperCase()} table successfully!`)

@@ -84,16 +84,48 @@ const sqlProblemsData = [
     marks: 10,
     time_limit: 15,
     statement: 'Write a solution to find the IDs of products that are both low fat (`low_fats = "Y"`) and recyclable (`recyclable = "Y"`).',
-    description: 'Table: Products\n+-------------+---------+\n| Column Name | Type    |\n+-------------+---------+\n| product_id  | int     |\n| low_fats    | enum    |\n| recyclable  | enum    |\n+-------------+---------+\nproduct_id is the primary key for this table.',
+    description: `Table: Products
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| product_id  | int     |
+| low_fats    | enum    |
+| recyclable  | enum    |
++-------------+---------+
+product_id is the primary key (column with unique values) for this table.
+low_fats is an ENUM (category) of type ('Y', 'N') where 'Y' means this product is low fat and 'N' means it is not.
+recyclable is an ENUM (category) of types ('Y', 'N') where 'Y' means this product is recyclable and 'N' means it is not.
+
+Write a solution to find the ids of products that are both low fat and recyclable.
+
+Return the result table in any order.
+
+Example 1:
+Input: 
+Products table:
++-------------+----------+------------+
+| product_id  | low_fats | recyclable |
++-------------+----------+------------+
+| 0           | Y        | N          |
+| 1           | Y        | Y          |
+| 2           | N        | Y          |
+| 3           | Y        | Y          |
+| 4           | N        | N          |
++-------------+----------+------------+
+Output: 
++-------------+
+| product_id  |
++-------------+
+| 1           |
+| 3           |
++-------------+
+Explanation: Only products 1 and 3 are both low fat and recyclable.`,
     input_format: 'Query the `Products` table.',
     output_format: 'Return product_id column in any order.',
     sample_input: null,
     sample_output: null,
-    starter_code: `-- Write your SELECT query here
-SELECT product_id 
-FROM Products 
-WHERE low_fats = 'Y' AND recyclable = 'Y';
-`,
+    starter_code: `-- Write your SQL query here\n`,
     test_cases_json: JSON.stringify([
       {
         expected_output: [
@@ -128,14 +160,7 @@ INSERT INTO Products VALUES (4, 'N', 'N');`,
     output_format: 'Single column SecondHighestSalary.',
     sample_input: null,
     sample_output: null,
-    starter_code: `-- Write your SELECT query here
-SELECT (
-  SELECT DISTINCT salary 
-  FROM Employee 
-  ORDER BY salary DESC 
-  LIMIT 1 OFFSET 1
-) AS SecondHighestSalary;
-`,
+    starter_code: `-- Write your SQL query here\n`,
     test_cases_json: JSON.stringify([
       {
         expected_output: [
@@ -166,20 +191,7 @@ INSERT INTO Employee VALUES (3, 300);`,
     output_format: 'Columns: Department, Employee, Salary.',
     sample_input: null,
     sample_output: null,
-    starter_code: `-- Write your SELECT query here
-WITH RankedSalaries AS (
-  SELECT 
-    d.name AS Department,
-    e.name AS Employee,
-    e.salary AS Salary,
-    DENSE_RANK() OVER (PARTITION BY e.departmentId ORDER BY e.salary DESC) as rnk
-  FROM Employee e
-  JOIN Department d ON e.departmentId = d.id
-)
-SELECT Department, Employee, Salary
-FROM RankedSalaries
-WHERE rnk <= 3;
-`,
+    starter_code: `-- Write your SQL query here\n`,
     test_cases_json: JSON.stringify([
       {
         expected_output: [
