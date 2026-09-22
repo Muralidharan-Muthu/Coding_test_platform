@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import prisma from '../db/prisma';
 import {
   getMcqQuestions,
+  formatMcq,
   getProblemsByLanguage,
   getAllProblems,
   getProblemById,
@@ -91,7 +92,7 @@ router.get('/problems/mcq', async (req: Request, res: Response) => {
         const questions = await prisma.mCQQuestion.findMany({
           where: { id: { in: problemIds } }
         });
-        const questionMap = new Map(questions.map(q => [q.id, q]));
+        const questionMap = new Map(questions.map(q => [q.id, formatMcq(q)]));
         const ordered = selected.map(s => questionMap.get(s.problem_id)).filter(Boolean);
         return res.json({ questions: ordered });
       }

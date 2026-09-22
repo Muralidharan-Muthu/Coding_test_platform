@@ -1,5 +1,5 @@
 {
-  "name": "backend-node",
+  "name": "backend",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -8,10 +8,17 @@
     "test:unit": "tsx --test src/__tests__/unit/*.test.ts",
     "test:integration": "tsx --test src/__tests__/integration/*.test.ts",
     "test:e2e": "tsx --test src/__tests__/e2e/*.test.ts",
-    "dev": "nodemon --watch src --ext ts --exec tsx src/index.ts",
+    "dev": "nodemon --watch src --watch .env --ext ts,env --exec tsx src/index.ts",
     "start": "tsx src/index.ts",
-    "db:push-turso": "npx tsx push_turso.ts",
-    "db:migrate-data": "npx tsx migrate_data.ts"
+    "db:push-turso": "npx tsx scripts/push_turso.ts",
+    "db:migrate-data": "npx tsx scripts/migrate_data.ts",
+    "db:check": "npx tsx scripts/check_tables.ts",
+    "db:create": "npx tsx scripts/create_tables.ts",
+    "db:drop-problems": "npx tsx scripts/drop_problems.ts",
+    "seed:admin": "npx tsx scripts/seed_admin.ts",
+    "seed:problems": "npx tsx scripts/seed_problems.ts",
+    "seed:all": "npx tsx scripts/seed_all_empty_tables.ts",
+    "update:starter-codes": "npx tsx scripts/update_leetcode_starter_codes.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"

@@ -1,4 +1,4 @@
-﻿import { formatTimeWithLabel } from '../utils/timeUtils'
+import { formatTimeWithLabel } from '../utils/timeUtils'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPythonProblems, getExamStatus, submitExam } from '../api'
@@ -11,16 +11,16 @@ import './SectionProblems.css'
 function PythonProblems() {
   const navigate = useNavigate()
   const [userName, setUserName] = useState('')
-  const [problems, setProblems] = useState([])
+  const [problems, setProblems] = useState<any[]>([])
   const [remainingTime, setRemainingTime] = useState(0)
   const [loading, setLoading] = useState(true)
-  const timerRef = useRef(null)
+  const timerRef = useRef<any>(null)
 
   const handleAutoSubmit = useCallback(async () => {
     const sessionId = localStorage.getItem('session_id')
     const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
     
-    const answersList = Object.entries(answers).map(([problemId, data]) => ({
+    const answersList = Object.entries(answers).map(([problemId, data]: [string, any]) => ({
       problem_id: problemId,
       code: data.code || '',
       language: data.language || 'python',
@@ -55,8 +55,8 @@ function PythonProblems() {
     }
   }, [navigate])
 
-    useEffect(() => {
-    const handlePenalty = (e) => {
+  useEffect(() => {
+    const handlePenalty = (e: any) => {
       const penaltySeconds = e.detail?.penaltySeconds || 60
       setRemainingTime(prev => Math.max(0, prev - penaltySeconds))
     }
@@ -73,7 +73,7 @@ function PythonProblems() {
             handleAutoSubmit()
             return 0
           }
-          localStorage.setItem('exam_remaining', prev - 1)
+          localStorage.setItem('exam_remaining', String(prev - 1))
           return prev - 1
         })
       }, 1000)
@@ -88,7 +88,6 @@ function PythonProblems() {
     try {
       const sessionId = localStorage.getItem('session_id')
 
-      // Check exam status
       const status = await getExamStatus(sessionId)
       
       if (status.status === 'not_started') {
@@ -108,9 +107,8 @@ function PythonProblems() {
       
       setRemainingTime(status.remaining_seconds)
       
-      // Load Python problems
       const problemsData = await getPythonProblems(sessionId)
-      setProblems(problemsData)
+      setProblems(problemsData || [])
     } catch (err) {
       console.error('Failed to load problems', err)
     } finally {
@@ -118,7 +116,7 @@ function PythonProblems() {
     }
   }
 
-  const formatTime = (seconds) => {
+  const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
@@ -131,7 +129,7 @@ function PythonProblems() {
     return 'timer'
   }
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case 'easy': return '#10b981'
       case 'medium': return '#f59e0b'
@@ -140,13 +138,13 @@ function PythonProblems() {
     }
   }
 
-  const isAnswered = (problemId) => {
+  const isAnswered = (problemId: string) => {
     const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
     return !!answers[problemId]
   }
 
   if (loading) {
-    return <Spinner label="Loading problemsâ€¦" size={40} fullPage />
+    return <Spinner label="Loading problems..." size={40} fullPage />
   }
 
   return (
@@ -159,6 +157,15 @@ function PythonProblems() {
           <h1><PythonIcon size={20} /> Python Problems</h1>
         </div>
         <div className="header-right">
+          <button
+            type="button"
+            onClick={() => navigate('/test-structure?confirm=true')}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer ring-2 ring-emerald-400/40"
+            title="Finish exam and proceed to submission confirmation"
+          >
+            <FiCheck className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Finish Test</span>
+          </button>
           <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
             <span className="timer-icon" aria-hidden="true"><TimerIcon size={16} /></span>
             <span className="timer-value">{formatTime(remainingTime)}</span>
@@ -170,7 +177,7 @@ function PythonProblems() {
 
       <div className="problems-content">
         <div className="problems-list">
-          {problems.map((problem, index) => (
+          {problems.map((problem: any, index: number) => (
             <div 
               key={problem.id}
               className={`problem-item${isAnswered(problem.id) ? ' answered' : ''}`}

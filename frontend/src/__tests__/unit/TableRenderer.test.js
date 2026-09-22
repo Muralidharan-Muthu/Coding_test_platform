@@ -4,7 +4,7 @@ import {
   parseAsciiTable,
   parseContentWithTables,
   parseSqlFromDdlDml
-} from '../../utils/tableParser.js'
+} from '../../utils/tableParser'
 
 describe('TableRenderer & ASCII Table Parser Tests', () => {
   it('should parse an ASCII grid table into headers and rows', () => {

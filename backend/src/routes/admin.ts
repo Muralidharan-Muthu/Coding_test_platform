@@ -30,6 +30,7 @@ import {
   generateOtp,
   saveCandidateOtp,
   sendOtpEmailToCandidate,
+  verifySmtpConnection,
   updateCandidateTestType,
   updateCandidateTestTypeBulk,
   shuffleCandidateQuestions
@@ -120,6 +121,16 @@ router.post('/send-otp-email', async (req: Request, res: Response) => {
       return res.status(400).json({ detail: 'Email is required.' });
     }
     const result = await sendOtpEmailToCandidate(username || email.split('@')[0], email);
+    return res.json(result);
+  } catch (err: any) {
+    return res.status(500).json({ detail: err.message });
+  }
+});
+
+// GET /admin/smtp-verify
+router.get('/smtp-verify', async (req: Request, res: Response) => {
+  try {
+    const result = await verifySmtpConnection();
     return res.json(result);
   } catch (err: any) {
     return res.status(500).json({ detail: err.message });

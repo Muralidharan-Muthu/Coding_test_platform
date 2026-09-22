@@ -4,7 +4,7 @@ echo "Installing dependencies for Coding Platform..."
 
 # ── Backend ──────────────────────────────────────────────────────────────────
 echo "[Backend] Setting up Node.js server..."
-cd backend-node || exit 1
+cd backend || exit 1
 echo "[Backend] Installing dependencies..."
 npm install
 cd ..

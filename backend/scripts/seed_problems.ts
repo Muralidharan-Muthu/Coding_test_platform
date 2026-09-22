@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import prisma from './src/db/prisma';
+import prisma from '../src/db/prisma';
 
 const pythonProblemsData = [
   {

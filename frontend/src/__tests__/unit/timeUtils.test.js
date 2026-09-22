@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { formatSeconds, formatTimeWithLabel } from '../../utils/timeUtils.js';
+import { formatSeconds, formatTimeWithLabel } from '../../utils/timeUtils';
 
 describe('Frontend - timeUtils Unit Tests', () => {
   describe('formatSeconds', () => {

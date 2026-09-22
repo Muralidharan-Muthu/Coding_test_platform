@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getExamSummary, startExam, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
@@ -51,6 +51,12 @@ function TestStructure() {
     if (!name || !sessionId) { navigate('/'); return }
     setUserName(name)
     initExam()
+
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('confirm') === 'true') {
+      setShowSubmitConfirm(true)
+    }
+
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
   }, [navigate])
 
@@ -269,14 +275,52 @@ function TestStructure() {
       </div>
 
       {showSubmitConfirm && (
-        <div className="ts-modal-overlay">
-          <div className="ts-modal">
-            <h3>Submit Exam?</h3>
-            <p>This cannot be undone. Time left: <b>{formatTime(remainingTime)}</b></p>
-            <div className="ts-modal-btns">
-              <button onClick={() => setShowSubmitConfirm(false)} disabled={submitting} className="ts-btn-cancel">Cancel</button>
-              <button onClick={handleManualSubmit} disabled={submitting} className="ts-btn-confirm">
-                {submitting ? 'Submitting...' : 'Confirm'}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
+          <div className="w-full max-w-md p-6 bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl text-slate-100 space-y-5 text-center">
+            <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30">
+              <ChecklistIcon size={28} />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-xl font-bold text-white">Submit Exam</h3>
+              <p className="text-sm text-slate-300">
+                Are you ready to submit your assessment? Once submitted, your answers will be finalized.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs text-slate-300 flex items-center justify-around">
+              <div>
+                <span className="block text-slate-400">Time Remaining</span>
+                <span className="font-mono text-sm font-bold text-amber-400">{formatTime(remainingTime)}</span>
+              </div>
+              <div className="h-8 w-px bg-slate-700" />
+              <div>
+                <span className="block text-slate-400">Answered</span>
+                <span className="text-sm font-bold text-emerald-400">
+                  {[(examSummary?.python_questions || 0) > 0 && `${getAnsweredCount('python')} Python`,
+                    (examSummary?.sql_questions || 0) > 0 && `${getAnsweredCount('sql')} SQL`,
+                    (examSummary?.mcq_questions || 0) > 0 && `${getAnsweredCount('mcq')} MCQ`
+                  ].filter(Boolean).join(' • ') || 'Answers saved'}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowSubmitConfirm(false)}
+                disabled={submitting}
+                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition cursor-pointer"
+              >
+                Review Answers
+              </button>
+              <button
+                type="button"
+                onClick={handleManualSubmit}
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-5 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-lg transition cursor-pointer ring-2 ring-emerald-400/30 disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Yes, Submit Exam'}
               </button>
             </div>
           </div>

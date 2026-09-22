@@ -1,58 +1,68 @@
 import prisma from '../db/prisma';
 
+export const formatMcq = (q: any) => {
+  let options: string[] = [];
+  if (q.options_json) {
+    try {
+      options = JSON.parse(q.options_json);
+    } catch (e) {
+      options = [q.option_a, q.option_b, q.option_c, q.option_d];
+    }
+  } else {
+    options = [q.option_a, q.option_b, q.option_c, q.option_d];
+  }
+
+  // Filter out any undefined or empty strings if all 4 options are not provided
+  if (!options || !Array.isArray(options) || options.length === 0) {
+    options = [q.option_a, q.option_b, q.option_c, q.option_d].filter(Boolean);
+  }
+  if (options.length === 0) {
+    options = ['Option A', 'Option B', 'Option C', 'Option D'];
+  }
+
+  let correctIndex = q.correct_answer;
+  if (correctIndex === null || correctIndex === undefined) {
+    const charCode = (q.correct_option || 'A').trim().toUpperCase().charCodeAt(0);
+    correctIndex = charCode >= 65 && charCode <= 68 ? charCode - 65 : 0;
+  }
+
+  const diff = (q.difficulty || 'easy').toLowerCase();
+  const defaultTime = diff === 'hard' ? 60 : diff === 'medium' ? 45 : 30;
+  const defaultMarks = diff === 'hard' ? 5 : diff === 'medium' ? 3 : 1;
+
+  const timeVal = typeof q.time === 'number' && q.time > 0 ? q.time : defaultTime;
+  const marksVal = typeof q.marks === 'number' && q.marks > 0 ? q.marks : defaultMarks;
+
+  return {
+    id: q.id,
+    title: q.title || q.question_title || 'MCQ Question',
+    question_title: q.question_title || q.title || 'MCQ Question',
+    question: q.question || q.question_text || '',
+    question_text: q.question_text || q.question || '',
+    option_a: q.option_a,
+    option_b: q.option_b,
+    option_c: q.option_c,
+    option_d: q.option_d,
+    options,
+    options_json: q.options_json || JSON.stringify(options),
+    correct_option: q.correct_option || String.fromCharCode(65 + correctIndex),
+    correct_answer: correctIndex,
+    difficulty: diff,
+    marks: marksVal,
+    time: timeVal,
+    time_limit: timeVal,
+    topic: q.topic || 'Python',
+    explanation: q.explanation || '',
+    created_at: q.created_at
+  };
+};
+
 export const getMcqQuestions = async () => {
   const mcqs = await prisma.mCQQuestion.findMany({
     orderBy: { created_at: 'desc' }
   });
 
-  return mcqs.map(q => {
-    let options: string[] = [];
-    if (q.options_json) {
-      try {
-        options = JSON.parse(q.options_json);
-      } catch (e) {
-        options = [q.option_a, q.option_b, q.option_c, q.option_d];
-      }
-    } else {
-      options = [q.option_a, q.option_b, q.option_c, q.option_d];
-    }
-
-    let correctIndex = q.correct_answer;
-    if (correctIndex === null || correctIndex === undefined) {
-      const charCode = (q.correct_option || 'A').trim().toUpperCase().charCodeAt(0);
-      correctIndex = charCode >= 65 && charCode <= 68 ? charCode - 65 : 0;
-    }
-
-    const diff = (q.difficulty || 'easy').toLowerCase();
-    const defaultTime = diff === 'hard' ? 60 : diff === 'medium' ? 45 : 30;
-    const defaultMarks = diff === 'hard' ? 5 : diff === 'medium' ? 3 : 1;
-
-    const timeVal = typeof q.time === 'number' && q.time > 0 ? q.time : defaultTime;
-    const marksVal = typeof q.marks === 'number' && q.marks > 0 ? q.marks : defaultMarks;
-
-    return {
-      id: q.id,
-      title: q.title || q.question_title || 'MCQ Question',
-      question_title: q.question_title || q.title || 'MCQ Question',
-      question: q.question || q.question_text || '',
-      question_text: q.question_text || q.question || '',
-      option_a: q.option_a,
-      option_b: q.option_b,
-      option_c: q.option_c,
-      option_d: q.option_d,
-      options,
-      options_json: q.options_json || JSON.stringify(options),
-      correct_option: q.correct_option || String.fromCharCode(65 + correctIndex),
-      correct_answer: correctIndex,
-      difficulty: diff,
-      marks: marksVal,
-      time: timeVal,
-      time_limit: timeVal,
-      topic: q.topic || 'Python',
-      explanation: q.explanation || '',
-      created_at: q.created_at
-    };
-  });
+  return mcqs.map(formatMcq);
 };
 
 export const createMcqQuestion = async (data: any) => {

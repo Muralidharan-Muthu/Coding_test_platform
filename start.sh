@@ -5,7 +5,7 @@ echo "Starting Coding Platform (Backend + Frontend)..."
 # ── Backend ──────────────────────────────────────────────────────────────────
 echo "[Backend] Starting Node.js Express server on port 8000..."
 (
-  cd backend-node
+  cd backend
   npm run dev
 ) &
 BACKEND_PID=$!

@@ -1,5 +1,5 @@
-﻿import axios from 'axios';
-import prisma from './db/prisma';
+import axios from 'axios';
+import prisma from '../../db/prisma';
 
 const API_BASE = 'http://localhost:8000';
 

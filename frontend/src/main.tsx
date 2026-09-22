@@ -1,4 +1,4 @@
-﻿import React from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes, Outlet } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
@@ -16,6 +16,7 @@ import SQLProblems from './pages/SQLProblems'
 import MCQProblems from './pages/MCQProblems'
 import CodingPage from './pages/CodingPage'
 import SubmissionComplete from './pages/SubmissionComplete'
+import ErrorBoundary from './components/ErrorBoundary'
 import ExamProctoringShell from './components/Proctoring/ExamProctoringShell'
 
 // Practice Pages
@@ -100,12 +101,14 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <ThemeProvider>
-      <ToastProvider>
-        <ConfirmProvider>
-          <App />
-        </ConfirmProvider>
-      </ToastProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 )

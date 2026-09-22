@@ -1,11 +1,11 @@
 import Editor from '@monaco-editor/react'
-import api, { getExamStatus, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, submitCode, submitExam, submitSql } from '../api'
+import api, { getExamStatus, getExamSummary, getPracticeProblems, getProblem, getPythonProblems, getSqlProblems, previewSubmitCode, previewSubmitSql, runCode, runSql, saveExamAnswer, submitCode, submitExam, submitSql } from '../api'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession, clearAdminSession, clearPracticeSession } from '../utils/sessionStorage'
-import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode, FiChevronUp, FiChevronDown, FiAlertTriangle, FiArrowLeft, FiCheck, FiX } from 'react-icons/fi'
+import { FiFileText, FiBookOpen, FiClock, FiThumbsUp, FiThumbsDown, FiMessageSquare, FiStar, FiShare2, FiAlignLeft, FiRefreshCw, FiMaximize, FiPlay, FiUploadCloud, FiCheckSquare, FiTerminal, FiCode, FiChevronUp, FiChevronDown, FiAlertTriangle, FiArrowLeft, FiArrowRight, FiCheck, FiX } from 'react-icons/fi'
 import { FaLightbulb } from 'react-icons/fa'
 import { ProctoringProvider } from '../components/Proctoring/ProctoringProvider'
 import { useProctoring } from '../components/Proctoring/useProctoring'
@@ -136,8 +136,20 @@ function CodingPage() {
     return localStorage.getItem(EXAM_SECURE_MODE_KEY) === 'true' && Boolean(document.fullscreenElement)
   })
   const [sqlDialect, setSqlDialect] = useState('sql')
-  const [problemList, setProblemList] = useState([])
+  const [problemList, setProblemList] = useState<any[]>([])
   const [currentProblemIndex, setCurrentProblemIndex] = useState(-1)
+  const [examSequence, setExamSequence] = useState<Array<{
+    id: string
+    title: string
+    language: string
+    path: string
+    isMcq?: boolean
+  }>>([])
+
+  const currentSeqIndex = examSequence.findIndex(item => item.id === problemId)
+  const isLastQuestion = examSequence.length > 0 && currentSeqIndex === examSequence.length - 1
+  const nextQuestion = currentSeqIndex >= 0 && currentSeqIndex < examSequence.length - 1 ? examSequence[currentSeqIndex + 1] : null
+  const prevQuestion = currentSeqIndex > 0 ? examSequence[currentSeqIndex - 1] : null
 
   // UI state for the LeetCode-style layout
   const [leftTab, setLeftTab] = useState('description')
@@ -402,19 +414,71 @@ function CodingPage() {
     }
   }
 
-  const loadProblemList = async (language) => {
+  const loadProblemList = async (language: string) => {
     try {
-      let problems
       if (isPracticeMode) {
-        problems = await getPracticeProblems(language)
+        const problems = await getPracticeProblems(language)
+        setProblemList(problems || [])
+        setCurrentProblemIndex((problems || []).findIndex((p: any) => p.id === problemId))
+        setExamSequence((problems || []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          language: p.language || language,
+          path: buildCodingPath(p.id),
+          isMcq: false
+        })))
       } else if (isAdminPreviewMode) {
         const response = await api.get('/admin/problems')
-        problems = (response.data || []).filter((item) => item.language === language)
+        const problems = (response.data || []).filter((item: any) => item.language === language)
+        setProblemList(problems || [])
+        setCurrentProblemIndex((problems || []).findIndex((p: any) => p.id === problemId))
+        setExamSequence((problems || []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          language: p.language || language,
+          path: buildCodingPath(p.id),
+          isMcq: false
+        })))
       } else {
-        problems = language === 'python' ? await getPythonProblems() : await getSqlProblems()
+        const sessionId = localStorage.getItem('session_id') || ''
+        const [pyProblems, sqlProblems, summary] = await Promise.all([
+          getPythonProblems(sessionId).catch(() => []),
+          getSqlProblems(sessionId).catch(() => []),
+          getExamSummary(sessionId).catch(() => null)
+        ])
+
+        const pyItems = (Array.isArray(pyProblems) ? pyProblems : []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          language: 'python',
+          path: buildCodingPath(p.id),
+          isMcq: false
+        }))
+
+        const sqlItems = (Array.isArray(sqlProblems) ? sqlProblems : []).map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          language: 'sql',
+          path: buildCodingPath(p.id),
+          isMcq: false
+        }))
+
+        const hasMcq = (summary?.mcq_questions || 0) > 0
+        const mcqItems = hasMcq ? [{
+          id: 'mcq',
+          title: 'MCQ Round',
+          language: 'mcq',
+          path: '/problems/mcq',
+          isMcq: true
+        }] : []
+
+        const fullSequence = [...pyItems, ...sqlItems, ...mcqItems]
+        setExamSequence(fullSequence)
+
+        const problems = language === 'python' ? pyProblems : sqlProblems
+        setProblemList(Array.isArray(problems) ? problems : [])
+        setCurrentProblemIndex((Array.isArray(problems) ? problems : []).findIndex((p: any) => p.id === problemId))
       }
-      setProblemList(problems)
-      setCurrentProblemIndex(problems.findIndex(p => p.id === problemId))
     } catch (err) {
       console.error('Failed to load problem list:', err)
     }
@@ -501,6 +565,61 @@ function CodingPage() {
   }
 
   const handleReset = () => { setCode(starterCode); setOutput(''); setError(''); setSubmitResult(null); setOutputType('text') }
+
+  const saveCurrentDraft = async () => {
+    if (!problemId) return
+    try {
+      const answers = JSON.parse(localStorage.getItem('exam_answers') || '{}')
+      answers[problemId] = {
+        code,
+        language: problem?.language || 'python',
+        selected_option: null
+      }
+      localStorage.setItem('exam_answers', JSON.stringify(answers))
+    } catch (e) {
+      console.warn('Failed to save to localStorage', e)
+    }
+
+    const sessionId = localStorage.getItem('session_id')
+    if (isExamMode && sessionId && problem) {
+      try {
+        await saveExamAnswer(sessionId, problemId, code, problem.language)
+      } catch (err) {
+        console.warn('Failed to save answer to server:', err)
+      }
+    }
+  }
+
+  const handleGoToNext = async () => {
+    await saveCurrentDraft()
+    if (nextQuestion) {
+      navigate(nextQuestion.path)
+    } else if (currentProblemIndex < problemList.length - 1) {
+      handleNext()
+    }
+  }
+
+  const handleGoToPrev = async () => {
+    await saveCurrentDraft()
+    if (prevQuestion) {
+      navigate(prevQuestion.path)
+    } else if (currentProblemIndex > 0) {
+      handlePrevious()
+    }
+  }
+
+  const handleFinishExam = async () => {
+    await saveCurrentDraft()
+    if (isPracticeMode) {
+      navigate('/practice/problems')
+      return
+    }
+    if (isAdminPreviewMode) {
+      navigate('/admin/questions')
+      return
+    }
+    navigate('/test-structure?confirm=true')
+  }
 
   const handlePrevious = () => {
     if (currentProblemIndex > 0) navigate(buildCodingPath(problemList[currentProblemIndex - 1].id))
@@ -845,13 +964,39 @@ function CodingPage() {
             )}
             <span className="toolbar-title" title={problem.title}>{problem.title}</span>
             {isPracticeMode && <span className="practice-mode-badge">Practice</span>}
-            {problemList.length > 0 && (
+            {examSequence.length > 0 ? (
               <div className="toolbar-nav-arrows">
-                <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">"¹</button>
-                <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">"º</button>
-                <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
+                <button
+                  type="button"
+                  onClick={handleGoToPrev}
+                  disabled={currentSeqIndex <= 0}
+                  className="btn-nav-arrow"
+                  aria-label="Previous question"
+                  title={prevQuestion ? `Back to ${prevQuestion.title}` : undefined}
+                >
+                  &larr;
+                </button>
+                <span className="problem-counter-badge">
+                  {currentSeqIndex >= 0 ? currentSeqIndex + 1 : 1}/{examSequence.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleGoToNext}
+                  disabled={isLastQuestion}
+                  className="btn-nav-arrow"
+                  aria-label="Next question"
+                  title={nextQuestion ? `Next: ${nextQuestion.title}` : undefined}
+                >
+                  &rarr;
+                </button>
               </div>
-            )}
+            ) : problemList.length > 0 ? (
+              <div className="toolbar-nav-arrows">
+                <button onClick={handlePrevious} disabled={currentProblemIndex <= 0} className="btn-nav-arrow" aria-label="Previous problem">&larr;</button>
+                <span className="problem-counter-badge">{currentProblemIndex + 1}/{problemList.length}</span>
+                <button onClick={handleNext} disabled={currentProblemIndex >= problemList.length - 1} className="btn-nav-arrow" aria-label="Next problem">&rarr;</button>
+              </div>
+            ) : null}
           </div>
 
           <div className="toolbar-center" />
@@ -863,6 +1008,34 @@ function CodingPage() {
             <button onClick={handleSubmit} disabled={loading} className="btn-submit-toolbar">
               <span className="toolbar-btn-icon"><FiUploadCloud /></span> {loading ? 'Submitting...' : 'Submit'}
             </button>
+
+            {/* Candidate Next / Finish Top-Right Action Button */}
+            {isExamMode && examSequence.length > 0 && (
+              isLastQuestion ? (
+                <button
+                  type="button"
+                  onClick={handleFinishExam}
+                  disabled={loading}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer ring-2 ring-emerald-400/40 disabled:opacity-50"
+                  title="Finish exam and proceed to submission confirmation"
+                >
+                  <FiCheck className="w-3.5 h-3.5 stroke-[3]" />
+                  <span>Finish Test</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleGoToNext}
+                  disabled={loading}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 cursor-pointer disabled:opacity-50"
+                  title={nextQuestion ? `Proceed to ${nextQuestion.title}` : 'Next Question'}
+                >
+                  <span>{nextQuestion?.isMcq ? 'Next: MCQ Round' : 'Next Question'}</span>
+                  <FiArrowRight className="w-3.5 h-3.5" />
+                </button>
+              )
+            )}
+
             {isExamMode && (
               <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
                 <span className="timer-icon" aria-hidden="true"><FiClock /></span>

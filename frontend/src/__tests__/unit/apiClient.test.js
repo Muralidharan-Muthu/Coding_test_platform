@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import * as apiModule from '../../api.js';
+import * as apiModule from '../../api';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,7 +23,9 @@ describe('Frontend - API Client Unit & Regression Tests', () => {
   });
 
   it('Regression Test: api.js source must not contain literal single-quoted template strings', () => {
-    const apiFilePath = path.resolve(__dirname, '../../api.js');
+    const apiFilePath = fs.existsSync(path.resolve(__dirname, '../../api.ts'))
+      ? path.resolve(__dirname, '../../api.ts')
+      : path.resolve(__dirname, '../../api.js');
     const sourceCode = fs.readFileSync(apiFilePath, 'utf-8');
 
     // Check for buggy literal string: '/admin/questions-by-type/${type}'

@@ -1,4 +1,4 @@
-﻿import FormattedQuestionText from '../components/ui/FormattedQuestionText'
+import FormattedQuestionText from '../components/ui/FormattedQuestionText'
 function buildMcqAiPrompt(difficulty = 'Easy') {
   const diffNorm = (difficulty || 'easy').toLowerCase()
   const timeSeconds = diffNorm === 'hard' ? 60 : diffNorm === 'medium' ? 45 : 30
@@ -116,11 +116,16 @@ function normalizeMcqQuestion(rawQuestion) {
   const timeVal = Number(rawTime) > 0 ? Number(rawTime) : defaultTime
   const marksVal = Number(rawQuestion?.marks) > 0 ? Number(rawQuestion.marks) : defaultMarks
 
+  const rawOptions = Array.isArray(rawQuestion?.options) && rawQuestion.options.length > 0
+    ? rawQuestion.options
+    : (rawQuestion?.options_json ? (() => { try { return JSON.parse(rawQuestion.options_json); } catch { return null; } })() : null)
+    || [rawQuestion?.option_a, rawQuestion?.option_b, rawQuestion?.option_c, rawQuestion?.option_d].filter(Boolean)
+
   return {
     question_title: String(rawQuestion?.question_title ?? rawQuestion?.title ?? rawQuestion?.questionTitle ?? '').trim(),
     question: String(rawQuestion?.question ?? rawQuestion?.question_text ?? '').trim(),
-    options: Array.isArray(rawQuestion?.options)
-      ? rawQuestion.options.map((option) => String(option ?? '').trim())
+    options: Array.isArray(rawOptions)
+      ? rawOptions.map((option) => String(option ?? '').trim())
       : [],
     correct_answer: Number(rawQuestion?.correct_answer ?? rawQuestion?.correctAnswer ?? 0),
     correct_option: rawQuestion?.correct_option ? String(rawQuestion.correct_option).trim().toUpperCase() : undefined,

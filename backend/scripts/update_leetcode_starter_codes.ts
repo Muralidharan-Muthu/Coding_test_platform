@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import prisma from './src/db/prisma';
+import prisma from '../src/db/prisma';
 
 async function updateStarterCodes() {
   console.log('Updating python_problems in Turso to use clean LeetCode starter codes...');

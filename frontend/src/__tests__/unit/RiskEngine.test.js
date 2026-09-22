@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { RiskEngine } from '../../proctoring/RiskEngine.js';
-import { DEFAULT_PROCTORING_CONFIG } from '../../proctoring/ProctoringConfig.js';
+import { RiskEngine } from '../../proctoring/RiskEngine';
+import { DEFAULT_PROCTORING_CONFIG } from '../../proctoring/ProctoringConfig';
 
 describe('Frontend - RiskEngine Unit Tests', () => {
   it('should initialize with 0 score and NORMAL risk level', () => {

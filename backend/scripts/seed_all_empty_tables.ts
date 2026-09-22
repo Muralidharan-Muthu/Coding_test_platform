@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import prisma from './src/db/prisma';
+import prisma from '../src/db/prisma';
 
 async function seedEmptyTables() {
   console.log('🌱 Starting 5-record sample seed for all empty tables in Turso...\n');

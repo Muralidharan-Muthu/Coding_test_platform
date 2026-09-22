@@ -357,9 +357,28 @@
 }
 
 .window-blurred .section-problems-page {
-  filter: blur(20px) !important;
-  opacity: 0.1 !important;
+  filter: blur(12px) !important;
+  opacity: 0.25 !important;
   pointer-events: none !important;
   user-select: none !important;
   transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+body.window-blurred::after {
+  content: '🛡️ EXAM WINDOW OUT OF FOCUS — Click into the window to resume your test';
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid rgba(239, 68, 68, 0.6);
+  color: #fca5a5;
+  padding: 12px 24px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  z-index: 99999;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+  pointer-events: none;
 }

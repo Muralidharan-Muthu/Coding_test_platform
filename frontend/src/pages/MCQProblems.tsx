@@ -1,4 +1,4 @@
-﻿import FormattedQuestionText from '../components/ui/FormattedQuestionText'
+import FormattedQuestionText from '../components/ui/FormattedQuestionText'
 import { formatTimeWithLabel } from '../utils/timeUtils'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -6,7 +6,7 @@ import { getExamStatus, getMcqProblems, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { ChecklistIcon, TimerIcon } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
-import { FiArrowLeft } from 'react-icons/fi'
+import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 import './SectionProblems.css'
 import './MCQProblems.css'
 
@@ -58,7 +58,7 @@ function MCQProblems() {
     }
   }, [navigate])
 
-    useEffect(() => {
+  useEffect(() => {
     const handlePenalty = (e) => {
       const penaltySeconds = e.detail?.penaltySeconds || 60
       setRemainingTime(prev => Math.max(0, prev - penaltySeconds))
@@ -110,7 +110,9 @@ function MCQProblems() {
 
       setRemainingTime(status.remaining_seconds)
       const questionsData = await getMcqProblems(sessionId)
-      const list = Array.isArray(questionsData) ? questionsData : (Array.isArray(questionsData?.questions) ? questionsData.questions : [])
+      const list = Array.isArray(questionsData)
+        ? questionsData
+        : (Array.isArray(questionsData?.questions) ? questionsData.questions : [])
       setQuestions(list)
     } catch (err) {
       console.error('Failed to load MCQ questions', err)
@@ -166,8 +168,13 @@ function MCQProblems() {
     localStorage.setItem('exam_answers', JSON.stringify(nextAnswers))
   }
 
+  const handleFinishExam = () => {
+    localStorage.setItem('exam_answers', JSON.stringify(selectedAnswers))
+    navigate('/test-structure?confirm=true')
+  }
+
   if (loading) {
-    return <Spinner label="Loading MCQ questionsâ€¦" size={40} fullPage />
+    return <Spinner label="Loading MCQ questions..." size={40} fullPage />
   }
 
   return (
@@ -180,6 +187,15 @@ function MCQProblems() {
           <h1><ChecklistIcon size={20} /> MCQ Questions</h1>
         </div>
         <div className="header-right">
+          <button
+            type="button"
+            onClick={handleFinishExam}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-lg shadow-md hover:shadow-lg transition-all duration-150 cursor-pointer ring-2 ring-emerald-400/40"
+            title="Finish exam and proceed to submission confirmation"
+          >
+            <FiCheck className="w-3.5 h-3.5 stroke-[3]" />
+            <span>Finish Test</span>
+          </button>
           <div className={getTimerClass()} aria-label={`Time remaining: ${formatTime(remainingTime)}`}>
             <span className="timer-icon" aria-hidden="true"><TimerIcon size={16} /></span>
             <span className="timer-value">{formatTime(remainingTime)}</span>
@@ -207,29 +223,39 @@ function MCQProblems() {
                 const selectedOption = getSelectedOption(question.id)
                 const isAnswered = selectedOption !== null
 
+                const rawOptions = Array.isArray(question.options) && question.options.length > 0
+                  ? question.options
+                  : (question.options_json ? (() => { try { return JSON.parse(question.options_json); } catch { return null; } })() : null)
+                  || [question.option_a, question.option_b, question.option_c, question.option_d].filter(Boolean);
+                const options = Array.isArray(rawOptions) && rawOptions.length > 0
+                  ? rawOptions
+                  : [question.option_a || 'Option A', question.option_b || 'Option B', question.option_c || 'Option C', question.option_d || 'Option D'];
+                const qTitle = question.question_title || question.title || `Question ${index + 1}`;
+                const qText = question.question || question.question_text || '';
+
                 return (
                   <article key={question.id} className={`mcq-question-card${isAnswered ? ' answered' : ''}`}>
                     <div className="mcq-question-top">
                       <div className="mcq-question-number">{index + 1}</div>
                       <div className="mcq-question-main">
                         <div className="mcq-question-heading">
-                          <h3>{question.question_title}</h3>
+                          <h3>{qTitle}</h3>
                           <span className="mcq-answer-state">{isAnswered ? 'Answered' : 'Not answered'}</span>
                         </div>
                         <div className="problem-meta mcq-meta">
                           <span className="difficulty-badge" style={{ backgroundColor: getDifficultyColor(question.difficulty) }}>
                             {question.difficulty}
                           </span>
-                          <span className="marks">{question.marks} marks</span>
-                          <span className="time-limit">{formatTimeWithLabel(question.time_limit || question.time, false)}</span>
-                          <span className="mcq-topic-pill">{question.topic}</span>
+                          <span className="marks">{question.marks || 1} marks</span>
+                          <span className="time-limit">{formatTimeWithLabel(question.time_limit || question.time || 30, false)}</span>
+                          <span className="mcq-topic-pill">{question.topic || 'General'}</span>
                         </div>
-                        <FormattedQuestionText text={question.question} className="mcq-question-text" />
+                        <FormattedQuestionText text={qText} className="mcq-question-text" />
                       </div>
                     </div>
 
                     <div className="mcq-options-grid">
-                      {question.options.map((option, optionIndex) => (
+                      {options.map((option, optionIndex) => (
                         <button
                           key={`${question.id}-${optionIndex}`}
                           type="button"
@@ -244,6 +270,20 @@ function MCQProblems() {
                   </article>
                 )
               })}
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-slate-700/50 flex items-center justify-between flex-wrap gap-4">
+              <span className="text-sm font-medium text-slate-400">
+                {questions.filter(q => getSelectedOption(q.id) !== null).length} of {questions.length} questions answered
+              </span>
+              <button
+                type="button"
+                onClick={handleFinishExam}
+                className="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 rounded-xl shadow-lg transition-all cursor-pointer ring-2 ring-emerald-400/30"
+              >
+                <FiCheck className="w-4 h-4 stroke-[3]" />
+                <span>Finish Test & Submit</span>
+              </button>
             </div>
           </>
         )}
