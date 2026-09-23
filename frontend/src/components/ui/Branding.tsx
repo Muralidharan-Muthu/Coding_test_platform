@@ -92,7 +92,7 @@ export const PlatformLogoMini = ({
       onClick={onClick}
     >
       <img
-        src="/assets/meptrasoft-logo.png"
+        src="/assets/meptrasoft-icon.png"
         alt="Meptrasoft AI Technologies"
         style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: 'transparent' }}
       />

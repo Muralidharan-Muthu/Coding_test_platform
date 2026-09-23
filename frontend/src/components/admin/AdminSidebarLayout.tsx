@@ -481,7 +481,7 @@ function AdminSidebarLayout({
               title="Meptrasoft AI Technologies"
             >
               <img
-                src="/assets/meptrasoft-logo.png"
+                src="/assets/meptrasoft-icon.png"
                 alt="Meptrasoft AI Technologies"
                 className="admin-shell-brand-mini-img"
               />
