@@ -211,7 +211,7 @@ a {
 @layer components {
 
   /* ── components/admin/AdminSidebarLayout.css ── */
-﻿.admin-shell {
+.admin-shell {
   min-height: 100vh;
   display: flex;
   position: relative;
@@ -250,32 +250,58 @@ a {
 .admin-shell-brand {
   flex: 1;
   min-width: 0;
-  height: 36px;
+  height: 48px;
   display: inline-flex;
   align-items: center;
-  justify-content: flex-start;
-  background: transparent;
-  border: none;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 14px;
+  padding: 4px 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.admin-shell-brand:hover {
+  background: #f8fafc;
+}
+
+.admin-shell-brand-img {
+  height: 40px;
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  display: block;
+  background: transparent;
 }
 
 .admin-shell-brand-mini {
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(30, 41, 59, 0.98));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-shell-brand-mini:hover {
+  background: #f8fafc;
 }
 
 .admin-shell-brand-mini-img {
-  width: 30px;
-  height: 30px;
+  width: 100%;
+  height: 100%;
   display: block;
   object-fit: contain;
+  background: transparent;
 }
 
 .admin-shell-toggle {
@@ -544,6 +570,7 @@ a {
   gap: 10px;
 }
 
+.admin-shell-user,
 .admin-shell-user-chip {
   display: inline-flex;
   align-items: center;
@@ -724,7 +751,7 @@ a {
 }
 
   /* ── components/Proctoring/ExamProctoringShell.css ── */
-﻿/* ─── Exam Proctoring Shell Layout & Overlay System ─── */
+/* ─── Exam Proctoring Shell Layout & Overlay System ─── */
 .eps-shell {
   min-height: 100vh;
   position: relative;
@@ -1002,7 +1029,7 @@ body.eps-page-blur .candidate-dashboard-page {
 }
 
   /* ── pages/AdminCodingPage.css ── */
-﻿/* ─── Admin Problem Inspection / Coding Page ─── */
+/* ─── Admin Problem Inspection / Coding Page ─── */
 .acp-container {
   height: 100vh;
   display: flex;
@@ -1948,17 +1975,25 @@ body.eps-page-blur .candidate-dashboard-page {
 
 /* ─── Logo ─── */
 .admin-login-center-logo {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 8px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  margin: 0 auto;
 }
 
 .admin-login-center-logo-img {
-  height: 52px;
+  height: 46px;
   width: auto;
+  max-width: 100%;
   object-fit: contain;
-  background: white;
-  padding: 8px 16px;
-  border-radius: 8px;
+  background: transparent;
+  padding: 0;
+  display: block;
 }
 
 /* ─── Header ─── */
@@ -2471,7 +2506,7 @@ body.eps-page-blur .candidate-dashboard-page {
 }
 
   /* ── pages/CandidateOTP.css ── */
-﻿/* ─── Compact & Professional Candidate Management ─── */
+/* ─── Compact & Professional Candidate Management ─── */
 .otp-dashboard,
 .send-mail-page,
 .choose-test-type-page {
@@ -3176,7 +3211,7 @@ body.eps-page-blur .candidate-dashboard-page {
 
 
   /* ── pages/ChooseTestTypePage.css ── */
-﻿/* ─── Modern Choose Test Type Styling ─── */
+/* ─── Modern Choose Test Type Styling ─── */
 .ctt-content {
   padding: 20px 24px 40px;
   max-width: 1440px;
@@ -3494,7 +3529,7 @@ body.eps-page-blur .candidate-dashboard-page {
 }
 
   /* ── pages/CodingPage.css ── */
-﻿/* --- Coding Page — LeetCode-inspired Layout --- */
+/* --- Coding Page — LeetCode-inspired Layout --- */
 .coding-page {
   display: flex;
   flex-direction: column;
@@ -5306,17 +5341,25 @@ body.eps-page-blur .candidate-dashboard-page {
 
 /* ─── Logo ─── */
 .login-center-logo {
-  display: flex;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 8px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  margin: 0 auto;
 }
 
 .login-center-logo-img {
-  height: 52px;
+  height: 46px;
   width: auto;
+  max-width: 100%;
   object-fit: contain;
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 8px 16px;
+  background: transparent;
+  padding: 0;
+  display: block;
 }
 
 /* ─── Header ─── */
@@ -5723,7 +5766,7 @@ body.eps-page-blur .candidate-dashboard-page {
 
 
   /* ── pages/MCQQuestionsPage.css ── */
-﻿/* ==========================================================================
+/* ==========================================================================
    MCQ Questions Page Styling Enhancements
    ========================================================================== */
 
@@ -6276,7 +6319,7 @@ body.eps-page-blur .candidate-dashboard-page {
 
 
   /* ── pages/QuestionsPage.css ── */
-﻿/* ==========================================================================
+/* ==========================================================================
    Modern Questions Page Styling (Design System Compliant)
    ========================================================================== */
 
@@ -7468,7 +7511,7 @@ body.window-blurred::after {
 
 
   /* ── pages/SendMailPage.css ── */
-﻿/* ─── Compact Send Mail Page Styles ─── */
+/* ─── Compact Send Mail Page Styles ─── */
 .sm-otp-code {
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   font-weight: 700;

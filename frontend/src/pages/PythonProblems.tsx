@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPythonProblems, getExamStatus, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { PythonIcon, TimerIcon } from '../components/ui/Branding'
+import { PythonIcon, TimerIcon, PlatformLogoSmall } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 
@@ -149,7 +149,8 @@ function PythonProblems() {
   return (
     <div className="section-problems-page">
       <header className="header">
-        <div className="header-left">
+        <div className="header-left flex items-center gap-3">
+          <PlatformLogoSmall />
           <button onClick={() => navigate('/test-structure')} className="btn-back" aria-label="Back to sections">
             <FiArrowLeft /> Back
           </button>

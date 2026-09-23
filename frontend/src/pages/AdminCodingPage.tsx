@@ -4,6 +4,7 @@ import Editor from '@monaco-editor/react'
 import api, { getProblem, runCode, runSql, previewSubmitCode, previewSubmitSql } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import Spinner from '../components/ui/Spinner'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
 import {
@@ -327,6 +328,7 @@ function AdminCodingPage() {
       {/* ── Top Header ── */}
       <header className="acp-header">
         <div className="acp-header-left">
+          <PlatformLogoSmall onClick={() => navigate('/admin/dashboard/assessment')} className="mr-2.5" />
           <button
             type="button"
             className="acp-back-btn"

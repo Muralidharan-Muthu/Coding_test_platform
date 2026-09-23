@@ -1,105 +1,110 @@
 // Meptrasoft AI Technologies Branding Component
 // Reusable logo component for Meptrasoft AI Technologies
 
-import { useTheme } from '../../context/ThemeContext'
+import React from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse, faBuilding } from '@fortawesome/free-solid-svg-icons'
 
-// The logo artwork is dark navy/teal on a transparent background, so it
-// disappears against any dark surface. Give it a white chip behind it
-// whenever the surrounding theme is dark so it stays legible.
-
 // Large logo — used on landing / auth pages
-export const PlatformLogoOnly = ({ className = '', size = 'large' }) => {
-  const { theme } = useTheme()
-  const height = size === 'large' ? '80px' : '60px'
+export const PlatformLogoOnly = ({
+  className = '',
+  size = 'large'
+}: {
+  className?: string
+  size?: 'large' | 'medium' | 'small'
+}) => {
+  const height = size === 'large' ? '54px' : size === 'medium' ? '42px' : '32px'
+  const padding = size === 'large' ? 'px-7 py-2.5' : size === 'medium' ? 'px-5 py-2' : 'px-3 py-1'
   return (
-    <div className={`dm-logo-only ${className}`} style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
-      borderRadius: '12px',
-      padding: '12px 20px',
-      width: 'fit-content',
-      boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
-      border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
-      transition: 'background-color 0.3s ease',
-    }}>
+    <div
+      className={`dm-logo-only bg-white rounded-2xl ${padding} shadow-xs border border-slate-200/90 inline-flex items-center justify-center transition-all duration-200 ${className}`}
+    >
       <img
         src="/assets/meptrasoft-logo.png"
         alt="Meptrasoft AI Technologies"
-        style={{ height: height, width: 'auto' }}
+        style={{ height, width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block', background: 'transparent' }}
       />
     </div>
   )
 }
 
 // Standard header logo
-export const PlatformLogo = ({ className = '', onClick }) => {
-  const { theme } = useTheme()
+export const PlatformLogo = ({
+  className = '',
+  onClick
+}: {
+  className?: string
+  onClick?: () => void
+}) => {
   return (
     <div
-      className={`dm-logo ${className}`}
+      className={`dm-logo bg-white rounded-xl px-4 py-1.5 shadow-xs border border-slate-200/90 inline-flex items-center justify-center transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:bg-slate-50' : ''
+      } ${className}`}
       onClick={onClick}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
-        borderRadius: theme === 'dark' ? '8px' : '0',
-        padding: theme === 'dark' ? '5px 12px' : '0',
-        boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
-        border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
-        transition: 'background-color 0.3s ease',
-      }}
     >
       <img
         src="/assets/meptrasoft-logo.png"
         alt="Meptrasoft AI Technologies"
-        style={{ height: '30px', width: 'auto' }}
+        style={{ height: '36px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block', background: 'transparent' }}
       />
     </div>
   )
 }
 
-// Small header logo (used in exam pages)
-export const PlatformLogoSmall = ({ className = '', onClick }) => {
-  const { theme } = useTheme()
+// Small header logo (used in exam pages, topbars & sidebars)
+export const PlatformLogoSmall = ({
+  className = '',
+  onClick
+}: {
+  className?: string
+  onClick?: () => void
+}) => {
   return (
     <div
-      className={`dm-logo-small ${className}`}
+      className={`dm-logo-small bg-white rounded-xl px-3.5 py-1 shadow-xs border border-slate-200/90 inline-flex items-center justify-center transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:bg-slate-50' : ''
+      } ${className}`}
       onClick={onClick}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        cursor: onClick ? 'pointer' : 'default',
-        backgroundColor: theme === 'dark' ? '#ffffff' : 'transparent',
-        borderRadius: theme === 'dark' ? '8px' : '0',
-        padding: theme === 'dark' ? '5px 10px' : '0',
-        boxShadow: theme === 'dark' ? 'var(--shadow-sm)' : 'none',
-        border: theme === 'dark' ? '1px solid rgba(15, 23, 42, 0.06)' : 'none',
-        transition: 'background-color 0.3s ease',
-        maxWidth: '100%',
-        boxSizing: 'border-box',
-      }}
     >
       <img
         src="/assets/meptrasoft-logo.png"
         alt="Meptrasoft AI Technologies"
-        style={{ height: '24px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
+        style={{ height: '32px', width: 'auto', maxWidth: '100%', objectFit: 'contain', display: 'block', background: 'transparent' }}
       />
     </div>
   )
 }
 
+// Square mini logo (used for collapsed sidebars or tight spaces)
+export const PlatformLogoMini = ({
+  className = '',
+  onClick
+}: {
+  className?: string
+  onClick?: () => void
+}) => {
+  return (
+    <div
+      className={`dm-logo-mini w-11 h-11 bg-white rounded-xl p-1 shadow-xs border border-slate-200/90 inline-flex items-center justify-center transition-all duration-200 ${
+        onClick ? 'cursor-pointer hover:bg-slate-50' : ''
+      } ${className}`}
+      onClick={onClick}
+    >
+      <img
+        src="/assets/meptrasoft-logo.png"
+        alt="Meptrasoft AI Technologies"
+        style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', background: 'transparent' }}
+      />
+    </div>
+  )
+}
 
-// Python Icon - Uses different image based on theme
-export const PythonIcon = ({ size = 16 }) => {
-  const { theme } = useTheme()
+// Python Icon
+export const PythonIcon = ({ size = 16 }: { size?: number }) => {
   return (
     <img 
-      src={theme === 'dark' ? '/assets/py-white.png' : '/assets/py.png'} 
+      src="/assets/py.png" 
       alt="Python" 
       style={{ height: size, width: 'auto', display: 'inline-block', verticalAlign: 'middle' }} 
     />
@@ -107,7 +112,7 @@ export const PythonIcon = ({ size = 16 }) => {
 }
 
 // Database Icon for SQL
-export const DatabaseIcon = ({ size = 16 }) => (
+export const DatabaseIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="12" cy="6" rx="8" ry="3" stroke="currentColor" strokeWidth="2" fill="none"/>
     <path d="M4 6v6c0 1.657 3.582 3 8 3s8-1.343 8-3V6" stroke="currentColor" strokeWidth="2" fill="none"/>
@@ -117,7 +122,7 @@ export const DatabaseIcon = ({ size = 16 }) => (
 )
 
 // Clock Icon for duration
-export const ClockIcon = ({ size = 24 }) => (
+export const ClockIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="12" r="10"/>
     <polyline points="12 6 12 12 16 14"/>
@@ -125,7 +130,7 @@ export const ClockIcon = ({ size = 24 }) => (
 )
 
 // Checklist Icon for questions
-export const ChecklistIcon = ({ size = 24 }) => (
+export const ChecklistIcon = ({ size = 24 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M9 11l3 3L22 4"/>
     <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
@@ -133,17 +138,17 @@ export const ChecklistIcon = ({ size = 24 }) => (
 )
 
 // House Icon - Font Awesome
-export const HouseIcon = ({ size = 16 }) => (
+export const HouseIcon = ({ size = 16 }: { size?: number }) => (
   <FontAwesomeIcon icon={faHouse} style={{ fontSize: size }} />
 )
 
 // Building Icon - Font Awesome
-export const BuildingIcon = ({ size = 16 }) => (
+export const BuildingIcon = ({ size = 16 }: { size?: number }) => (
   <FontAwesomeIcon icon={faBuilding} style={{ fontSize: size }} />
 )
 
 // Timer Icon
-export const TimerIcon = ({ size = 16 }) => (
+export const TimerIcon = ({ size = 16 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <circle cx="12" cy="14" r="8"/>
     <line x1="12" y1="10" x2="12" y2="2"/>
@@ -152,5 +157,4 @@ export const TimerIcon = ({ size = 16 }) => (
   </svg>
 )
 
-export default { PlatformLogo, PlatformLogoSmall, PythonIcon, DatabaseIcon, ClockIcon, ChecklistIcon, HouseIcon, BuildingIcon, TimerIcon }
-
+export default { PlatformLogo, PlatformLogoSmall, PlatformLogoOnly, PlatformLogoMini, PythonIcon, DatabaseIcon, ClockIcon, ChecklistIcon, HouseIcon, BuildingIcon, TimerIcon }

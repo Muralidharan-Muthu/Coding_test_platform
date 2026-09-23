@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { clearCandidateSession } from '../utils/sessionStorage'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 import { FiClock, FiCheckCircle, FiCheck, FiAward } from 'react-icons/fi'
 
 function SubmissionComplete() {
@@ -22,6 +23,9 @@ function SubmissionComplete() {
 
   return (
     <div className="submission-complete-page">
+      <div className="sc-logo-corner fixed top-5 left-6 z-50">
+        <PlatformLogoSmall onClick={handleBackToLogin} />
+      </div>
       <div className="sc-theme-corner">
         <ThemeToggle />
       </div>

@@ -1,4 +1,4 @@
-﻿import { FiCamera, FiCheck, FiAlertTriangle, FiVideoOff, FiCpu } from 'react-icons/fi'
+import { FiCamera, FiCheck, FiAlertTriangle, FiVideoOff, FiCpu } from 'react-icons/fi'
 import { useProctoring } from './useProctoring'
 
 export function ProctoringStatus({ aiStatus = 'clean', riskScore = 0 }) {

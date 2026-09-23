@@ -4,6 +4,7 @@ import api from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { FiArrowRight, FiDatabase } from 'react-icons/fi'
 import { SiPython } from 'react-icons/si'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 
 function ProblemList() {
   const navigate = useNavigate()
@@ -43,12 +44,7 @@ function ProblemList() {
   return (
     <div className="problem-list-page">
       <header className="header">
-        <div className="header-logo">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>
-          </svg>
-          <span>CodeFlow</span>
-        </div>
+        <PlatformLogoSmall onClick={() => navigate('/practice/problems')} />
         <div className="header-right">
           <ThemeToggle />
           <div className="user-info">

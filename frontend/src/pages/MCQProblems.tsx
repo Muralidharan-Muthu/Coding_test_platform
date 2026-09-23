@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getExamStatus, getMcqProblems, submitExam } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { ChecklistIcon, TimerIcon } from '../components/ui/Branding'
+import { ChecklistIcon, TimerIcon, PlatformLogoSmall } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { FiArrowLeft, FiCheck } from 'react-icons/fi'
 
@@ -178,7 +178,8 @@ function MCQProblems() {
   return (
     <div className="section-problems-page mcq-section">
       <header className="header">
-        <div className="header-left">
+        <div className="header-left flex items-center gap-3">
+          <PlatformLogoSmall />
           <button onClick={() => navigate('/test-structure')} className="btn-back" aria-label="Back to sections">
             <FiArrowLeft /> Back
           </button>

@@ -12,6 +12,7 @@ import { useProctoring } from '../components/Proctoring/useProctoring'
 
 import { ProctoringStatus } from '../components/Proctoring/ProctoringStatus'
 import { FormattedContent, parseSqlFromDdlDml } from '../components/ui/TableRenderer'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
 const VIOLATION_ALERT_MS = 4000
@@ -958,6 +959,7 @@ function CodingPage() {
         {/* === Top Toolbar === */}
         <div className="coding-toolbar">
           <div className="toolbar-left">
+            <PlatformLogoSmall onClick={!isExamMode ? () => navigate('/dashboard') : undefined} className="mr-2.5" />
             {(isExamMode || isStatelessMode) && (
               <button onClick={handleBack} className="btn-back-coding" aria-label="Go back"><FiArrowLeft /> Back</button>
             )}

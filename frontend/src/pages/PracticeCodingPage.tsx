@@ -23,6 +23,7 @@ import {
   FiCopy
 } from 'react-icons/fi'
 import { FormattedContent } from '../components/ui/TableRenderer'
+import { PlatformLogoSmall } from '../components/ui/Branding'
 
 function PracticeCodingPage() {
   const { problemId } = useParams()
@@ -321,6 +322,7 @@ function PracticeCodingPage() {
       {/* ── Top Header ── */}
       <header className="acp-header">
         <div className="acp-header-left">
+          <PlatformLogoSmall onClick={() => navigate('/practice/problems')} className="mr-2.5" />
           <button
             type="button"
             className="acp-back-btn"

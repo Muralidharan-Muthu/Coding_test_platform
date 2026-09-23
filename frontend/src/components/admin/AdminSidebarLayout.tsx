@@ -449,7 +449,7 @@ function AdminSidebarLayout({
   }
 
   return (
-    <div className={`admin-shell ${className} ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+    <div className={`admin-shell flex min-h-screen relative text-slate-800 dark:text-[#eff1f6] ${className} ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
       <button
         type="button"
         className="admin-shell-overlay"
@@ -457,16 +457,34 @@ function AdminSidebarLayout({
         onClick={() => setMobileOpen(false)}
       />
 
-      <aside className="admin-shell-sidebar" aria-label="Admin navigation">
+      <aside className="admin-shell-sidebar shrink-0 sticky top-0 h-screen flex flex-col z-[120]" aria-label="Admin navigation">
         <div className="admin-shell-brand-row">
-          {!collapsed && (
+          {!collapsed ? (
             <button
               type="button"
               className="admin-shell-brand"
               onClick={() => onNavigate(enrichedNavItems[0]?.href || '/admin/dashboard/assessment')}
               aria-label="Go to assessment dashboard"
             >
-              <PlatformLogoSmall />
+              <img
+                src="/assets/meptrasoft-logo.png"
+                alt="Meptrasoft AI Technologies"
+                className="admin-shell-brand-img"
+              />
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="admin-shell-brand-mini"
+              onClick={() => onNavigate(enrichedNavItems[0]?.href || '/admin/dashboard/assessment')}
+              aria-label="Go to assessment dashboard"
+              title="Meptrasoft AI Technologies"
+            >
+              <img
+                src="/assets/meptrasoft-logo.png"
+                alt="Meptrasoft AI Technologies"
+                className="admin-shell-brand-mini-img"
+              />
             </button>
           )}
 
@@ -605,7 +623,7 @@ function AdminSidebarLayout({
         </div>
       </aside>
 
-      <div className="admin-shell-main">
+      <div className="admin-shell-main flex-1 min-w-0 flex flex-col">
         <header className="admin-shell-topbar">
           <div className="admin-shell-topbar-left">
             <button
@@ -630,7 +648,7 @@ function AdminSidebarLayout({
           </div>
         </header>
 
-        <main className="admin-shell-body">
+        <main className="admin-shell-body flex-1 min-w-0 min-h-0">
           {children}
         </main>
       </div>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useProctoring } from './useProctoring'
 import { FiCpu, FiEye, FiAlertTriangle } from 'react-icons/fi'
 

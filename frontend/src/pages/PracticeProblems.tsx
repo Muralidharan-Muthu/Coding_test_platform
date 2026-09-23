@@ -1,9 +1,9 @@
-﻿import { formatTimeWithLabel } from '../utils/timeUtils'
+import { formatTimeWithLabel } from '../utils/timeUtils'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPracticeProblems } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
-import { DatabaseIcon, PythonIcon, ChecklistIcon } from '../components/ui/Branding'
+import { DatabaseIcon, PythonIcon, ChecklistIcon, PlatformLogoSmall } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { clearPracticeSession } from '../utils/sessionStorage'
 import { FiCheckCircle, FiXCircle, FiHelpCircle, FiCode, FiTerminal } from 'react-icons/fi'
@@ -97,9 +97,12 @@ function PracticeProblems() {
   return (
     <div className="section-problems-page">
       <header className="header">
-        <div className="header-left">
-          <h1>Practice Sandbox</h1>
-          <span className="practice-badge">Untimed & Unproctored</span>
+        <div className="header-left flex items-center gap-3">
+          <PlatformLogoSmall onClick={() => navigate('/practice/problems')} />
+          <div>
+            <h1>Practice Sandbox</h1>
+            <span className="practice-badge">Untimed & Unproctored</span>
+          </div>
         </div>
         <div className="header-right">
           <ThemeToggle />

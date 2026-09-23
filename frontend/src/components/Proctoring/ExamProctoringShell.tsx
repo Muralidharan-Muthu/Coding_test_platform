@@ -1,4 +1,4 @@
-﻿import { createPortal } from 'react-dom'
+import { createPortal } from 'react-dom'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiLock, FiMaximize, FiAlertTriangle, FiXOctagon, FiShield, FiAlertCircle } from 'react-icons/fi'
