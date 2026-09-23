@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiCheck, FiRefreshCw, FiSave, FiUsers, FiSearch, FiX } from 'react-icons/fi'
 import {
@@ -13,8 +13,6 @@ import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
-import './CandidateOTP.css'
-import './ChooseTestTypePage.css'
 
 // Default system topic definitions
 const SYSTEM_TOPICS = [
@@ -33,7 +31,7 @@ function parseTopicsFromType(testType = 'both', allTopicSlugs = ['python', 'sql'
   if (raw === 'python_mcq' || raw === 'python+mcq') return ['python', 'mcq']
   if (raw === 'sql_mcq' || raw === 'sql+mcq') return ['sql', 'mcq']
   if (raw === 'all') return [...allTopicSlugs]
-  
+
   // Custom delimiters
   const parts = raw.split(/[\+,\s\/&]+/).map(p => p.trim()).filter(Boolean)
   return parts.length > 0 ? Array.from(new Set(parts)) : ['python', 'sql']

@@ -1,8 +1,19 @@
-﻿import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { FiAlertTriangle, FiTrash2, FiInfo } from 'react-icons/fi'
-import './ConfirmDialog.css'
 
-const ConfirmContext = createContext(null)
+interface ConfirmOptions {
+  title?: string
+  message?: string
+  confirmText?: string
+  cancelText?: string
+  type?: 'danger' | 'warning' | 'info'
+}
+
+interface ConfirmContextValue {
+  confirm: (options: ConfirmOptions) => Promise<boolean>
+}
+
+const ConfirmContext = createContext<ConfirmContextValue | null>(null)
 
 export function useConfirm() {
   const context = useContext(ConfirmContext)
@@ -12,24 +23,24 @@ export function useConfirm() {
   return context.confirm
 }
 
-export function ConfirmProvider({ children }) {
-  const [dialogState, setDialogState] = useState(null)
-  const resolveRef = useRef(null)
+export function ConfirmProvider({ children }: { children: React.ReactNode }) {
+  const [dialogState, setDialogState] = useState<ConfirmOptions | null>(null)
+  const resolveRef = useRef<((value: boolean) => void) | null>(null)
 
-  const confirm = useCallback((options) => {
-    return new Promise((resolve) => {
+  const confirm = useCallback((options: ConfirmOptions) => {
+    return new Promise<boolean>((resolve) => {
       resolveRef.current = resolve
       setDialogState({
         title: options.title || 'Are you sure?',
         message: options.message || 'Please confirm this action.',
         confirmText: options.confirmText || 'Confirm',
         cancelText: options.cancelText || 'Cancel',
-        type: options.type || 'danger', // 'danger' | 'warning' | 'info'
+        type: options.type || 'danger',
       })
     })
   }, [])
 
-  const handleClose = useCallback((result) => {
+  const handleClose = useCallback((result: boolean) => {
     if (resolveRef.current) {
       resolveRef.current(result)
       resolveRef.current = null
@@ -37,11 +48,10 @@ export function ConfirmProvider({ children }) {
     setDialogState(null)
   }, [])
 
-  // Keyboard navigation (Escape to cancel, Enter to confirm)
   useEffect(() => {
     if (!dialogState) return
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         handleClose(false)
       } else if (e.key === 'Enter') {
@@ -53,27 +63,51 @@ export function ConfirmProvider({ children }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [dialogState, handleClose])
 
-  const renderIcon = (type) => {
-    if (type === 'danger') return <FiTrash2 size={24} />
-    if (type === 'warning') return <FiAlertTriangle size={24} />
-    return <FiInfo size={24} />
+  const renderIcon = (type = 'danger') => {
+    if (type === 'danger') return <FiTrash2 size={24} className="text-rose-500" />
+    if (type === 'warning') return <FiAlertTriangle size={24} className="text-amber-500" />
+    return <FiInfo size={24} className="text-blue-500" />
+  }
+
+  const getIconBg = (type = 'danger') => {
+    if (type === 'danger') return 'bg-rose-500/10'
+    if (type === 'warning') return 'bg-amber-500/10'
+    return 'bg-blue-500/10'
+  }
+
+  const getConfirmBtnClass = (type = 'danger') => {
+    if (type === 'danger') return 'bg-rose-600 hover:bg-rose-700 text-white'
+    if (type === 'warning') return 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold'
+    return 'bg-blue-600 hover:bg-blue-700 text-white'
   }
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>
       {children}
       {dialogState && (
-        <div className="confirm-dialog-backdrop" onClick={() => handleClose(false)}>
-          <div className="confirm-dialog-card" onClick={(e) => e.stopPropagation()}>
-            <div className={`confirm-dialog-icon-wrap ${dialogState.type}`}>
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs transition-opacity"
+          onClick={() => handleClose(false)}
+        >
+          <div
+            className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] rounded-2xl p-6 shadow-2xl max-w-md w-full space-y-4 animate-in fade-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${getIconBg(dialogState.type)}`}>
               {renderIcon(dialogState.type)}
             </div>
-            <h3 className="confirm-dialog-title">{dialogState.title}</h3>
-            <p className="confirm-dialog-message">{dialogState.message}</p>
-            <div className="confirm-dialog-actions">
+            <div className="space-y-1">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-[#eff1f6]">
+                {dialogState.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#b0b0b0] leading-relaxed">
+                {dialogState.message}
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 type="button"
-                className="confirm-dialog-btn-cancel"
+                className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#eff1f6] bg-slate-100 hover:bg-slate-200 dark:bg-[#333333] dark:hover:bg-[#3e3e3e] rounded-xl transition cursor-pointer"
                 onClick={() => handleClose(false)}
                 autoFocus
               >
@@ -81,7 +115,7 @@ export function ConfirmProvider({ children }) {
               </button>
               <button
                 type="button"
-                className={`confirm-dialog-btn-confirm ${dialogState.type}`}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition cursor-pointer ${getConfirmBtnClass(dialogState.type)}`}
                 onClick={() => handleClose(true)}
               >
                 {dialogState.confirmText}

@@ -204,7 +204,6 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
 import { FiZap, FiCopy, FiCheck, FiPlus, FiX, FiCpu } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
-import './QuestionsPage.css'
 import { formatTimeWithLabel, formatTimeHHMMSS } from '../utils/timeUtils'
 
 const DIFFICULTY_CONFIG = {

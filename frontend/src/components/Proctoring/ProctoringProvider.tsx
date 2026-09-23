@@ -13,7 +13,6 @@
 import { createContext, useCallback, useEffect, useRef, useState } from 'react'
 import { ProctoringEngine } from '../../proctoring/ProctoringEngine'
 import { sendProctoringEvents, startProctoringSession, endProctoringSession } from '../../services/proctoringApi'
-import './ProctoringProvider.css'
 
 /** @typedef {import('../../proctoring/ProctoringTypes').ProctoringState} ProctoringState */
 /** @typedef {import('../../proctoring/ProctoringTypes').ProctoringEvent} ProctoringEvent */

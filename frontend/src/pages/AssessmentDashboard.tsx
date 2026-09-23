@@ -1,246 +1,37 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import CodeReviewModal from '../components/assessment/CodeReviewModal'
-import ColorLegend from '../components/assessment/ColorLegend'
-import DifficultyTable from '../components/assessment/DifficultyTable'
-import FilterBar from '../components/assessment/FilterBar'
-import ProblemDetailTable from '../components/assessment/ProblemDetailTable'
-import StatCards from '../components/assessment/StatCards'
-import TestSummaryTable from '../components/assessment/TestSummaryTable'
-import TrustProctoringTable from '../components/assessment/TrustProctoringTable'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
+import CandidatesAssessmentTable from '../components/assessment/CandidatesAssessmentTable'
+import CodeReviewModal from '../components/assessment/CodeReviewModal'
 import Spinner from '../components/ui/Spinner'
 import { useToast } from '../components/ui/ToastProvider'
 import { exportAssessmentResults, getProctoringReports } from '../services/assessmentApi'
-import { FiBarChart2, FiX, FiFileText, FiShield, FiTrendingUp, FiCheckSquare, FiLayers } from 'react-icons/fi'
-import './AssessmentDashboard.css'
+import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
+import {
+  FiUsers,
+  FiCheckCircle,
+  FiMinusCircle,
+  FiXCircle,
+  FiClock,
+  FiCalendar,
+  FiFilter,
+  FiRotateCcw,
+  FiDownload,
+  FiX,
+  FiSearch
+} from 'react-icons/fi'
 
-/* --- Nav Items (matches AdminDashboard) --- */
-const TABLE_TABS = [
-  { id: 'summary', label: 'Test Summary', icon: FiFileText },
-  { id: 'proctoring', label: 'Trust & Proctoring', icon: FiShield },
-  { id: 'difficulty', label: 'Difficulty Breakdown', icon: FiTrendingUp },
-  { id: 'problems', label: 'Problem-wise Performance', icon: FiCheckSquare },
-]
-
-const NAV_ITEMS = [
-  {
-    label: 'Assessment Dashboard',
-    href: '/dashboard/assessment',
-    activePaths: ['/dashboard/assessment'],
-  },
-  { label: 'Questions', href: '/admin/questions/python_questions', activePaths: ['/admin/questions'] },
-  {
-    label: 'Manage Candidates',
-    href: '/admin/otp',
-    activePaths: ['/admin/otp'],
-    children: [
-      { label: 'Choose Test Type', href: '/admin/test-type', activePaths: ['/admin/test-type'] },
-      { label: 'Send Mail', href: '/admin/send-mail', activePaths: ['/admin/send-mail'] },
-    ],
-  },
-]
-
-const modalBackdropStyle = {
-  position: 'fixed',
-  inset: 0,
-  zIndex: 220,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '24px',
-  background: 'rgba(15, 23, 42, 0.58)',
-}
-
-const modalCardStyle = {
-  width: 'min(720px, 100%)',
-  maxHeight: '80vh',
-  overflow: 'hidden',
-  position: 'relative',
-  display: 'flex',
-  flexDirection: 'column',
-  borderRadius: '18px',
-  background: 'var(--color-surface, #ffffff)',
-  color: 'var(--color-text, #0f172a)',
-  boxShadow: '0 24px 80px rgba(15, 23, 42, 0.35)',
-  border: '1px solid var(--color-border, rgba(148, 163, 184, 0.25))',
-}
-
-const modalCornerCloseButtonStyle = {
-  position: 'absolute',
-  top: '16px',
-  right: '16px',
-  zIndex: 3,
-  width: '34px',
-  height: '34px',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '999px',
-  border: '1px solid rgba(148, 163, 184, 0.35)',
-  background: 'var(--color-surface-2, #f8fafc)',
-  color: 'var(--color-text, #0f172a)',
-  fontSize: '18px',
-  fontWeight: 800,
-  lineHeight: 1,
-  cursor: 'pointer',
-  boxShadow: '0 8px 24px rgba(15, 23, 42, 0.12)',
-}
-
-const modalHeaderSectionStyle = {
-  padding: '24px 24px 14px',
-  flexShrink: 0,
-  borderBottom: '1px solid var(--color-border, rgba(148, 163, 184, 0.25))',
-}
-
-const modalBodyScrollAreaStyle = {
-  padding: '14px 24px 20px',
-  overflowY: 'auto',
-  minHeight: 0,
-  flex: 1,
-}
-
-const logCardStyle = {
-  borderRadius: '14px',
-  padding: '14px 16px',
-  background: 'var(--color-surface-2, #f8fafc)',
-  border: '1px solid var(--color-border, rgba(148, 163, 184, 0.22))',
-}
-
-const logCardTopRowStyle = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'flex-start',
-  gap: '12px',
-}
-
-const logCardBodyRowStyle = {
-  display: 'grid',
-  gridTemplateColumns: '1fr auto',
-  gap: '16px',
-  alignItems: 'center',
-}
-
-const modalSummaryRowStyle = {
-  marginTop: '12px',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '10px',
-}
-
-const modalSummaryChipStyle = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '8px',
-  padding: '7px 12px',
-  borderRadius: '999px',
-  border: '1px solid rgba(148, 163, 184, 0.28)',
-  background: 'var(--color-surface-2, #f8fafc)',
-  fontSize: '12px',
-  fontWeight: 800,
-  color: 'var(--color-text-subtle, #475569)',
-}
-
-const modalSummaryValueStyle = {
-  fontSize: '14px',
-  fontWeight: 900,
-  color: 'var(--color-text, #0f172a)',
-}
-
-const logRepeatedNoteBaseStyle = {
-  marginTop: '6px',
-  fontSize: '13px',
-  fontWeight: 800,
-  color: 'var(--color-text-subtle, #64748b)',
-}
-
-const logCountPanelBaseStyle = {
-  minWidth: '58px',
-  height: '58px',
-  borderRadius: '12px',
-  display: 'grid',
-  placeItems: 'center',
-  border: '1px solid rgba(148, 163, 184, 0.3)',
-  boxShadow: '0 6px 12px rgba(15, 23, 42, 0.12)',
-}
-
-const logCountPanelNumberStyle = {
-  fontSize: '17px',
-  lineHeight: 1,
-  fontWeight: 900,
-  letterSpacing: '-0.01em',
-}
-
-const logCountPanelLabelStyle = {
-  marginTop: '1px',
-  fontSize: '9px',
-  letterSpacing: '0.06em',
-  fontWeight: 800,
-}
-
-const repeatedLogTheme = {
-  noteColor: '#334155',
-  cardBorderAccent: '4px solid #94a3b8',
-  cardShadow: '0 10px 20px rgba(148, 163, 184, 0.22)',
-  panelBackground: 'linear-gradient(135deg, rgba(226, 232, 240, 0.9), rgba(241, 245, 249, 0.9))',
-  panelBorder: '1px solid rgba(148, 163, 184, 0.45)',
-  panelText: '#0f172a',
-}
-
-const normalizeLogValue = (value) => String(value || '').trim().replace(/\s+/g, ' ').toLowerCase()
-
-const toTimestampNumber = (timestamp) => {
-  const value = new Date(timestamp || '').getTime()
-  return Number.isFinite(value) ? value : Number.POSITIVE_INFINITY
-}
-
-const groupLogsForDisplay = (logs = []) => {
-  const grouped = new Map()
-
-  logs.forEach((log) => {
-    const violationType = normalizeLogValue(log?.violation_type)
-    const message = normalizeLogValue(log?.message)
-    const key = `${violationType}|${message}`
-    const normalizedCount = Number.isFinite(Number(log?.count)) ? Number(log.count) : 1
-
-    if (!grouped.has(key)) {
-      grouped.set(key, {
-        ...log,
-        count: normalizedCount,
-      })
-      return
-    }
-
-    const existing = grouped.get(key)
-    const existingTime = toTimestampNumber(existing?.timestamp)
-    const incomingTime = toTimestampNumber(log?.timestamp)
-
-    grouped.set(key, {
-      ...existing,
-      count: (Number(existing?.count) || 0) + normalizedCount,
-      timestamp: incomingTime < existingTime ? log?.timestamp : existing?.timestamp,
-    })
-  })
-
-  return [...grouped.values()].sort((left, right) => toTimestampNumber(left?.timestamp) - toTimestampNumber(right?.timestamp))
-}
-
-function AssessmentDashboard() {
+export default function AssessmentDashboard() {
   const navigate = useNavigate()
   const toast = useToast()
-  const [results, setResults] = useState([])
-  const [totalCount, setTotalCount] = useState(0)
-  const [filteredCount, setFilteredCount] = useState(0)
+  const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
   const [adminName, setAdminName] = useState('')
-  const [activeTableTab, setActiveTableTab] = useState('summary')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedLogs, setSelectedLogs] = useState([])
-  const [selectedCandidateName, setSelectedCandidateName] = useState('')
-  // Code review modal state
-  const [isCodeReviewOpen, setIsCodeReviewOpen] = useState(false)
-  const [codeReviewCandidate, setCodeReviewCandidate] = useState(null)
+
+  // Top level search & filters
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeVerdictTab, setActiveVerdictTab] = useState('All')
   const [filters, setFilters] = useState({
     date_from: '',
     date_to: '',
@@ -249,51 +40,74 @@ function AssessmentDashboard() {
     test_location: 'All'
   })
 
+  // Modals state
+  const [isCodeReviewOpen, setIsCodeReviewOpen] = useState(false)
+  const [codeReviewCandidate, setCodeReviewCandidate] = useState<any>(null)
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false)
+  const [selectedLogs, setSelectedLogs] = useState<any[]>([])
+  const [selectedCandidateName, setSelectedCandidateName] = useState('')
+
   useEffect(() => {
     const loggedIn = localStorage.getItem('admin_logged_in')
     const name = localStorage.getItem('admin_name')
-    if (!loggedIn) { navigate('/admin'); return }
+    if (!loggedIn) {
+      navigate('/admin')
+      return
+    }
     setAdminName(name || 'Admin User')
     loadResults()
   }, [navigate])
 
-  const loadResults = async (currentFilters = {}) => {
+  const loadResults = async (customFilters = filters) => {
     setLoading(true)
     try {
-      const response = await getProctoringReports(currentFilters)
+      const response = await getProctoringReports(customFilters)
       setResults(response.data || [])
-      setFilteredCount(response.total || 0)
-      if (
-        Object.keys(currentFilters).length === 0 ||
-        (currentFilters.verdict === 'All' && currentFilters.submission_type === 'All' &&
-         currentFilters.test_location === 'All' && !currentFilters.date_from && !currentFilters.date_to)
-      ) {
-        setTotalCount(response.total || 0)
-      }
     } catch (err) {
-      console.error('Failed to load results:', err)
-      setResults([]); setFilteredCount(0); setTotalCount(0)
+      console.error('Failed to load assessment results:', err)
+      toast.error('Failed to load assessment data')
+      setResults([])
     } finally {
       setLoading(false)
     }
   }
 
-  const handleOpenLogs = (logs = [], candidateName = '') => {
-    const groupedLogs = Array.isArray(logs) ? groupLogsForDisplay(logs) : []
-    setSelectedLogs(groupedLogs)
-    setSelectedCandidateName(candidateName || '')
-    setIsModalOpen(true)
+  const handleApplyFilter = () => {
+    loadResults(filters)
   }
 
-  const handleCloseLogs = () => {
-    setIsModalOpen(false)
-    setSelectedLogs([])
-    setSelectedCandidateName('')
+  const handleResetFilter = () => {
+    const reset = {
+      date_from: '',
+      date_to: '',
+      verdict: 'All',
+      submission_type: 'All',
+      test_location: 'All'
+    }
+    setFilters(reset)
+    setSearchQuery('')
+    setActiveVerdictTab('All')
+    loadResults(reset)
   }
 
-  // Code review modal handlers
-  const handleOpenCodeReview = (candidate) => {
-    setCodeReviewCandidate(candidate)
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      await exportAssessmentResults(filters)
+      toast.success('Excel report downloaded successfully.')
+    } catch (err: any) {
+      console.error('Failed to export:', err)
+      toast.error(err.response?.data?.detail || 'Failed to export Excel report.')
+    } finally {
+      setExporting(false)
+    }
+  }
+
+  const handleOpenCodeReview = (candidate: any) => {
+    setCodeReviewCandidate({
+      name: candidate.user_name || candidate.name || 'Candidate',
+      email: candidate.email
+    })
     setIsCodeReviewOpen(true)
   }
 
@@ -302,32 +116,16 @@ function AssessmentDashboard() {
     setCodeReviewCandidate(null)
   }
 
-  const formatLogTimestamp = (timestamp) => {
-    if (!timestamp) return 'Unknown time'
-    const parsedDate = new Date(timestamp)
-    if (Number.isNaN(parsedDate.getTime())) return timestamp
-    return parsedDate.toLocaleString()
+  const handleOpenLogs = (logs: any[], candidateName: string) => {
+    setSelectedLogs(logs || [])
+    setSelectedCandidateName(candidateName)
+    setIsLogModalOpen(true)
   }
 
-  const handleApplyFilter = () => loadResults(filters)
-
-  const handleResetFilter = () => {
-    const resetFilters = { date_from: '', date_to: '', verdict: 'All', submission_type: 'All', test_location: 'All' }
-    setFilters(resetFilters)
-    loadResults(resetFilters)
-  }
-
-  const handleExport = async () => {
-    setExporting(true)
-    try {
-      await exportAssessmentResults(filters)
-      toast.success('Excel report downloaded.')
-    } catch (err) {
-      console.error('Failed to export:', err)
-      toast.error(err.response?.data?.detail || 'Failed to export Excel report.')
-    } finally {
-      setExporting(false)
-    }
+  const handleCloseLogs = () => {
+    setIsLogModalOpen(false)
+    setSelectedLogs([])
+    setSelectedCandidateName('')
   }
 
   const handleLogout = () => {
@@ -336,237 +134,395 @@ function AssessmentDashboard() {
     navigate('/admin')
   }
 
-  const stats = {
-    total: results.length,
-    good: results.filter(r => r.overall_verdict === 'Good').length,
-    average: results.filter(r => r.overall_verdict === 'Average').length,
-    belowAverage: results.filter(r => r.overall_verdict === 'Below Average').length,
-    autoSubmitted: results.filter(r => (r.submission_type || '').toLowerCase() === 'auto').length
-  }
+  // Summary Metrics
+  const stats = useMemo(() => {
+    const total = results.length
+    const good = results.filter(r => (r.overall_verdict || '').toLowerCase() === 'good').length
+    const average = results.filter(r => (r.overall_verdict || '').toLowerCase() === 'average').length
+    const belowAverage = results.filter(r => (r.overall_verdict || '').toLowerCase() === 'below average').length
+    const autoSubmitted = results.filter(r => (r.submission_type || '').toLowerCase() === 'auto').length
+    return { total, good, average, belowAverage, autoSubmitted }
+  }, [results])
 
-  const modalUniqueCount = selectedLogs.length
-  const modalMaxCount = selectedLogs.reduce((max, log) => {
-    const count = Number(log?.count)
-    return count > max ? count : max
-  }, 0)
+  // Filtered dataset combining global filters & card filter
+  const displayedResults = useMemo(() => {
+    return results.filter(row => {
+      // Quick card filter
+      if (activeVerdictTab !== 'All') {
+        if (activeVerdictTab === 'auto') {
+          if ((row.submission_type || '').toLowerCase() !== 'auto') return false
+        } else {
+          if ((row.overall_verdict || '').toLowerCase() !== activeVerdictTab.toLowerCase()) return false
+        }
+      }
+
+      // Top dropdown verdict filter
+      if (filters.verdict !== 'All') {
+        if ((row.overall_verdict || '').toLowerCase() !== filters.verdict.toLowerCase()) return false
+      }
+
+      // Top dropdown submission filter
+      if (filters.submission_type !== 'All') {
+        const type = (row.submission_type || '').toLowerCase()
+        if (filters.submission_type.toLowerCase() === 'auto' && type !== 'auto') return false
+        if (filters.submission_type.toLowerCase() === 'manual' && type !== 'manual') return false
+      }
+
+      // Search filter
+      const q = searchQuery.trim().toLowerCase()
+      if (q) {
+        const name = (row.user_name || row.name || '').toLowerCase()
+        const email = (row.email || '').toLowerCase()
+        const id = (row.candidate_id || '').toLowerCase()
+        if (!name.includes(q) && !email.includes(q) && !id.includes(q)) return false
+      }
+
+      return true
+    })
+  }, [results, activeVerdictTab, filters.verdict, filters.submission_type, searchQuery])
+
+  // Active filter chip label for the table
+  const activeFilterLabel = useMemo(() => {
+    if (activeVerdictTab !== 'All') {
+      return activeVerdictTab === 'auto' ? 'Auto-Submitted' : activeVerdictTab
+    }
+    if (filters.verdict !== 'All') return `Verdict: ${filters.verdict}`
+    if (filters.submission_type !== 'All') return `Type: ${filters.submission_type}`
+    if (searchQuery.trim()) return `Search: "${searchQuery.trim()}"`
+    return undefined
+  }, [activeVerdictTab, filters.verdict, filters.submission_type, searchQuery])
+
+  // Card click toggles quick filter
+  const handleStatCardClick = (verdictKey: string) => {
+    setActiveVerdictTab(prev => (prev === verdictKey ? 'All' : verdictKey))
+  }
 
   return (
     <AdminSidebarLayout
-      className="asd-page"
+      className="asd-page bg-slate-50/60 dark:bg-[#1a1a1a] min-h-screen text-slate-800 dark:text-[#eff1f6]"
       adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
       onLogout={handleLogout}
     >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-      {/* -- Filter Bar -- */}
-      <FilterBar
-        filters={filters}
-        setFilters={setFilters}
-        onApply={handleApplyFilter}
-        onReset={handleResetFilter}
-        onExport={handleExport}
-        exporting={exporting}
-        displayCount={filteredCount}
-        totalCount={totalCount}
-      />
-
-      {/* -- Page Content -- */}
-      <main className="asd-content">
-
-        {/* Page Heading */}
-
-        {loading ? (
-          <Spinner label="Loading assessment data..." size={44} />
-        ) : results.length === 0 ? (
-          <div className="asd-empty">
-            <div className="asd-empty-icon" aria-hidden="true"><FiBarChart2 /></div>
-            <h2>No Assessments Yet</h2>
-            <p>Candidates who complete the assessment will appear here automatically.</p>
-          </div>
-        ) : (
-          <>
-            <StatCards stats={stats} />
-            <ColorLegend />
-
-            {/* Table Switching Navigation Bar */}
-            <div className="asd-table-nav-bar" role="tablist" aria-label="Assessment Table Sections">
-              {TABLE_TABS.map((tab) => {
-                const Icon = tab.icon
-                const isActive = activeTableTab === tab.id
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    aria-selected={isActive}
-                    className={`asd-table-nav-item ${isActive ? "active" : ""}`}
-                    onClick={() => setActiveTableTab(tab.id)}
-                  >
-                    <Icon className="asd-table-nav-icon" />
-                    <span>{tab.label}</span>
-                  </button>
-                )
-              })}
+        {/* ── Top Header & Global Controls ── */}
+        <div className="bg-white dark:bg-[#282828] border border-slate-200/80 dark:border-[#3e3e3e] rounded-2xl p-5 shadow-sm space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
+                  Assessment Dashboard
+                </h1>
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/30">
+                  {results.length} Completed
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-[#b0b0b0] mt-1">
+                Candidate evaluation results, test performance metrics, and proctoring integrity.
+              </p>
             </div>
 
-            {/* 1. Test Summary */}
-            {(activeTableTab === "summary") && (
-              <div id="test-summary" className="asd-table-card">
-                <div className="asd-table-header">
-                  <h3>Test Summary</h3>
-                  <span className="asd-table-tag">candidate_test_summary</span>
-                </div>
-                <TestSummaryTable data={results} onViewCode={handleOpenCodeReview} />
-              </div>
-            )}
+            {/* Quick Action Export */}
+            <div className="flex items-center gap-2 self-start md:self-auto">
+              <button
+                type="button"
+                onClick={handleExport}
+                disabled={exporting || results.length === 0}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold text-slate-900 bg-[#ffa116] hover:bg-[#e88f0a] rounded-xl shadow-xs transition cursor-pointer disabled:opacity-50"
+                title="Download Excel Assessment Report"
+              >
+                <FiDownload size={14} />
+                <span>{exporting ? 'Exporting Report...' : 'Download Excel'}</span>
+              </button>
+            </div>
+          </div>
 
-            {/* 2. Trust & Proctoring */}
-            {(activeTableTab === "proctoring") && (
-              <div id="trust-proctoring" className="asd-table-card">
-                <div className="asd-table-header">
-                  <h3>Trust & Proctoring</h3>
-                  <span className="asd-table-tag">candidate_proctoring_logs</span>
-                </div>
-                <TrustProctoringTable data={results} onViewLogs={handleOpenLogs} />
-              </div>
-            )}
+          {/* ── Aligned Executive Filter Bar ── */}
+          <div className="pt-3 border-t border-slate-100 dark:border-[#3e3e3e] flex flex-wrap items-center gap-2.5">
+            {/* Real-time search */}
+            <div className="relative flex-1 min-w-[240px]">
+              <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+              <input
+                type="text"
+                placeholder="Search candidate name, email, or candidate ID..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] rounded-xl text-slate-800 dark:text-[#eff1f6] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ffa116]/30 focus:border-[#ffa116] transition"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-[#eff1f6]"
+                >
+                  <FiX size={13} />
+                </button>
+              )}
+            </div>
 
-            {/* 3. Difficulty Breakdown */}
-            {(activeTableTab === "difficulty") && (
-              <div id="difficulty-breakdown" className="asd-table-card">
-                <div className="asd-table-header">
-                  <div className="asd-title-row">
-                    <h3>Difficulty Breakdown</h3>
-                    <div className="asd-diff-badges">
-                      <span className="asd-diff-badge asd-diff-easy">Easy 4 Qs</span>
-                      <span className="asd-diff-badge asd-diff-medium">Medium 4 Qs</span>
-                      <span className="asd-diff-badge asd-diff-hard">Hard 2 Qs</span>
-                    </div>
-                  </div>
-                  <span className="asd-table-tag">candidate_problem_testcases</span>
-                </div>
-                <DifficultyTable data={results} />
-              </div>
-            )}
+            {/* Verdict Filter */}
+            <select
+              value={filters.verdict}
+              onChange={(e) => setFilters(f => ({ ...f, verdict: e.target.value }))}
+              className="px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] rounded-xl text-slate-800 dark:text-[#eff1f6] focus:outline-none focus:ring-2 focus:ring-[#ffa116]/30 focus:border-[#ffa116] transition cursor-pointer"
+            >
+              <option value="All">All Verdicts</option>
+              <option value="Good">Good (≥70%)</option>
+              <option value="Average">Average (40–69%)</option>
+              <option value="Below Average">Below Average (&lt;40%)</option>
+            </select>
 
-            {/* 4. Problem-wise Performance */}
-            {(activeTableTab === "problems") && (
-              <div id="problem-performance" className="asd-table-card">
-                <div className="asd-table-header">
-                  <h3>Problem-wise Performance</h3>
-                  <span className="asd-table-tag">candidate_problem_testcase_details</span>
-                </div>
-                <ProblemDetailTable data={results} />
-              </div>
-            )}
-          </>
-        )}
-      </main>
+            {/* Submission Type */}
+            <select
+              value={filters.submission_type}
+              onChange={(e) => setFilters(f => ({ ...f, submission_type: e.target.value }))}
+              className="px-3 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] rounded-xl text-slate-800 dark:text-[#eff1f6] focus:outline-none focus:ring-2 focus:ring-[#ffa116]/30 focus:border-[#ffa116] transition cursor-pointer"
+            >
+              <option value="All">All Submissions</option>
+              <option value="Manual">Manual Submit</option>
+              <option value="Auto">Auto (Time Up)</option>
+            </select>
 
-      {isModalOpen && (
-        <div style={modalBackdropStyle} role="dialog" aria-modal="true" aria-label="Candidate proctoring logs">
-          <div style={modalCardStyle}>
+            {/* Date Pickers */}
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] px-2.5 py-1.5 rounded-xl text-xs">
+              <FiCalendar className="text-slate-400" size={13} />
+              <input
+                type="date"
+                value={filters.date_from}
+                onChange={(e) => setFilters(f => ({ ...f, date_from: e.target.value }))}
+                className="bg-transparent text-slate-700 dark:text-[#eff1f6] focus:outline-none text-xs"
+                title="From Date"
+              />
+              <span className="text-slate-400">to</span>
+              <input
+                type="date"
+                value={filters.date_to}
+                onChange={(e) => setFilters(f => ({ ...f, date_to: e.target.value }))}
+                className="bg-transparent text-slate-700 dark:text-[#eff1f6] focus:outline-none text-xs"
+                title="To Date"
+              />
+            </div>
+
+            {/* Filter & Reset Buttons */}
             <button
               type="button"
-              onClick={handleCloseLogs}
-              style={modalCornerCloseButtonStyle}
-              aria-label="Close proctoring logs"
-              title="Close"
+              onClick={handleApplyFilter}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition cursor-pointer shadow-xs"
             >
-              <FiX />
+              <FiFilter size={13} />
+              <span>Apply</span>
             </button>
-            <div style={modalHeaderSectionStyle}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '16px', alignItems: 'flex-start' }}>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--color-text-subtle, #475569)' }}>
-                    Proctoring Logs
-                  </div>
-                  <h3 style={{ margin: '10px 0 0', fontSize: '24px', lineHeight: 1.2 }}>
-                    {selectedCandidateName || 'Candidate'}
-                  </h3>
-                  <p style={{ margin: '8px 0 0', fontSize: '13px', lineHeight: 1.5, color: 'var(--color-text-subtle, #64748b)' }}>
-                    Repeated identical violations are grouped into a single card.
-                  </p>
-                  <div style={modalSummaryRowStyle}>
-                    <span style={modalSummaryChipStyle}>
-                      Unique Logs
-                      <span style={modalSummaryValueStyle}>{modalUniqueCount}</span>
-                    </span>
-                    <span style={modalSummaryChipStyle}>
-                      Highest Count
-                      <span style={modalSummaryValueStyle}>{modalMaxCount}</span>
-                    </span>
-                  </div>
-                </div>
+
+            <button
+              type="button"
+              onClick={handleResetFilter}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 dark:text-[#b0b0b0] dark:hover:text-[#eff1f6] hover:bg-slate-100 dark:hover:bg-[#333333] rounded-xl transition cursor-pointer"
+              title="Reset all filters"
+            >
+              <FiRotateCcw size={13} />
+              <span>Reset</span>
+            </button>
+          </div>
+        </div>
+
+        {/* ── Clean & Aligned KPI Stat Cards (Interactive) ── */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+          {/* Card 1: Total Candidates */}
+          <div
+            onClick={() => handleStatCardClick('All')}
+            className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
+              activeVerdictTab === 'All'
+                ? 'border-blue-500 ring-2 ring-blue-500/20'
+                : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+                Total Candidates
+              </span>
+              <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
+                {stats.total}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+              <FiUsers size={18} />
+            </div>
+          </div>
+
+          {/* Card 2: Good */}
+          <div
+            onClick={() => handleStatCardClick('Good')}
+            className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
+              activeVerdictTab === 'Good'
+                ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+                : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+                Good (≥70%)
+              </span>
+              <span className="text-2xl font-black text-emerald-600 dark:text-[#2cbb5d] tracking-tight">
+                {stats.good}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-[#2cbb5d] flex items-center justify-center flex-shrink-0">
+              <FiCheckCircle size={18} />
+            </div>
+          </div>
+
+          {/* Card 3: Average */}
+          <div
+            onClick={() => handleStatCardClick('Average')}
+            className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
+              activeVerdictTab === 'Average'
+                ? 'border-amber-500 ring-2 ring-amber-500/20'
+                : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+                Average (40–69%)
+              </span>
+              <span className="text-2xl font-black text-amber-600 dark:text-[#ffb800] tracking-tight">
+                {stats.average}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-[#ffb800] flex items-center justify-center flex-shrink-0">
+              <FiMinusCircle size={18} />
+            </div>
+          </div>
+
+          {/* Card 4: Below Average */}
+          <div
+            onClick={() => handleStatCardClick('Below Average')}
+            className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
+              activeVerdictTab === 'Below Average'
+                ? 'border-rose-500 ring-2 ring-rose-500/20'
+                : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+                Below Average (&lt;40%)
+              </span>
+              <span className="text-2xl font-black text-rose-600 dark:text-[#ff375f] tracking-tight">
+                {stats.belowAverage}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-[#ff375f] flex items-center justify-center flex-shrink-0">
+              <FiXCircle size={18} />
+            </div>
+          </div>
+
+          {/* Card 5: Auto-Submitted */}
+          <div
+            onClick={() => handleStatCardClick('auto')}
+            className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
+              activeVerdictTab === 'auto'
+                ? 'border-purple-500 ring-2 ring-purple-500/20'
+                : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
+            }`}
+          >
+            <div className="space-y-0.5">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+                Auto-Submitted
+              </span>
+              <span className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
+                {stats.autoSubmitted}
+              </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+              <FiClock size={18} />
+            </div>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="py-20 bg-white dark:bg-[#282828] border border-slate-200/80 dark:border-[#3e3e3e] rounded-2xl text-center">
+            <Spinner label="Loading assessment records…" size={44} />
+          </div>
+        ) : (
+          <CandidatesAssessmentTable
+            data={displayedResults}
+            totalRawCount={results.length}
+            activeFilterLabel={activeFilterLabel}
+            onClearFilter={handleResetFilter}
+            onViewCode={handleOpenCodeReview}
+            onViewLogs={handleOpenLogs}
+          />
+        )}
+
+      </div>
+
+      {/* ── Proctoring Violation Logs Modal ── */}
+      {isLogModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+          <div className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-slate-100 dark:border-[#3e3e3e] flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffa116]">
+                  Proctoring Violations Log
+                </span>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-[#eff1f6]">
+                  {selectedCandidateName}
+                </h3>
               </div>
+              <button
+                type="button"
+                onClick={handleCloseLogs}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-[#eff1f6] rounded-xl hover:bg-slate-100 dark:hover:bg-[#333333] transition"
+              >
+                <FiX size={18} />
+              </button>
             </div>
 
-            <div style={modalBodyScrollAreaStyle}>
+            <div className="p-5 overflow-y-auto space-y-3 flex-1 text-xs">
               {selectedLogs.length === 0 ? (
-                <p style={{ margin: 0, fontSize: '15px', lineHeight: 1.7 }}>
-                  No violations detected.
-                </p>
+                <div className="py-8 text-center text-slate-500 dark:text-[#b0b0b0]">
+                  No violation events recorded. Session completed cleanly.
+                </div>
               ) : (
-                <div style={{ display: 'grid', gap: '12px' }}>
-                  {selectedLogs.map((log, index) => {
-                    const parsedCount = Number(log?.count)
-                    const count = Number.isFinite(parsedCount) && parsedCount > 0 ? parsedCount : 1
-                    const countText = count === 1 ? 'Occurred 1 time' : `Occurred ${count} times`
-
-                    return (
-                      <div
-                        key={log.id || `${log.timestamp}-${index}`}
-                        style={{
-                          ...logCardStyle,
-                          borderLeft: repeatedLogTheme.cardBorderAccent,
-                          boxShadow: repeatedLogTheme.cardShadow,
-                        }}
-                      >
-                        <div style={logCardTopRowStyle}>
-                          <div style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--color-text-subtle, #64748b)' }}>
-                            {formatLogTimestamp(log.timestamp)}
-                          </div>
+                selectedLogs.map((log: any, i: number) => {
+                  const count = Number(log.count) || 1
+                  return (
+                    <div
+                      key={log.id || `${log.timestamp}-${i}`}
+                      className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] flex items-start justify-between gap-3"
+                    >
+                      <div className="space-y-1">
+                        <div className="font-semibold text-slate-800 dark:text-[#eff1f6]">
+                          {log.message || log.violation_type || 'Flagged Event'}
                         </div>
-                        <div style={{ ...logCardBodyRowStyle, marginTop: '6px' }}>
-                          <div>
-                            <div style={{ fontSize: '14px', lineHeight: 1.6 }}>
-                              {log.message}
-                            </div>
-                            <div
-                              style={{
-                                ...logRepeatedNoteBaseStyle,
-                                color: repeatedLogTheme.noteColor,
-                              }}
-                            >
-                              {countText}
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              ...logCountPanelBaseStyle,
-                              background: repeatedLogTheme.panelBackground,
-                              border: repeatedLogTheme.panelBorder,
-                            }}
-                            title={`${count} events`}
-                          >
-                            <div style={{ textAlign: 'center', color: repeatedLogTheme.panelText }}>
-                              <div style={logCountPanelNumberStyle}>{count}</div>
-                              <div style={logCountPanelLabelStyle}>COUNT</div>
-                            </div>
-                          </div>
+                        <div className="text-[11px] text-slate-400 font-mono">
+                          {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Timestamp not recorded'}
                         </div>
                       </div>
-                    )
-                  })}
-                </div>
+                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold font-mono bg-rose-500/10 text-rose-500 border border-rose-500/20 flex-shrink-0">
+                        {count === 1 ? '1 event' : `${count} events`}
+                      </span>
+                    </div>
+                  )
+                })
               )}
+            </div>
+
+            <div className="p-4 border-t border-slate-100 dark:border-[#3e3e3e] flex justify-end bg-slate-50/50 dark:bg-[#2a2a2a]/40">
+              <button
+                type="button"
+                onClick={handleCloseLogs}
+                className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-[#eff1f6] bg-slate-200 dark:bg-[#333333] hover:bg-slate-300 dark:hover:bg-[#3e3e3e] rounded-xl transition"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Code Review Modal */}
+      {/* ── Code Review Modal ── */}
       <CodeReviewModal
         isOpen={isCodeReviewOpen}
         onClose={handleCloseCodeReview}
@@ -575,9 +531,3 @@ function AssessmentDashboard() {
     </AdminSidebarLayout>
   )
 }
-
-export default AssessmentDashboard
-
-
-
-

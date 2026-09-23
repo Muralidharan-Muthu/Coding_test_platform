@@ -6,7 +6,6 @@ import ThemeToggle from '../components/ui/ThemeToggle'
 import { PythonIcon, TimerIcon } from '../components/ui/Branding'
 import Spinner from '../components/ui/Spinner'
 import { FiArrowLeft, FiCheck } from 'react-icons/fi'
-import './SectionProblems.css'
 
 function PythonProblems() {
   const navigate = useNavigate()

@@ -8,7 +8,6 @@ import { PlatformLogoSmall, ClockIcon, ChecklistIcon, PythonIcon, DatabaseIcon }
 import Spinner from '../components/ui/Spinner'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import { FiCamera, FiShield, FiMonitor, FiLock, FiClock, FiRefreshCw, FiCode, FiEye } from 'react-icons/fi'
-import './CandidateDashboard.css'
 
 const webcamConstraints = { facingMode: 'user' }
 

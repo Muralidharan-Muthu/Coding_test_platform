@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getCandidates, sendOTPEmail } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
@@ -6,8 +6,6 @@ import { useToast } from '../components/ui/ToastProvider'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import { FiMail, FiEye, FiUsers } from 'react-icons/fi'
-import './CandidateOTP.css'
-import './SendMailPage.css'
 
 function SendMailPage() {
   const navigate = useNavigate()

@@ -7,7 +7,6 @@ import { ProctoringStatus } from './ProctoringStatus'
 import { CameraPreview } from './CameraPreview'
 import { useProctoring } from './useProctoring'
 import { submitExam, analyzeProctorFrame, applyExamPenalty } from '../../api'
-import './ExamProctoringShell.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
 const AI_SCAN_INTERVAL_MS = 20000 // Periodic background scan every 20s

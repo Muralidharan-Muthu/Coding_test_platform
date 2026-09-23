@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoOnly } from '../components/ui/Branding'
-import './LandingPage.css'
 
 function LandingPage() {
   const navigate = useNavigate()

@@ -26,7 +26,6 @@ import {
   FiCpu
 } from 'react-icons/fi'
 import { FormattedContent } from '../components/ui/TableRenderer'
-import './AdminCodingPage.css'
 import { formatTimeWithLabel } from '../utils/timeUtils'
 
 function AdminCodingPage() {

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { candidateLogin } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import Spinner from '../components/ui/Spinner'
-import './Login.css'
 
 function PracticeLogin() {
   const [email, setEmail] = useState('')

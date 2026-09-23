@@ -1,12 +1,12 @@
-﻿import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import ThemeToggle from '../ui/ThemeToggle'
 import { PlatformLogoSmall } from '../ui/Branding'
 import { getQuestionTypes, createQuestionType, deleteQuestionType } from '../../api'
 import { useToast } from '../ui/ToastProvider'
 import { useConfirm } from '../ui/ConfirmDialog'
+import { ADMIN_NAV_ITEMS } from '../../constants/data'
 import { FiPlus, FiX } from 'react-icons/fi'
-import './AdminSidebarLayout.css'
 
 const SIDEBAR_STATE_KEY = 'admin_sidebar_collapsed'
 
@@ -142,10 +142,36 @@ function getNavIcon(href = '', label = '') {
 function isNavItemActive(item, pathname, search = '') {
   if (!item || !item.href) return false
   const fullCurrent = pathname + (search || '')
-  if (Array.isArray(item.activePaths) && item.activePaths.some((path) => fullCurrent === path || pathname === path || pathname.startsWith(`${path}/`))) {
-    return true
+  const cleanPath = (pathname || '').replace(/\/+$/, '')
+  const cleanHref = (item.href || '').replace(/\/+$/, '')
+
+  // Specific check for Assessment Dashboard:
+  const labelLower = (item.label || '').toLowerCase()
+  if (labelLower.includes('assessment') || labelLower.includes('dashboard')) {
+    if (
+      cleanPath === '/admin/dashboard' ||
+      cleanPath === '/admin/dashboard/assessment' ||
+      cleanPath === '/dashboard/assessment' ||
+      cleanPath.startsWith('/admin/dashboard') ||
+      cleanPath.startsWith('/dashboard/assessment')
+    ) {
+      return true
+    }
   }
-  return pathname === item.href || pathname.startsWith(`${item.href}/`)
+
+  // Direct exact match
+  if (cleanPath === cleanHref) return true
+
+  // activePaths array check
+  if (Array.isArray(item.activePaths)) {
+    for (const path of item.activePaths) {
+      const cleanTarget = (path || '').replace(/\/+$/, '')
+      if (cleanPath === cleanTarget || fullCurrent === path) return true
+      if (cleanPath.startsWith(`${cleanTarget}/`)) return true
+    }
+  }
+
+  return cleanHref ? cleanPath.startsWith(`${cleanHref}/`) : false
 }
 
 function getGroupKey(item) {
@@ -213,7 +239,7 @@ function AddTypeGlobalModal({ onAdd, onClose }) {
 function AdminSidebarLayout({
   className = '',
   adminName = 'Admin User',
-  navItems = [],
+  navItems = ADMIN_NAV_ITEMS,
   sidebarExtra = null,
   sidebarExtraAfterHref = null,
   onNavigate = () => {},
@@ -273,12 +299,25 @@ function AdminSidebarLayout({
     }
   }
 
-  // Enrich navItems so that the Questions submenu ALWAYS has all dynamic types
+  // Enrich navItems so that all menu groups are complete, robust and styled consistently
   const enrichedNavItems = useMemo(() => {
     const customTypes = globalQuestionTypes.filter((t) => t.is_system === 0)
+    const itemsToUse = (Array.isArray(navItems) && navItems.length > 0) ? navItems : ADMIN_NAV_ITEMS
     
-    return navItems.map((item) => {
-      if ((item.label || '').toLowerCase().includes('questions') && Array.isArray(item.children)) {
+    return itemsToUse.map((item) => {
+      const label = (item.label || '').toLowerCase()
+
+      // 1. Assessment Dashboard: canonical href and activePaths
+      if (label.includes('assessment') || label.includes('dashboard')) {
+        return {
+          ...item,
+          href: '/admin/dashboard/assessment',
+          activePaths: ['/admin/dashboard', '/admin/dashboard/assessment', '/dashboard/assessment'],
+        }
+      }
+
+      // 2. Questions: ALWAYS ensure children with Python, SQL, MCQ, custom types, and Add Type
+      if (label.includes('question')) {
         const baseSystemChildren = [
           {
             label: 'Python Questions',
@@ -310,6 +349,8 @@ function AdminSidebarLayout({
 
         return {
           ...item,
+          href: item.href || '/admin/questions/python_questions',
+          activePaths: item.activePaths || ['/admin/questions'],
           children: [
             ...baseSystemChildren,
             ...customChildren,
@@ -320,6 +361,30 @@ function AdminSidebarLayout({
           ],
         }
       }
+
+      // 3. Manage Candidates: ALWAYS ensure children with Choose Test Type and Send Mail
+      if (label.includes('candidate') || label.includes('manage')) {
+        const candidateChildren = [
+          {
+            label: 'Choose Test Type',
+            href: '/admin/test-type',
+            activePaths: ['/admin/test-type'],
+          },
+          {
+            label: 'Send Mail',
+            href: '/admin/send-mail',
+            activePaths: ['/admin/send-mail'],
+          },
+        ]
+
+        return {
+          ...item,
+          href: item.href || '/admin/otp',
+          activePaths: item.activePaths || ['/admin/otp'],
+          children: candidateChildren,
+        }
+      }
+
       return item
     })
   }, [navItems, globalQuestionTypes])
@@ -432,7 +497,12 @@ function AdminSidebarLayout({
                     <button
                       type="button"
                       className={`admin-shell-nav-item admin-shell-nav-main${isActive ? ' active' : ''}`}
-                      onClick={() => item.href && onNavigate(item.href)}
+                      onClick={() => {
+                        if (item.href) onNavigate(item.href)
+                        if (hasChildren && !isExpanded) {
+                          toggleGroup(item)
+                        }
+                      }}
                       title={collapsed ? item.label : undefined}
                       aria-current={isActive ? 'page' : undefined}
                     >

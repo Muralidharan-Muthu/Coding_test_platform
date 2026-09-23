@@ -5,7 +5,6 @@ import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall, PythonIcon, DatabaseIcon, TimerIcon, ChecklistIcon } from '../components/ui/Branding'
 import { useToast } from '../components/ui/ToastProvider'
 import { clearCandidateSession } from '../utils/sessionStorage'
-import './TestStructure.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
 const EXAM_DURATION_SECONDS = 150 * 60

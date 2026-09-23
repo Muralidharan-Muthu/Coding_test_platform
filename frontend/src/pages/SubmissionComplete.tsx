@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { clearCandidateSession } from '../utils/sessionStorage'
 import { FiClock, FiCheckCircle, FiCheck, FiAward } from 'react-icons/fi'
-import './SubmissionComplete.css'
 
 function SubmissionComplete() {
   const navigate = useNavigate()

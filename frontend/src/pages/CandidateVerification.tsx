@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { PlatformLogoSmall } from '../components/ui/Branding'
 import { clearCandidateSession } from '../utils/sessionStorage'
-import './CandidateVerification.css'
 
 const webcamConstraints = {
   facingMode: 'user',

@@ -7,8 +7,6 @@ import { DatabaseIcon, PythonIcon, ChecklistIcon } from '../components/ui/Brandi
 import Spinner from '../components/ui/Spinner'
 import { clearPracticeSession } from '../utils/sessionStorage'
 import { FiCheckCircle, FiXCircle, FiHelpCircle, FiCode, FiTerminal } from 'react-icons/fi'
-import './SectionProblems.css'
-import './PracticeProblems.css'
 
 const TABS = [
   { key: 'python', label: 'Python', Icon: PythonIcon },

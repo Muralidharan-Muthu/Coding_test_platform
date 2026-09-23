@@ -55,8 +55,6 @@ import { useToast } from '../components/ui/ToastProvider'
 import { useConfirm } from '../components/ui/ConfirmDialog'
 import { FiPlus, FiX, FiCopy, FiCheck, FiCpu } from 'react-icons/fi'
 import Spinner from '../components/ui/Spinner'
-import './MCQQuestionsPage.css'
-import './QuestionsPage.css'
 import { formatTimeWithLabel, formatTimeHHMMSS } from '../utils/timeUtils'
 
 const DIFFICULTY_TABS = [

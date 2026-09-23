@@ -4,7 +4,6 @@ import api from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import { FiArrowRight, FiDatabase } from 'react-icons/fi'
 import { SiPython } from 'react-icons/si'
-import './ProblemList.css'
 
 function ProblemList() {
   const navigate = useNavigate()

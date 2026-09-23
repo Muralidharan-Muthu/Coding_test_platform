@@ -4,7 +4,6 @@ import { login } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import Spinner from '../components/ui/Spinner'
 import { FiArrowRight } from 'react-icons/fi'
-import './Login.css'
 
 function Login() {
   const [username, setUsername] = useState('')

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { adminLogin } from '../api'
 import ThemeToggle from '../components/ui/ThemeToggle'
 import Spinner from '../components/ui/Spinner'
-import './AdminLogin.css'
 
 function AdminLogin() {
   const [email, setEmail] = useState('muralidharanm@meptrasoftai.com')

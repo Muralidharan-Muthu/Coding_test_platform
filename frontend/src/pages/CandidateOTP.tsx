@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAllCandidates, deleteCandidate, getCandidates, importCandidates, updateCandidate } from '../api'
 import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
@@ -8,7 +8,6 @@ import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
 import * as XLSX from 'xlsx'
 import { FiDownload, FiPlus, FiUploadCloud, FiTrash2, FiEdit2, FiCheck, FiX, FiUsers } from 'react-icons/fi'
-import './CandidateOTP.css'
 
 const EMPTY_EDIT_FORM = { username: '', email: '' }
 

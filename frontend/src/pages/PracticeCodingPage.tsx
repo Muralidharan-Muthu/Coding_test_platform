@@ -23,7 +23,6 @@ import {
   FiCopy
 } from 'react-icons/fi'
 import { FormattedContent } from '../components/ui/TableRenderer'
-import './AdminCodingPage.css'
 
 function PracticeCodingPage() {
   const { problemId } = useParams()

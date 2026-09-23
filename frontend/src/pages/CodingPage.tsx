@@ -12,7 +12,6 @@ import { useProctoring } from '../components/Proctoring/useProctoring'
 
 import { ProctoringStatus } from '../components/Proctoring/ProctoringStatus'
 import { FormattedContent, parseSqlFromDdlDml } from '../components/ui/TableRenderer'
-import './CodingPage.css'
 
 const EXAM_SECURE_MODE_KEY = 'exam_secure_mode_started'
 const VIOLATION_ALERT_MS = 4000
