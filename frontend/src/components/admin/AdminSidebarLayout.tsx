@@ -516,9 +516,11 @@ function AdminSidebarLayout({
                       type="button"
                       className={`admin-shell-nav-item admin-shell-nav-main${isActive ? ' active' : ''}`}
                       onClick={() => {
-                        if (item.href) onNavigate(item.href)
-                        if (hasChildren && !isExpanded) {
+                        if (hasChildren) {
                           toggleGroup(item)
+                          if (item.href && !isActive) onNavigate(item.href)
+                        } else if (item.href) {
+                          onNavigate(item.href)
                         }
                       }}
                       title={collapsed ? item.label : undefined}
@@ -527,20 +529,17 @@ function AdminSidebarLayout({
                       <span className="admin-shell-nav-icon" aria-hidden="true">
                         {getNavIcon(item.href, item.label)}
                       </span>
-                      <span className="admin-shell-nav-label">{item.label}</span>
-                    </button>
+                      {!collapsed && <span className="admin-shell-nav-label">{item.label}</span>}
 
-                    {!collapsed && hasChildren && (
-                      <button
-                        type="button"
-                        className={`admin-shell-nav-toggle${isExpanded ? ' expanded' : ''}${isActive ? ' active' : ''}`}
-                        onClick={() => toggleGroup(item)}
-                        aria-label={isExpanded ? `Collapse ${item.label}` : `Expand ${item.label}`}
-                        aria-expanded={isExpanded}
-                      >
-                        <ChevronDownIcon />
-                      </button>
-                    )}
+                      {!collapsed && hasChildren && (
+                        <span
+                          className={`admin-shell-nav-arrow${isExpanded ? ' expanded' : ''}`}
+                          aria-hidden="true"
+                        >
+                          <ChevronDownIcon />
+                        </span>
+                      )}
+                    </button>
                   </div>
 
                   {!collapsed && hasChildren && isExpanded && (
@@ -557,9 +556,7 @@ function AdminSidebarLayout({
                                 else setShowGlobalAddType(true)
                               }}
                             >
-                              <span className="admin-shell-nav-icon" aria-hidden="true">
-                                <PlusIcon />
-                              </span>
+                              <span className="admin-shell-subnav-bullet"><PlusIcon /></span>
                               <span className="admin-shell-nav-label">Add Type</span>
                             </button>
                           )
@@ -570,13 +567,11 @@ function AdminSidebarLayout({
                           <div key={`${child.label}-${child.href || 'child'}`} className="admin-shell-subnav-row">
                             <button
                               type="button"
-                              className={`admin-shell-nav-item admin-shell-subnav-item${isChildActive ? ' active' : ''}`}
+                              className={`admin-shell-subnav-item${isChildActive ? ' active' : ''}`}
                               onClick={() => child.href && onNavigate(child.href, child)}
                               aria-current={isChildActive ? 'page' : undefined}
                             >
-                              <span className="admin-shell-nav-icon" aria-hidden="true">
-                                {getNavIcon(child.href, child.label)}
-                              </span>
+                              <span className="admin-shell-subnav-bullet" />
                               <span className="admin-shell-nav-label">{child.label}</span>
                             </button>
 
@@ -618,7 +613,7 @@ function AdminSidebarLayout({
             <span className="admin-shell-logout-icon" aria-hidden="true">
               <LogoutIcon />
             </span>
-            <span className="admin-shell-nav-label">Logout</span>
+            {!collapsed && <span className="admin-shell-nav-label">Logout</span>}
           </button>
         </div>
       </aside>

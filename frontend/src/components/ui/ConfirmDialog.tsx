@@ -66,19 +66,19 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
   const renderIcon = (type = 'danger') => {
     if (type === 'danger') return <FiTrash2 size={24} className="text-rose-500" />
     if (type === 'warning') return <FiAlertTriangle size={24} className="text-amber-500" />
-    return <FiInfo size={24} className="text-blue-500" />
+    return <FiInfo size={24} className="text-[#ffa116]" />
   }
 
   const getIconBg = (type = 'danger') => {
     if (type === 'danger') return 'bg-rose-500/10'
     if (type === 'warning') return 'bg-amber-500/10'
-    return 'bg-blue-500/10'
+    return 'bg-[#ffa116]/10'
   }
 
   const getConfirmBtnClass = (type = 'danger') => {
     if (type === 'danger') return 'bg-rose-600 hover:bg-rose-700 text-white'
     if (type === 'warning') return 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold'
-    return 'bg-blue-600 hover:bg-blue-700 text-white'
+    return 'bg-[#ffa116] hover:bg-[#e88f0a] text-slate-900 font-bold'
   }
 
   return (

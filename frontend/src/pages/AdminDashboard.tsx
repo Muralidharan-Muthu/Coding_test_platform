@@ -337,7 +337,7 @@ export default function AdminDashboard() {
             {generatedPythonProblems.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ffa116]" />
                   <h3 className="text-sm font-bold text-slate-900 dark:text-[#eff1f6]">
                     Python Coding Questions ({generatedPythonProblems.length})
                   </h3>

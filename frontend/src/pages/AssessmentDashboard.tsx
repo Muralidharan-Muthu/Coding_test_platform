@@ -58,6 +58,16 @@ export default function AssessmentDashboard() {
     loadResults()
   }, [navigate])
 
+  // Hide side scrollbars on assessment page while keeping natural scroll behavior
+  useEffect(() => {
+    document.documentElement.classList.add('no-scrollbar')
+    document.body.classList.add('no-scrollbar')
+    return () => {
+      document.documentElement.classList.remove('no-scrollbar')
+      document.body.classList.remove('no-scrollbar')
+    }
+  }, [])
+
   const loadResults = async (customFilters = filters) => {
     setLoading(true)
     try {
@@ -199,7 +209,7 @@ export default function AssessmentDashboard() {
 
   return (
     <AdminSidebarLayout
-      className="asd-page bg-slate-50/60 dark:bg-[#1a1a1a] min-h-screen text-slate-800 dark:text-[#eff1f6]"
+      className="asd-page no-scrollbar bg-slate-50/60 dark:bg-[#1a1a1a] min-h-screen text-slate-800 dark:text-[#eff1f6]"
       adminName={adminName || 'Admin User'}
       navItems={NAV_ITEMS}
       onNavigate={(href) => navigate(href)}
@@ -246,7 +256,7 @@ export default function AssessmentDashboard() {
               <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
               <input
                 type="text"
-                placeholder="Search candidate name, email, or candidate ID..."
+                placeholder="Search candidate name or email..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-8 py-2 text-xs sm:text-sm bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] rounded-xl text-slate-800 dark:text-[#eff1f6] placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ffa116]/30 focus:border-[#ffa116] transition"
@@ -309,7 +319,7 @@ export default function AssessmentDashboard() {
             <button
               type="button"
               onClick={handleApplyFilter}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-xl transition cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-900 bg-[#ffa116] hover:bg-[#e88f0a] active:bg-[#d97706] rounded-xl transition cursor-pointer shadow-xs"
             >
               <FiFilter size={13} />
               <span>Apply</span>
@@ -327,26 +337,30 @@ export default function AssessmentDashboard() {
           </div>
         </div>
 
-        {/* ── Clean & Aligned KPI Stat Cards (Interactive) ── */}
+        {/* ── Clean & Aligned KPI Stat Cards (Unified Palette) ── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
           {/* Card 1: Total Candidates */}
           <div
             onClick={() => handleStatCardClick('All')}
             className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
               activeVerdictTab === 'All'
-                ? 'border-blue-500 ring-2 ring-blue-500/20'
+                ? 'border-[#ffa116] ring-2 ring-[#ffa116]/20 bg-[#ffa116]/[0.02]'
                 : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
             }`}
           >
             <div className="space-y-0.5">
-              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#8a8a8a] block">
                 Total Candidates
               </span>
               <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
                 {stats.total}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              activeVerdictTab === 'All'
+                ? 'bg-[#ffa116]/15 text-[#ffa116]'
+                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a]'
+            }`}>
               <FiUsers size={18} />
             </div>
           </div>
@@ -356,19 +370,23 @@ export default function AssessmentDashboard() {
             onClick={() => handleStatCardClick('Good')}
             className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
               activeVerdictTab === 'Good'
-                ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+                ? 'border-[#ffa116] ring-2 ring-[#ffa116]/20 bg-[#ffa116]/[0.02]'
                 : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
             }`}
           >
             <div className="space-y-0.5">
-              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#8a8a8a] block">
                 Good (≥70%)
               </span>
-              <span className="text-2xl font-black text-emerald-600 dark:text-[#2cbb5d] tracking-tight">
+              <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
                 {stats.good}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-[#2cbb5d] flex items-center justify-center flex-shrink-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              activeVerdictTab === 'Good'
+                ? 'bg-[#ffa116]/15 text-[#ffa116]'
+                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a]'
+            }`}>
               <FiCheckCircle size={18} />
             </div>
           </div>
@@ -378,19 +396,23 @@ export default function AssessmentDashboard() {
             onClick={() => handleStatCardClick('Average')}
             className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
               activeVerdictTab === 'Average'
-                ? 'border-amber-500 ring-2 ring-amber-500/20'
+                ? 'border-[#ffa116] ring-2 ring-[#ffa116]/20 bg-[#ffa116]/[0.02]'
                 : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
             }`}
           >
             <div className="space-y-0.5">
-              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#8a8a8a] block">
                 Average (40–69%)
               </span>
-              <span className="text-2xl font-black text-amber-600 dark:text-[#ffb800] tracking-tight">
+              <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
                 {stats.average}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-[#ffb800] flex items-center justify-center flex-shrink-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              activeVerdictTab === 'Average'
+                ? 'bg-[#ffa116]/15 text-[#ffa116]'
+                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a]'
+            }`}>
               <FiMinusCircle size={18} />
             </div>
           </div>
@@ -400,19 +422,23 @@ export default function AssessmentDashboard() {
             onClick={() => handleStatCardClick('Below Average')}
             className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
               activeVerdictTab === 'Below Average'
-                ? 'border-rose-500 ring-2 ring-rose-500/20'
+                ? 'border-[#ffa116] ring-2 ring-[#ffa116]/20 bg-[#ffa116]/[0.02]'
                 : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
             }`}
           >
             <div className="space-y-0.5">
-              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#8a8a8a] block">
                 Below Average (&lt;40%)
               </span>
-              <span className="text-2xl font-black text-rose-600 dark:text-[#ff375f] tracking-tight">
+              <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
                 {stats.belowAverage}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-600 dark:text-[#ff375f] flex items-center justify-center flex-shrink-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              activeVerdictTab === 'Below Average'
+                ? 'bg-[#ffa116]/15 text-[#ffa116]'
+                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a]'
+            }`}>
               <FiXCircle size={18} />
             </div>
           </div>
@@ -422,19 +448,23 @@ export default function AssessmentDashboard() {
             onClick={() => handleStatCardClick('auto')}
             className={`p-4 rounded-2xl bg-white dark:bg-[#282828] border transition-all cursor-pointer shadow-sm flex items-center justify-between ${
               activeVerdictTab === 'auto'
-                ? 'border-purple-500 ring-2 ring-purple-500/20'
+                ? 'border-[#ffa116] ring-2 ring-[#ffa116]/20 bg-[#ffa116]/[0.02]'
                 : 'border-slate-200/80 dark:border-[#3e3e3e] hover:border-slate-300 dark:hover:border-[#4d4d4d]'
             }`}
           >
             <div className="space-y-0.5">
-              <span className="text-xs font-medium text-slate-500 dark:text-[#b0b0b0] block">
+              <span className="text-xs font-medium text-slate-500 dark:text-[#8a8a8a] block">
                 Auto-Submitted
               </span>
-              <span className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">
+              <span className="text-2xl font-black text-slate-900 dark:text-[#eff1f6] tracking-tight">
                 {stats.autoSubmitted}
               </span>
             </div>
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center flex-shrink-0">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition ${
+              activeVerdictTab === 'auto'
+                ? 'bg-[#ffa116]/15 text-[#ffa116]'
+                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a]'
+            }`}>
               <FiClock size={18} />
             </div>
           </div>

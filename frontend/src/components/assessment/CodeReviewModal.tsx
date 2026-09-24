@@ -95,7 +95,7 @@ export default function CodeReviewModal({ isOpen, onClose, candidate }: CodeRevi
               <button
                 type="button"
                 onClick={loadSubmissions}
-                className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-bold text-slate-900 bg-[#ffa116] hover:bg-[#e88f0a] rounded-xl transition cursor-pointer shadow-xs"
               >
                 Retry
               </button>
@@ -166,7 +166,7 @@ export default function CodeReviewModal({ isOpen, onClose, candidate }: CodeRevi
                           {selectedSubmission.problem_title || selectedSubmission.problem_id}
                         </h4>
                         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold uppercase bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/30">
                             {selectedSubmission.language}
                           </span>
                           {selectedSubmission.difficulty && (

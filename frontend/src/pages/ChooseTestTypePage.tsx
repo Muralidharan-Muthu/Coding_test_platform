@@ -419,7 +419,6 @@ function ChooseTestTypePage() {
                     <th>Username</th>
                     <th>Email</th>
                     <th style={{ minWidth: '280px' }}>Assigned Topics (Click to Toggle)</th>
-                    <th>Description</th>
                     <th style={{ width: '110px', textAlign: 'center' }}>Shuffle</th>
                     <th style={{ width: '90px', textAlign: 'center' }}>Save</th>
                   </tr>
@@ -428,10 +427,6 @@ function ChooseTestTypePage() {
                   {filteredCandidates.map((candidate, index) => {
                     const selected = candidateTopics[candidate.email] || ['python', 'sql']
                     const isCandidateShuffled = Boolean(shuffledState[candidate.email])
-                    const topicNames = selected.map(s => {
-                      const found = allTopics.find(t => t.slug === s)
-                      return found ? found.display_name : s
-                    })
 
                     return (
                       <tr key={candidate.email}>
@@ -466,11 +461,6 @@ function ChooseTestTypePage() {
                               All
                             </button>
                           </div>
-                        </td>
-                        <td className="ctt-desc-cell">
-                          <span className="ctt-topic-summary-tag">
-                            Candidate gets <strong>{topicNames.join(' + ')}</strong> question set ({selected.length} {selected.length === 1 ? 'topic' : 'topics'}).
-                          </span>
                         </td>
                         <td style={{ textAlign: 'center' }}>
                           <button

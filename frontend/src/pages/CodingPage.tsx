@@ -1028,7 +1028,7 @@ function CodingPage() {
                   type="button"
                   onClick={handleGoToNext}
                   disabled={loading}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm hover:shadow transition-all duration-150 cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-slate-900 bg-[#ffa116] hover:bg-[#e88f0a] active:bg-[#d97706] rounded-lg shadow-sm hover:shadow transition-all duration-150 cursor-pointer disabled:opacity-50"
                   title={nextQuestion ? `Proceed to ${nextQuestion.title}` : 'Next Question'}
                 >
                   <span>{nextQuestion?.isMcq ? 'Next: MCQ Round' : 'Next Question'}</span>

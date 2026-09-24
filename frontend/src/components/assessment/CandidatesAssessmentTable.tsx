@@ -134,23 +134,6 @@ export default function CandidatesAssessmentTable({
       .toUpperCase() || 'U'
   }
 
-  const getAvatarBg = (name = '') => {
-    const colors = [
-      'bg-blue-600',
-      'bg-emerald-600',
-      'bg-purple-600',
-      'bg-amber-600',
-      'bg-teal-600',
-      'bg-indigo-600',
-      'bg-rose-600'
-    ]
-    let hash = 0
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash)
-    }
-    return colors[Math.abs(hash) % colors.length]
-  }
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '—'
     try {
@@ -267,16 +250,16 @@ export default function CandidatesAssessmentTable({
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto no-scrollbar">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-100 dark:border-[#3e3e3e] bg-slate-50/70 dark:bg-[#1a1a1a]/80 text-[11px] font-semibold text-slate-400 dark:text-[#8a8a8a] uppercase tracking-wider select-none">
-                <th className="py-3.5 px-4 w-12 text-center">#</th>
+                <th className="py-4 px-4 w-12 text-center">#</th>
                 
                 {/* Candidate Name Sortable */}
                 <th
                   onClick={() => handleSort('name')}
-                  className="py-3.5 px-4 cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
+                  className="py-4 px-6 min-w-[220px] cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
                   title="Sort by Candidate Name"
                 >
                   <div className="flex items-center gap-1.5">
@@ -289,12 +272,10 @@ export default function CandidatesAssessmentTable({
                   </div>
                 </th>
 
-                <th className="py-3.5 px-4 w-28">ID</th>
-
                 {/* Date Sortable */}
                 <th
                   onClick={() => handleSort('date')}
-                  className="py-3.5 px-4 min-w-[170px] cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
+                  className="py-4 px-6 min-w-[190px] cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
                   title="Sort by Test Date"
                 >
                   <div className="flex items-center gap-1.5">
@@ -307,12 +288,12 @@ export default function CandidatesAssessmentTable({
                   </div>
                 </th>
 
-                <th className="py-3.5 px-4 min-w-[190px]">Section Scores</th>
+                <th className="py-4 px-6 min-w-[220px]">Section Scores</th>
 
                 {/* Score Sortable */}
                 <th
                   onClick={() => handleSort('score')}
-                  className="py-3.5 px-4 w-36 cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
+                  className="py-4 px-6 min-w-[150px] cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
                   title="Sort by Overall Score"
                 >
                   <div className="flex items-center gap-1.5">
@@ -325,12 +306,12 @@ export default function CandidatesAssessmentTable({
                   </div>
                 </th>
 
-                <th className="py-3.5 px-4 w-28">Verdict</th>
+                <th className="py-4 px-6 w-32">Verdict</th>
 
                 {/* Proctoring Sortable */}
                 <th
                   onClick={() => handleSort('trust')}
-                  className="py-3.5 px-4 w-36 cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
+                  className="py-4 px-6 min-w-[160px] cursor-pointer hover:text-slate-700 dark:hover:text-[#eff1f6] transition"
                   title="Sort by Proctoring Trust (find violations)"
                 >
                   <div className="flex items-center gap-1.5">
@@ -343,7 +324,7 @@ export default function CandidatesAssessmentTable({
                   </div>
                 </th>
 
-                <th className="py-3.5 px-4 w-32 text-center">Actions</th>
+                <th className="py-4 px-6 w-32 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-[#3e3e3e] text-xs sm:text-sm">
@@ -353,7 +334,6 @@ export default function CandidatesAssessmentTable({
                 const isExpanded = Boolean(expandedRows[rowKey])
                 const candidateName = row.user_name || row.name || 'Candidate'
                 const initials = getInitials(candidateName)
-                const avatarColor = getAvatarBg(candidateName)
 
                 const isAuto = (row.submission_type || '').toLowerCase() === 'auto'
                 const overallPercentage = Math.round(Number(row.overall_percentage) || 0)
@@ -374,14 +354,14 @@ export default function CandidatesAssessmentTable({
                   <React.Fragment key={rowKey}>
                     <tr className="hover:bg-slate-50/80 dark:hover:bg-[#333333]/40 transition-colors">
                       {/* Row index */}
-                      <td className="py-3.5 px-4 text-center font-mono text-xs text-slate-400">
+                      <td className="py-4 px-4 text-center font-mono text-xs text-slate-400">
                         {rowNumber}
                       </td>
 
                       {/* Candidate Avatar, Name & Email */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-6">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full ${avatarColor} text-white flex items-center justify-center font-bold text-xs flex-shrink-0 shadow-xs`}>
+                          <div className="w-8 h-8 rounded-lg bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/25 flex items-center justify-center font-bold text-xs flex-shrink-0">
                             {initials}
                           </div>
                           <div className="min-w-0">
@@ -395,15 +375,8 @@ export default function CandidatesAssessmentTable({
                         </div>
                       </td>
 
-                      {/* Candidate ID */}
-                      <td className="py-3.5 px-4">
-                        <span className="inline-block px-2 py-0.5 rounded-md font-mono text-xs font-semibold bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
-                          {row.candidate_id || `CAND_${idx + 1}`}
-                        </span>
-                      </td>
-
                       {/* Test Date & Duration */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-6">
                         <div className="space-y-1">
                           <div className="text-xs text-slate-700 dark:text-[#eff1f6] font-medium flex items-center gap-1.5">
                             <FiCalendar size={12} className="text-slate-400" />
@@ -413,10 +386,10 @@ export default function CandidatesAssessmentTable({
                             <FiClock size={11} className="text-slate-400" />
                             <span>{row.time_taken_minutes || row.duration || '—'} mins</span>
                             <span className="text-slate-400">•</span>
-                            <span className={`px-1.5 py-0.2 rounded font-medium text-[10px] ${
+                            <span className={`px-2 py-0.5 rounded text-[10px] ${
                               isAuto 
-                                ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30 font-semibold' 
-                                : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/30'
+                                ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/30 font-semibold' 
+                                : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
                             }`}>
                               {isAuto ? 'Auto !' : 'Manual'}
                             </span>
@@ -424,30 +397,30 @@ export default function CandidatesAssessmentTable({
                         </div>
                       </td>
 
-                      {/* Section Scores */}
-                      <td className="py-3.5 px-4">
-                        <div className="flex flex-wrap items-center gap-1.5">
+                      {/* Section Scores - Unified UI Design with Primary Accent */}
+                      <td className="py-4 px-6">
+                        <div className="flex flex-wrap items-center gap-2">
                           {row.python_score !== undefined && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-                              PY: {row.python_score}
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
+                              <span className="text-[#ffa116] font-semibold mr-1.5">PY</span> {row.python_score}
                             </span>
                           )}
                           {row.sql_score !== undefined && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                              SQL: {row.sql_score}
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
+                              <span className="text-[#ffa116] font-semibold mr-1.5">SQL</span> {row.sql_score}
                             </span>
                           )}
                           {row.mcq_score !== undefined && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                              MCQ: {row.mcq_score}
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
+                              <span className="text-[#ffa116] font-semibold mr-1.5">MCQ</span> {row.mcq_score}
                             </span>
                           )}
                         </div>
                       </td>
 
-                      {/* Overall Score */}
-                      <td className="py-3.5 px-4">
-                        <div className="space-y-1">
+                      {/* Overall Score - Clean Primary Progress Indicator */}
+                      <td className="py-4 px-6">
+                        <div className="space-y-1.5">
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-bold text-slate-800 dark:text-[#eff1f6]">
                               {overallPercentage}%
@@ -458,13 +431,7 @@ export default function CandidatesAssessmentTable({
                           </div>
                           <div className="w-full h-1.5 rounded-full bg-slate-100 dark:bg-[#1a1a1a] overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${
-                                overallPercentage >= 70
-                                  ? 'bg-[#2cbb5d]'
-                                  : overallPercentage >= 40
-                                  ? 'bg-[#ffb800]'
-                                  : 'bg-[#ff375f]'
-                              }`}
+                              className="h-full rounded-full bg-[#ffa116]"
                               style={{ width: `${Math.min(100, Math.max(0, overallPercentage))}%` }}
                             />
                           </div>
@@ -472,47 +439,43 @@ export default function CandidatesAssessmentTable({
                       </td>
 
                       {/* Verdict Badge */}
-                      <td className="py-3.5 px-4">
+                      <td className="py-4 px-6">
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
                           verdict.toLowerCase() === 'good'
-                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#2cbb5d] border border-emerald-500/30'
+                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/25'
                             : verdict.toLowerCase() === 'average'
-                            ? 'bg-amber-500/10 text-amber-600 dark:text-[#ffb800] border border-amber-500/30'
-                            : 'bg-rose-500/10 text-rose-600 dark:text-[#ff375f] border border-rose-500/30'
+                            ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/30'
+                            : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
                         }`}>
                           {verdict}
                         </span>
                       </td>
 
-                      {/* Proctoring Trust */}
-                      <td className="py-3.5 px-4">
+                      {/* Proctoring Trust - Clean Neutral Pill with Brand Shield */}
+                      <td className="py-4 px-6">
                         <button
                           type="button"
                           onClick={() => onViewLogs(logs, candidateName)}
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-medium border transition cursor-pointer ${
-                            violationCount === 0
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-[#2cbb5d] border-emerald-500/20 hover:bg-emerald-500/20'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-[#ffb800] border-amber-500/30 hover:bg-amber-500/20'
-                          }`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e] hover:border-[#ffa116]/50 hover:bg-slate-200/50 dark:hover:bg-[#282828] transition cursor-pointer"
                           title="Click to view proctoring violation logs"
                         >
-                          <FiShield size={12} />
-                          <span>{trustScore}/100</span>
+                          <FiShield size={12} className="text-[#ffa116]" />
+                          <span className="font-semibold">{trustScore}/100</span>
                           {violationCount > 0 && (
-                            <span className="font-bold text-[10px]">
-                              ({violationCount} {violationCount === 1 ? 'flag' : 'flags'})
+                            <span className="text-[10px] text-slate-400 dark:text-[#8a8a8a] font-mono">
+                              ({violationCount} flags)
                             </span>
                           )}
                         </button>
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3.5 px-4 text-center">
+                      <td className="py-4 px-6 text-center">
                         <div className="inline-flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => onViewCode(row)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-[#eff1f6] bg-slate-100 hover:bg-slate-200 dark:bg-[#333333] dark:hover:bg-[#3e3e3e] rounded-lg transition cursor-pointer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-[#eff1f6] bg-slate-100 hover:bg-slate-200 dark:bg-[#1a1a1a] dark:hover:bg-[#333333] border border-slate-200 dark:border-[#3e3e3e] rounded-lg transition cursor-pointer"
                             title="Inspect candidate submission code"
                           >
                             <FiCode size={12} className="text-slate-400" />
@@ -536,7 +499,7 @@ export default function CandidatesAssessmentTable({
                     {/* ── Inline Expandable Detail Drawer ── */}
                     {isExpanded && (
                       <tr className="bg-slate-50/80 dark:bg-[#1e1e1e] border-b border-slate-200 dark:border-[#3e3e3e]">
-                        <td colSpan={9} className="p-4 sm:p-5">
+                        <td colSpan={8} className="p-4 sm:p-5">
                           <div className="space-y-4">
                             <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#333333] pb-2">
                               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-[#8a8a8a] flex items-center gap-1.5">
@@ -580,8 +543,8 @@ export default function CandidatesAssessmentTable({
                                           isFullPass
                                             ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
                                             : passed > 0
-                                            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                            : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                            ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/20'
+                                            : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
                                         }`}>
                                           {Math.round((passed / total) * 100)}%
                                         </span>
@@ -599,7 +562,7 @@ export default function CandidatesAssessmentTable({
                             {/* Proctoring Highlights */}
                             <div className="pt-2 border-t border-slate-200 dark:border-[#333333] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                               <div className="flex items-center gap-2">
-                                <FiShield size={14} className={violationCount > 0 ? 'text-amber-500' : 'text-emerald-500'} />
+                                <FiShield size={14} className={violationCount > 0 ? 'text-[#ffa116]' : 'text-emerald-500'} />
                                 <span className="text-xs text-slate-700 dark:text-[#eff1f6]">
                                   {violationCount === 0 
                                     ? 'No proctoring violations recorded. Session integrity verified clean.' 
