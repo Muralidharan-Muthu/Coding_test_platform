@@ -115,8 +115,10 @@ export default function AssessmentDashboard() {
 
   const handleOpenCodeReview = (candidate: any) => {
     setCodeReviewCandidate({
+      id: candidate.id,
       name: candidate.user_name || candidate.name || 'Candidate',
-      email: candidate.email
+      email: candidate.email,
+      test_type: candidate.test_type,
     })
     setIsCodeReviewOpen(true)
   }
@@ -494,7 +496,7 @@ export default function AssessmentDashboard() {
             <div className="p-5 border-b border-slate-100 dark:border-[#3e3e3e] flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffa116]">
-                  Proctoring Violations Log
+                  Proctoring Summary
                 </span>
                 <h3 className="text-lg font-bold text-slate-900 dark:text-[#eff1f6]">
                   {selectedCandidateName}
@@ -509,33 +511,70 @@ export default function AssessmentDashboard() {
               </button>
             </div>
 
-            <div className="p-5 overflow-y-auto space-y-3 flex-1 text-xs">
+            <div className="p-5 overflow-y-auto space-y-4 flex-1 text-xs">
               {selectedLogs.length === 0 ? (
                 <div className="py-8 text-center text-slate-500 dark:text-[#b0b0b0]">
-                  No violation events recorded. Session completed cleanly.
+                  No proctoring issues were recorded. This session completed cleanly.
                 </div>
               ) : (
-                selectedLogs.map((log: any, i: number) => {
-                  const count = Number(log.count) || 1
-                  return (
-                    <div
-                      key={log.id || `${log.timestamp}-${i}`}
-                      className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] flex items-start justify-between gap-3"
-                    >
-                      <div className="space-y-1">
-                        <div className="font-semibold text-slate-800 dark:text-[#eff1f6]">
-                          {log.message || log.violation_type || 'Flagged Event'}
+                <>
+                  {/* Category summary header */}
+                  {(() => {
+                    const browserLogs = selectedLogs.filter((l: any) => l.category === 'browser')
+                    const faceLogs = selectedLogs.filter((l: any) => l.category === 'face')
+                    const headLogs = selectedLogs.filter((l: any) => l.category === 'head_pose')
+                    const otherLogs = selectedLogs.filter((l: any) => !['browser', 'face', 'head_pose'].includes(l.category))
+
+                    const renderSection = (title: string, logs: any[], color: string) => {
+                      if (logs.length === 0) return null
+                      return (
+                        <div key={title}>
+                          <span className={`text-[10px] font-bold uppercase tracking-wider ${color} block mb-2`}>
+                            {title}
+                          </span>
+                          <div className="space-y-2">
+                            {logs.map((log: any, i: number) => {
+                              const count = Number(log.count) || 1
+                              return (
+                                <div
+                                  key={`${log.violation_type}-${i}`}
+                                  className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#1a1a1a] border border-slate-200 dark:border-[#3e3e3e] flex items-start justify-between gap-3"
+                                >
+                                  <div className="space-y-1 min-w-0">
+                                    <div className="font-semibold text-slate-800 dark:text-[#eff1f6]">
+                                      {log.message || log.violation_type || 'Flagged Event'}
+                                    </div>
+                                    <div className="text-[11px] text-slate-400 font-mono">
+                                      {log.violation_type}
+                                    </div>
+                                  </div>
+                                  <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-bold font-mono flex-shrink-0 ${
+                                    log.category === 'browser'
+                                      ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
+                                      : log.category === 'face'
+                                      ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/20'
+                                      : 'bg-slate-100 dark:bg-[#282828] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
+                                  }`}>
+                                    {count === 1 ? '1 incident' : `${count} incidents`}
+                                  </span>
+                                </div>
+                              )
+                            })}
+                          </div>
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono">
-                          {log.timestamp ? new Date(log.timestamp).toLocaleString() : 'Timestamp not recorded'}
-                        </div>
-                      </div>
-                      <span className="px-2 py-0.5 rounded-md text-[11px] font-bold font-mono bg-rose-500/10 text-rose-500 border border-rose-500/20 flex-shrink-0">
-                        {count === 1 ? '1 event' : `${count} events`}
-                      </span>
-                    </div>
-                  )
-                })
+                      )
+                    }
+
+                    return (
+                      <>
+                        {renderSection('Browser & Integrity Events', browserLogs, 'text-rose-500')}
+                        {renderSection('Face & Camera Events', faceLogs, 'text-[#ffa116]')}
+                        {renderSection('Head Pose Events', headLogs, 'text-slate-500 dark:text-[#8a8a8a]')}
+                        {renderSection('Other Events', otherLogs, 'text-slate-500 dark:text-[#8a8a8a]')}
+                      </>
+                    )
+                  })()}
+                </>
               )}
             </div>
 

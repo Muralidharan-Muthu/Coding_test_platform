@@ -43,20 +43,32 @@ export default function CandidatesAssessmentTable({
   const [sortField, setSortField] = useState<SortField>('date')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
 
-  // Calculate proctoring trust score
-  const calculateTrustScore = (logs: any[] = []) => {
-    if (!Array.isArray(logs) || logs.length === 0) return 100
+  // Use backend-computed trust score from logs_summary when available
+  const getTrustScore = (row: any) => {
+    if (row.logs_summary?.trust_score !== undefined) return row.logs_summary.trust_score
+    // Fallback: compute from aggregated logs
+    const logs = Array.isArray(row.logs) ? row.logs : []
+    if (logs.length === 0) return 100
     let deductions = 0
-    logs.forEach(log => {
+    logs.forEach((log: any) => {
       const count = Number(log?.count) || 1
-      const type = String(log?.violation_type || '').toLowerCase()
+      const cat = String(log?.category || '').toLowerCase()
       let weight = 2
-      if (type.includes('phone') || type.includes('mobile')) weight = 25
-      else if (type.includes('multiple_face') || type.includes('external')) weight = 15
-      else if (type.includes('fullscreen') || type.includes('tab')) weight = 5
+      if (cat === 'browser') weight = 15
+      else if (cat === 'face') weight = 5
+      else if (cat === 'head_pose') weight = 3
       deductions += weight * count
     })
     return Math.max(0, 100 - deductions)
+  }
+
+  const getTrustVerdict = (row: any) => {
+    if (row.logs_summary?.trust_verdict) return row.logs_summary.trust_verdict
+    const score = getTrustScore(row)
+    if (score >= 100) return 'Clean'
+    if (score >= 80) return 'Minor Issues'
+    if (score >= 60) return 'Suspicious'
+    return 'High Risk'
   }
 
   // Handle column sorting
@@ -96,8 +108,8 @@ export default function CandidatesAssessmentTable({
           break
         }
         case 'trust': {
-          const trustA = calculateTrustScore(a.logs)
-          const trustB = calculateTrustScore(b.logs)
+          const trustA = getTrustScore(a)
+          const trustB = getTrustScore(b)
           comparison = trustA - trustB
           break
         }
@@ -134,22 +146,26 @@ export default function CandidatesAssessmentTable({
       .toUpperCase() || 'U'
   }
 
-  const formatDate = (dateStr?: string) => {
-    if (!dateStr) return '—'
+  const formatDatePart = (dateStr?: string) => {
+    if (!dateStr) return { date: '—', time: '' }
     try {
       const d = new Date(dateStr)
-      if (Number.isNaN(d.getTime())) return dateStr
-      return d.toLocaleString('en-IN', {
+      if (Number.isNaN(d.getTime())) return { date: dateStr, time: '' }
+      const datePart = d.toLocaleDateString('en-IN', {
         timeZone: 'Asia/Kolkata',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
+      })
+      const timePart = d.toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
       })
+      return { date: datePart, time: timePart }
     } catch {
-      return dateStr
+      return { date: dateStr, time: '' }
     }
   }
 
@@ -341,10 +357,12 @@ export default function CandidatesAssessmentTable({
                 const overallScore = Number(row.overall_score) || 0
                 const verdict = row.overall_verdict || (overallPercentage >= 70 ? 'Good' : overallPercentage >= 40 ? 'Average' : 'Below Average')
 
-                // Proctoring metrics
+                // Proctoring metrics (aggregated from backend)
                 const logs = Array.isArray(row.logs) ? row.logs : []
-                const violationCount = logs.reduce((acc: number, l: any) => acc + (Number(l?.count) || 1), 0)
-                const trustScore = calculateTrustScore(logs)
+                const logsSummary = row.logs_summary || {}
+                const totalSignificant = logsSummary.total_significant ?? logs.reduce((acc: number, l: any) => acc + (Number(l?.count) || 1), 0)
+                const trustScore = getTrustScore(row)
+                const trustVerdict = getTrustVerdict(row)
 
                 // Problem testcases
                 const problemTestcases = row.problem_testcases || {}
@@ -375,16 +393,28 @@ export default function CandidatesAssessmentTable({
                         </div>
                       </td>
 
-                      {/* Test Date & Duration */}
-                      <td className="py-4 px-6">
-                        <div className="space-y-1">
-                          <div className="text-xs text-slate-700 dark:text-[#eff1f6] font-medium flex items-center gap-1.5">
-                            <FiCalendar size={12} className="text-slate-400" />
-                            <span>{formatDate(row.test_date || row.created_at || row.submit_time)}</span>
-                          </div>
+                      {/* Test Date & Duration — Full spacing */}
+                      <td className="py-4 px-6 whitespace-nowrap">
+                        <div className="space-y-1.5">
+                          {(() => {
+                            const { date, time } = formatDatePart(row.test_date || row.created_at || row.submit_time)
+                            return (
+                              <>
+                                <div className="text-xs text-slate-700 dark:text-[#eff1f6] font-medium flex items-center gap-1.5">
+                                  <FiCalendar size={12} className="text-slate-400 flex-shrink-0" />
+                                  <span>{date}</span>
+                                </div>
+                                {time && (
+                                  <div className="text-[11px] text-slate-500 dark:text-[#8a8a8a] pl-[18px]">
+                                    {time}
+                                  </div>
+                                )}
+                              </>
+                            )
+                          })()}
                           <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-[#8a8a8a]">
-                            <FiClock size={11} className="text-slate-400" />
-                            <span>{row.time_taken_minutes || row.duration || '—'} mins</span>
+                            <FiClock size={11} className="text-slate-400 flex-shrink-0" />
+                            <span>{row.time_taken_min || row.time_taken_minutes || row.duration || '—'} mins</span>
                             <span className="text-slate-400">•</span>
                             <span className={`px-2 py-0.5 rounded text-[10px] ${
                               isAuto 
@@ -397,22 +427,28 @@ export default function CandidatesAssessmentTable({
                         </div>
                       </td>
 
-                      {/* Section Scores - Unified UI Design with Primary Accent */}
+                      {/* Section Scores — Only show sections the candidate attended */}
                       <td className="py-4 px-6">
                         <div className="flex flex-wrap items-center gap-2">
-                          {row.python_score !== undefined && (
+                          {Number(row.python_questions) > 0 && (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
-                              <span className="text-[#ffa116] font-semibold mr-1.5">PY</span> {row.python_score}
+                              <span className="text-[#ffa116] font-semibold mr-1.5">PY</span> {Math.round(Number(row.python_score) || 0)}
                             </span>
                           )}
-                          {row.sql_score !== undefined && (
+                          {Number(row.sql_questions) > 0 && (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
-                              <span className="text-[#ffa116] font-semibold mr-1.5">SQL</span> {row.sql_score}
+                              <span className="text-[#ffa116] font-semibold mr-1.5">SQL</span> {Math.round(Number(row.sql_score) || 0)}
                             </span>
                           )}
-                          {row.mcq_score !== undefined && (
+                          {Number(row.mcq_questions) > 0 && (
                             <span className="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-mono bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e]">
-                              <span className="text-[#ffa116] font-semibold mr-1.5">MCQ</span> {row.mcq_score}
+                              <span className="text-[#ffa116] font-semibold mr-1.5">MCQ</span> {Math.round(Number(row.mcq_score) || 0)}
+                            </span>
+                          )}
+                          {/* If all question counts are 0, show the overall */}
+                          {Number(row.python_questions) === 0 && Number(row.sql_questions) === 0 && Number(row.mcq_questions) === 0 && (
+                            <span className="text-[11px] text-slate-400 dark:text-[#8a8a8a]">
+                              Score: {Math.round(Number(row.overall_score) || 0)}
                             </span>
                           )}
                         </div>
@@ -451,19 +487,29 @@ export default function CandidatesAssessmentTable({
                         </span>
                       </td>
 
-                      {/* Proctoring Trust - Clean Neutral Pill with Brand Shield */}
+                      {/* Proctoring — Trust Verdict (admin-friendly) */}
                       <td className="py-4 px-6">
                         <button
                           type="button"
                           onClick={() => onViewLogs(logs, candidateName)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-medium bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e] hover:border-[#ffa116]/50 hover:bg-slate-200/50 dark:hover:bg-[#282828] transition cursor-pointer"
-                          title="Click to view proctoring violation logs"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-[#eff1f6] border border-slate-200 dark:border-[#3e3e3e] hover:border-[#ffa116]/50 hover:bg-slate-200/50 dark:hover:bg-[#282828] transition cursor-pointer"
+                          title={`Trust ${trustScore}/100 — Click for details`}
                         >
-                          <FiShield size={12} className="text-[#ffa116]" />
-                          <span className="font-semibold">{trustScore}/100</span>
-                          {violationCount > 0 && (
-                            <span className="text-[10px] text-slate-400 dark:text-[#8a8a8a] font-mono">
-                              ({violationCount} flags)
+                          <FiShield size={12} className={`flex-shrink-0 ${
+                            trustVerdict === 'Clean' ? 'text-emerald-500' :
+                            trustVerdict === 'Minor Issues' ? 'text-[#ffa116]' :
+                            trustVerdict === 'Suspicious' ? 'text-orange-500' :
+                            'text-rose-500'
+                          }`} />
+                          <span className={`font-semibold ${
+                            trustVerdict === 'Clean' ? 'text-emerald-600 dark:text-emerald-400' :
+                            trustVerdict === 'Minor Issues' ? 'text-[#ffa116]' :
+                            trustVerdict === 'Suspicious' ? 'text-orange-600 dark:text-orange-400' :
+                            'text-rose-600 dark:text-rose-400'
+                          }`}>{trustVerdict}</span>
+                          {totalSignificant > 0 && (
+                            <span className="text-[10px] text-slate-400 dark:text-[#8a8a8a]">
+                              {totalSignificant} {totalSignificant === 1 ? 'issue' : 'issues'}
                             </span>
                           )}
                         </button>
@@ -472,15 +518,20 @@ export default function CandidatesAssessmentTable({
                       {/* Actions */}
                       <td className="py-4 px-6 text-center">
                         <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => onViewCode(row)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-[#eff1f6] bg-slate-100 hover:bg-slate-200 dark:bg-[#1a1a1a] dark:hover:bg-[#333333] border border-slate-200 dark:border-[#3e3e3e] rounded-lg transition cursor-pointer"
-                            title="Inspect candidate submission code"
-                          >
-                            <FiCode size={12} className="text-slate-400" />
-                            <span>Code</span>
-                          </button>
+                          {(() => {
+                            const isMcqOnly = (Number(row.mcq_questions) > 0 && Number(row.python_questions || 0) === 0 && Number(row.sql_questions || 0) === 0) || row.test_type === 'mcq'
+                            return (
+                              <button
+                                type="button"
+                                onClick={() => onViewCode(row)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-slate-700 dark:text-[#eff1f6] bg-slate-100 hover:bg-slate-200 dark:bg-[#1a1a1a] dark:hover:bg-[#333333] border border-slate-200 dark:border-[#3e3e3e] rounded-lg transition cursor-pointer"
+                                title={isMcqOnly ? 'Inspect candidate MCQ questions and answers' : 'Inspect candidate submission code'}
+                              >
+                                <FiCode size={12} className="text-slate-400" />
+                                <span>{isMcqOnly ? 'MCQ' : 'Code'}</span>
+                              </button>
+                            )
+                          })()}
 
                           <button
                             type="button"
@@ -511,7 +562,7 @@ export default function CandidatesAssessmentTable({
                                 onClick={() => onViewCode(row)}
                                 className="text-xs font-medium text-[#ffa116] hover:underline"
                               >
-                                Open Code Review Modal →
+                                Open Review Modal →
                               </button>
                             </div>
 
@@ -559,15 +610,22 @@ export default function CandidatesAssessmentTable({
                               )}
                             </div>
 
-                            {/* Proctoring Highlights */}
+                            {/* Proctoring Summary */}
                             <div className="pt-2 border-t border-slate-200 dark:border-[#333333] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div className="flex items-center gap-2">
-                                <FiShield size={14} className={violationCount > 0 ? 'text-[#ffa116]' : 'text-emerald-500'} />
-                                <span className="text-xs text-slate-700 dark:text-[#eff1f6]">
-                                  {violationCount === 0 
-                                    ? 'No proctoring violations recorded. Session integrity verified clean.' 
-                                    : `${violationCount} proctoring violation event(s) recorded during this examination.`}
-                                </span>
+                              <div className="flex items-center gap-3">
+                                <FiShield size={14} className={trustVerdict === 'Clean' ? 'text-emerald-500' : 'text-[#ffa116]'} />
+                                <div className="text-xs text-slate-700 dark:text-[#eff1f6]">
+                                  {trustVerdict === 'Clean' ? (
+                                    <span>No proctoring issues recorded. Session integrity verified clean.</span>
+                                  ) : (
+                                    <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                      <span className="font-semibold">Verdict: {trustVerdict}</span>
+                                      {logsSummary.browser_violations > 0 && <span>{logsSummary.browser_violations} browser {logsSummary.browser_violations === 1 ? 'event' : 'events'}</span>}
+                                      {logsSummary.face_violations > 0 && <span>{logsSummary.face_violations} face {logsSummary.face_violations === 1 ? 'event' : 'events'}</span>}
+                                      {logsSummary.head_turn_violations > 0 && <span>{logsSummary.head_turn_violations} head pose {logsSummary.head_turn_violations === 1 ? 'event' : 'events'}</span>}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                               {logs.length > 0 && (
                                 <button
@@ -575,7 +633,7 @@ export default function CandidatesAssessmentTable({
                                   onClick={() => onViewLogs(logs, candidateName)}
                                   className="text-xs font-semibold text-[#ffa116] hover:underline cursor-pointer"
                                 >
-                                  View Proctoring Violation Logs →
+                                  View Details →
                                 </button>
                               )}
                             </div>

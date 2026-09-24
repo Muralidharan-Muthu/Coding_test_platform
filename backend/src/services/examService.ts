@@ -368,19 +368,19 @@ export async function submitFullExam(
       });
     }
 
-    // 3. Calculate Section and Overall Scores
+    // 3. Determine candidate's assigned test_type and allowed sections
+    const candidateInfo = await prisma.candidateOtp.findFirst({
+      where: { email: emailClean },
+      orderBy: { id: 'desc' }
+    });
+    const candidateTestType = (candidateInfo?.test_type || session?.test_type || 'both').toLowerCase();
+    const allowedSections = new Set(getTestTypeSections(candidateTestType));
+
+    // Calculate Section and Overall Scores
     let assignedProblems = await prisma.candidateSelectedExamProblem.findMany({
       where: { candidate_email: emailClean },
       orderBy: { saved_at: 'asc' }
     });
-
-    const submissions = await prisma.submission.findMany({
-      where: { user_id: user.id },
-      orderBy: { id: 'desc' }
-    });
-
-    const mcqQuestions = await prisma.mCQQuestion.findMany({});
-    const mcqMap = new Map(mcqQuestions.map(m => [m.id, m]));
 
     // If no candidate-specific problems, check global selected exam problems
     if (assignedProblems.length === 0) {
@@ -389,6 +389,26 @@ export async function submitFullExam(
         assignedProblems = globalProblems as any;
       }
     }
+
+    // Filter assigned problems to strictly match the candidate's allowed sections
+    assignedProblems = assignedProblems.filter(p => allowedSections.has((p.language || 'python').toLowerCase()));
+
+    // Only query submissions created during this exam session attempt (and only if coding is part of the test)
+    const hasCodingSection = allowedSections.has('python') || allowedSections.has('sql');
+    const submissions = hasCodingSection
+      ? await prisma.submission.findMany({
+          where: {
+            user_id: user.id,
+            ...(attempt ? { created_at: { gte: attempt.start_time.toISOString() } } : {}),
+          },
+          orderBy: { id: 'desc' }
+        })
+      : [];
+
+    const mcqQuestions = allowedSections.has('mcq')
+      ? await prisma.mCQQuestion.findMany({})
+      : [];
+    const mcqMap = new Map(mcqQuestions.map(m => [m.id, m]));
 
     let pyCount = 0;
     let sqlCount = 0;
@@ -407,7 +427,7 @@ export async function submitFullExam(
       const pMarks = Number(p.marks) || 10;
       maxPossibleScore += pMarks;
 
-      if (lang === 'python') {
+      if (lang === 'python' && allowedSections.has('python')) {
         pyCount++;
         const sub = submissions.find(s => s.problem_id === p.problem_id);
         const ratio = sub ? (sub.passed_tests / (sub.total_tests || 1)) : 0;
@@ -415,7 +435,7 @@ export async function submitFullExam(
         pyScoreSum += pts;
         problemScores[p.problem_id] = pts;
         problemTestcases[p.problem_id] = sub ? `${sub.passed_tests}/${sub.total_tests}` : `0/0`;
-      } else if (lang === 'sql') {
+      } else if (lang === 'sql' && allowedSections.has('sql')) {
         sqlCount++;
         const sub = submissions.find(s => s.problem_id === p.problem_id);
         const ratio = sub ? (sub.passed_tests / (sub.total_tests || 1)) : 0;
@@ -423,7 +443,7 @@ export async function submitFullExam(
         sqlScoreSum += pts;
         problemScores[p.problem_id] = pts;
         problemTestcases[p.problem_id] = sub ? `${sub.passed_tests}/${sub.total_tests}` : `0/0`;
-      } else if (lang === 'mcq') {
+      } else if (lang === 'mcq' && allowedSections.has('mcq')) {
         mcqCount++;
         const mcqQ = mcqMap.get(p.problem_id);
         const candAns = existingAnswers[p.problem_id];
@@ -443,27 +463,33 @@ export async function submitFullExam(
       }
     }
 
-    // Also include any submissions that the candidate solved which were not in assignedProblems
-    for (const sub of submissions) {
-      if (!evaluatedIds.has(sub.problem_id)) {
-        evaluatedIds.add(sub.problem_id);
-        const pyProb = await prisma.pythonProblem.findUnique({ where: { id: sub.problem_id } });
-        const sqlProb = !pyProb ? await prisma.sqlProblem.findUnique({ where: { id: sub.problem_id } }) : null;
-        const pMarks = pyProb?.marks || sqlProb?.marks || 10;
-        const lang = pyProb ? 'python' : (sqlProb ? 'sql' : 'python');
-        maxPossibleScore += pMarks;
+    // Only include additional submissions if candidate's test type includes coding
+    if (hasCodingSection) {
+      for (const sub of submissions) {
+        if (!evaluatedIds.has(sub.problem_id)) {
+          const pyProb = await prisma.pythonProblem.findUnique({ where: { id: sub.problem_id } });
+          const sqlProb = !pyProb ? await prisma.sqlProblem.findUnique({ where: { id: sub.problem_id } }) : null;
+          if (pyProb && !allowedSections.has('python')) continue;
+          if (sqlProb && !allowedSections.has('sql')) continue;
+          if (!pyProb && !sqlProb) continue;
 
-        const ratio = sub.total_tests > 0 ? (sub.passed_tests / sub.total_tests) : 0;
-        const pts = Math.round(ratio * pMarks * 100) / 100;
-        if (lang === 'python') {
-          pyCount++;
-          pyScoreSum += pts;
-        } else {
-          sqlCount++;
-          sqlScoreSum += pts;
+          evaluatedIds.add(sub.problem_id);
+          const pMarks = pyProb?.marks || sqlProb?.marks || 10;
+          const lang = pyProb ? 'python' : 'sql';
+          maxPossibleScore += pMarks;
+
+          const ratio = sub.total_tests > 0 ? (sub.passed_tests / sub.total_tests) : 0;
+          const pts = Math.round(ratio * pMarks * 100) / 100;
+          if (lang === 'python') {
+            pyCount++;
+            pyScoreSum += pts;
+          } else {
+            sqlCount++;
+            sqlScoreSum += pts;
+          }
+          problemScores[sub.problem_id] = pts;
+          problemTestcases[sub.problem_id] = `${sub.passed_tests}/${sub.total_tests}`;
         }
-        problemScores[sub.problem_id] = pts;
-        problemTestcases[sub.problem_id] = `${sub.passed_tests}/${sub.total_tests}`;
       }
     }
 

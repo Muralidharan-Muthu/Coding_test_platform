@@ -296,9 +296,15 @@ export const sendOtpEmailToCandidate = async (username: string, email: string) =
             await transporter.sendMail({
                 from: `"Meptrasoft AI Technologies" <${process.env.SMTP_USERNAME}>`,
                 to: email,
-                subject: '🔒 Your Meptrasoft Assessment Access Pass & Security OTP',
+                subject: 'Meptrasoft Assessment Access Pass and Security OTP',
                 attachments: [{ filename: 'meptrasoft-logo.png', path: require('path').join(process.cwd(), '../frontend/public/assets/meptrasoft-logo.png'), cid: 'meptrasoft_logo' }],
-                html: generateCandidateOtpEmailHtml({ username, email, otpCode, frontendUrl })
+                html: generateCandidateOtpEmailHtml({
+                    username,
+                    email,
+                    otpCode,
+                    frontendUrl,
+                    testType: (candidate as any)?.test_type || undefined
+                })
             });
             console.log(`[SMTP] Successfully sent OTP email to ${email}`);
             delivered = true;

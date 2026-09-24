@@ -112,8 +112,11 @@ export const initSampleData = async () => {
  * Get all submissions for a specific candidate
  * @param {string} email - Candidate's email address
  */
-export const getCandidateSubmissions = async (email) => {
-  const response = await api.get(`/api/candidates/${encodeURIComponent(email)}/submissions`)
+export const getCandidateSubmissions = async (email, assessmentId) => {
+  const url = assessmentId
+    ? `/api/candidates/${encodeURIComponent(email)}/submissions?assessment_id=${encodeURIComponent(assessmentId)}`
+    : `/api/candidates/${encodeURIComponent(email)}/submissions`
+  const response = await api.get(url)
   return response.data
 }
 
