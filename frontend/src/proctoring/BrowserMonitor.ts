@@ -28,6 +28,12 @@ export class BrowserMonitor {
   #isFullscreen = false
   /** @type {string|null} Selector for the code editor container to exempt from clipboard blocking */
   #editorSelector = null
+  /** @type {number} Timestamp when monitoring started */
+  #startedAt = 0
+  /** @type {number} Timestamp of the last TAB_SWITCH event */
+  #lastTabSwitchAt = 0
+  /** @type {number|null} Timer ID for debouncing window blur */
+  #blurTimeout = null
 
   /**
    * @param {object} [options]
@@ -46,11 +52,25 @@ export class BrowserMonitor {
   }
 
   /**
+   * Check if the exam is actively running (not submitted, not in initial warmup).
+   * @returns {boolean}
+   */
+  #isExamActive() {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') return true
+    // If exam was submitted or test ended, completely suppress all integrity events
+    if (localStorage.getItem('exam_submitted') === 'true') return false
+    // Warmup period: ignore browser focus / fullscreen flickers during the first 4 seconds of start
+    if (this.#startedAt > 0 && Date.now() - this.#startedAt < 4000) return false
+    return true
+  }
+
+  /**
    * Start monitoring browser events.
    */
   start() {
     if (this.#isRunning) return
     this.#isRunning = true
+    this.#startedAt = Date.now()
     this.#isFullscreen = Boolean(document.fullscreenElement)
     this.#abortController = new AbortController()
     const signal = this.#abortController.signal
@@ -88,6 +108,10 @@ export class BrowserMonitor {
   stop() {
     if (!this.#isRunning) return
     this.#isRunning = false
+    if (this.#blurTimeout) {
+      clearTimeout(this.#blurTimeout)
+      this.#blurTimeout = null
+    }
     document.body.classList.remove('window-blurred')
     if (this.#abortController) {
       this.#abortController.abort()
@@ -122,7 +146,7 @@ export class BrowserMonitor {
    * @param {Record<string, unknown>} [metadata]
    */
   #emit(type, message = '', metadata = {}) {
-    if (!this.#onEvent) return
+    if (!this.#onEvent || !this.#isRunning || !this.#isExamActive()) return
     this.#onEvent({
       type,
       timestamp: Date.now(),
@@ -143,7 +167,13 @@ export class BrowserMonitor {
   }
 
   #handleVisibility = () => {
+    if (!this.#isRunning || !this.#isExamActive()) return
     if (document.hidden) {
+      this.#lastTabSwitchAt = Date.now()
+      if (this.#blurTimeout) {
+        clearTimeout(this.#blurTimeout)
+        this.#blurTimeout = null
+      }
       this.#clearClipboard()
       document.body.classList.add('window-blurred')
       this.#emit('TAB_SWITCH', 'Tab switch detected. Candidate left the exam tab.')
@@ -153,19 +183,41 @@ export class BrowserMonitor {
   }
 
   #handleWindowBlur = () => {
+    if (!this.#isRunning || !this.#isExamActive()) return
+    // If TAB_SWITCH was just emitted within 2s, don't duplicate with WINDOW_BLUR
+    if (Date.now() - this.#lastTabSwitchAt < 2000) return
+    if (document.hidden) return // Already captured as tab switch
+
     this.#clearClipboard()
     document.body.classList.add('window-blurred')
-    this.#emit('WINDOW_BLUR', 'Window lost focus. Anti-screenshot shield activated.')
+
+    // Debounce micro-blurs: only emit if window stays unfocused for >= 1200ms
+    if (this.#blurTimeout) clearTimeout(this.#blurTimeout)
+    this.#blurTimeout = window.setTimeout(() => {
+      if (!this.#isRunning || !this.#isExamActive()) return
+      if (!document.hasFocus()) {
+        this.#emit('WINDOW_BLUR', 'Browser window lost focus.')
+      }
+      this.#blurTimeout = null
+    }, 1200)
   }
 
   #handleWindowFocus = () => {
+    if (this.#blurTimeout) {
+      clearTimeout(this.#blurTimeout)
+      this.#blurTimeout = null
+    }
     document.body.classList.remove('window-blurred')
-    this.#emit('WINDOW_FOCUS', 'Window regained focus.')
+    if (this.#isRunning && this.#isExamActive()) {
+      this.#emit('WINDOW_FOCUS', 'Window regained focus.')
+    }
   }
 
   #handleFullscreen = () => {
     const wasFullscreen = this.#isFullscreen
     this.#isFullscreen = Boolean(document.fullscreenElement)
+
+    if (!this.#isRunning || !this.#isExamActive()) return
 
     if (wasFullscreen && !this.#isFullscreen) {
       this.#emit('FULLSCREEN_EXIT', 'Fullscreen mode was exited during the exam.')

@@ -1,4 +1,4 @@
-﻿import { Router, Request, Response } from 'express';
+import { Router, Request, Response } from 'express';
 import prisma from '../db/prisma';
 import {
   executePython,
@@ -14,18 +14,18 @@ const router = Router();
 
 // Helper to look up Python problem
 async function getPythonProblem(id: string) {
-  let problem: any = await prisma.pythonProblem.findUnique({ where: { id } });
+  let problem: any = await getProblemById(id);
   if (!problem) {
-    problem = await prisma.customProblem.findUnique({ where: { id } });
+    problem = await prisma.pythonProblem.findUnique({ where: { id } });
   }
   return problem;
 }
 
 // Helper to look up SQL problem
 async function getSqlProblem(id: string) {
-  let problem: any = await prisma.sqlProblem.findUnique({ where: { id } });
+  let problem: any = await getProblemById(id);
   if (!problem) {
-    problem = await prisma.customProblem.findUnique({ where: { id } });
+    problem = await prisma.sqlProblem.findUnique({ where: { id } });
   }
   return problem;
 }

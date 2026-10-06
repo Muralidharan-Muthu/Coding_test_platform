@@ -79,6 +79,7 @@ function App() {
         <Route path="/admin/dashboard/assessment" element={<AssessmentDashboard />} />
         <Route path="/dashboard/assessment" element={<Navigate to="/admin/dashboard/assessment" replace />} />
         <Route path="/admin/otp" element={<CandidateOTP />} />
+        <Route path="/admin/add-candidate" element={<Navigate to="/admin/otp" replace />} />
         <Route path="/admin/test-type" element={<ChooseTestTypePage />} />
         <Route path="/admin/send-mail" element={<SendMailPage />} />
         <Route path="/admin/questions" element={<Navigate to="/admin/questions/python_questions" replace />} />

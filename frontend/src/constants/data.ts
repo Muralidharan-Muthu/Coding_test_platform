@@ -47,8 +47,13 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   {
     label: 'Manage Candidates',
     href: '/admin/otp',
-    activePaths: ['/admin/otp'],
+    activePaths: ['/admin/otp', '/admin/add-candidate'],
     children: [
+      {
+        label: 'Add Candidate',
+        href: '/admin/otp',
+        activePaths: ['/admin/otp', '/admin/add-candidate'],
+      },
       {
         label: 'Choose Test Type',
         href: '/admin/test-type',

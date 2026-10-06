@@ -404,13 +404,47 @@ export async function evaluatePythonSubmission(problem: any, code: string) {
 
 /**
  * Compare SQL candidate rows with expected output
+ * Supports:
+ * - Order independence (multiset equality when query results don't require strict ordering)
+ * - Automatic column reordering based on column names (if columns are provided)
+ * - Numeric normalization (e.g. 1.0 vs 1 vs "1")
+ * - Null/boolean handling
  */
 function normalizeSqlVal(v: any): string {
-  if (v === null || v === undefined) return '';
-  return String(v).trim().toLowerCase();
+  if (v === null || v === undefined) return '__NULL__';
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  const str = String(v).trim();
+  const num = Number(str);
+  if (!isNaN(num) && str !== '') {
+    return String(Math.round(num * 100000) / 100000);
+  }
+  return str.toLowerCase();
 }
 
-function compareSqlResults(actualCols: string[], actualRows: any[][], rawExpected: any): boolean {
+function serializeRow(row: any[]): string {
+  return row.map(normalizeSqlVal).join('||~||');
+}
+
+function compareMultisets(actRows: any[][], expRows: any[][]): boolean {
+  if (actRows.length !== expRows.length) return false;
+  const countMap = new Map<string, number>();
+
+  for (const r of expRows) {
+    const key = serializeRow(r);
+    countMap.set(key, (countMap.get(key) || 0) + 1);
+  }
+
+  for (const r of actRows) {
+    const key = serializeRow(r);
+    const count = countMap.get(key);
+    if (!count || count <= 0) return false;
+    countMap.set(key, count - 1);
+  }
+
+  return true;
+}
+
+export function compareSqlResults(actualCols: string[], actualRows: any[][], rawExpected: any): boolean {
   if (!rawExpected) return true;
 
   let expectedData = rawExpected;
@@ -420,8 +454,11 @@ function compareSqlResults(actualCols: string[], actualRows: any[][], rawExpecte
     } catch {}
   }
 
-  // If structured object { columns: [...], rows: [...] }
+  let expColumns: string[] | null = null;
   if (typeof expectedData === 'object' && expectedData !== null && !Array.isArray(expectedData)) {
+    if (Array.isArray(expectedData.columns)) {
+      expColumns = expectedData.columns.map((c: any) => String(c).toLowerCase());
+    }
     if (Array.isArray(expectedData.rows)) {
       expectedData = expectedData.rows;
     }
@@ -431,39 +468,62 @@ function compareSqlResults(actualCols: string[], actualRows: any[][], rawExpecte
     if (expectedData.length === 0 && actualRows.length === 0) return true;
     if (expectedData.length !== actualRows.length) return false;
 
-    // Array of key-value objects [ { product_id: 1 }, ... ]
+    let mappedActualRows: any[][] = actualRows;
+    if (expColumns && expColumns.length > 0 && actualCols && actualCols.length > 0) {
+      const lowerCols = actualCols.map(c => c.toLowerCase());
+      const colIndices = expColumns.map(expCol => lowerCols.indexOf(expCol));
+      if (colIndices.every(idx => idx !== -1)) {
+        mappedActualRows = actualRows.map(row => colIndices.map(idx => row[idx]));
+      }
+    }
+
     if (typeof expectedData[0] === 'object' && expectedData[0] !== null && !Array.isArray(expectedData[0])) {
       const expKeys = Object.keys(expectedData[0]).map(k => k.toLowerCase());
       const lowerCols = actualCols.map(c => c.toLowerCase());
-      
-      for (let i = 0; i < expectedData.length; i++) {
-        const expRow = expectedData[i];
-        const actRow = actualRows[i];
-        if (!actRow) return false;
-        for (const k of expKeys) {
-          const colIdx = lowerCols.indexOf(k);
-          if (colIdx === -1) return false;
-          if (normalizeSqlVal(actRow[colIdx]) !== normalizeSqlVal(expRow[k])) return false;
+      const colIndices = expKeys.map(k => lowerCols.indexOf(k));
+
+      if (colIndices.some(idx => idx === -1)) return false;
+
+      const actNorm = actualRows.map(row => colIndices.map(idx => row[idx]));
+      const expNorm = expectedData.map(obj => Object.keys(obj).map(k => obj[k]));
+
+      let seqMatch = true;
+      for (let i = 0; i < actNorm.length; i++) {
+        for (let j = 0; j < expKeys.length; j++) {
+          if (normalizeSqlVal(actNorm[i][j]) !== normalizeSqlVal(expNorm[i][j])) {
+            seqMatch = false;
+            break;
+          }
         }
+        if (!seqMatch) break;
       }
-      return true;
+      if (seqMatch) return true;
+
+      return compareMultisets(actNorm, expNorm);
     }
 
-    // Array of row arrays [ [1], [4], ... ] or [ ["1"], ["4"], ... ]
-    for (let i = 0; i < expectedData.length; i++) {
-      const expRow = expectedData[i];
-      const actRow = actualRows[i];
-      if (!actRow) return false;
-      if (Array.isArray(expRow)) {
-        if (expRow.length !== actRow.length) return false;
-        for (let j = 0; j < expRow.length; j++) {
-          if (normalizeSqlVal(actRow[j]) !== normalizeSqlVal(expRow[j])) return false;
-        }
-      } else {
-        if (normalizeSqlVal(actRow[0]) !== normalizeSqlVal(expRow)) return false;
+    const expRowArrays: any[][] = expectedData.map(r => Array.isArray(r) ? r : [r]);
+    const actRowArrays: any[][] = mappedActualRows.map(r => Array.isArray(r) ? r : [r]);
+
+    let seqMatch = true;
+    for (let i = 0; i < expRowArrays.length; i++) {
+      const expRow = expRowArrays[i];
+      const actRow = actRowArrays[i];
+      if (!actRow || actRow.length !== expRow.length) {
+        seqMatch = false;
+        break;
       }
+      for (let j = 0; j < expRow.length; j++) {
+        if (normalizeSqlVal(actRow[j]) !== normalizeSqlVal(expRow[j])) {
+          seqMatch = false;
+          break;
+        }
+      }
+      if (!seqMatch) break;
     }
-    return true;
+    if (seqMatch) return true;
+
+    return compareMultisets(actRowArrays, expRowArrays);
   }
 
   return false;

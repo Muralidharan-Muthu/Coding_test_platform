@@ -362,9 +362,14 @@ function AdminSidebarLayout({
         }
       }
 
-      // 3. Manage Candidates: ALWAYS ensure children with Choose Test Type and Send Mail
+      // 3. Manage Candidates: ALWAYS ensure children with Add Candidate, Choose Test Type and Send Mail
       if (label.includes('candidate') || label.includes('manage')) {
         const candidateChildren = [
+          {
+            label: 'Add Candidate',
+            href: '/admin/otp',
+            activePaths: ['/admin/otp', '/admin/add-candidate'],
+          },
           {
             label: 'Choose Test Type',
             href: '/admin/test-type',
@@ -380,7 +385,7 @@ function AdminSidebarLayout({
         return {
           ...item,
           href: item.href || '/admin/otp',
-          activePaths: item.activePaths || ['/admin/otp'],
+          activePaths: item.activePaths || ['/admin/otp', '/admin/add-candidate'],
           children: candidateChildren,
         }
       }

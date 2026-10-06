@@ -120,8 +120,8 @@ export async function getProctoringReportsForDashboard(filters: AssessmentFilter
     const rawId = rowCandId.replace(/^CAND_/i, '');
     const userIdStr = row.user_id ? String(row.user_id) : '';
 
-    const startWindow = row.login_time ? new Date(new Date(row.login_time).getTime() - 60_000) : null;
-    const endWindow = (row.submit_time || row.created_at) ? new Date(new Date(row.submit_time || row.created_at).getTime() + 60_000) : null;
+    const startWindow = row.login_time ? new Date(row.login_time) : null;
+    const endWindow = (row.submit_time || row.created_at) ? new Date(row.submit_time || row.created_at) : null;
 
     const matchingLogs = logs.filter((log) => {
       const logCand = log.candidate_id || '';
@@ -372,7 +372,7 @@ export async function getCandidateSubmissions(email: string, assessmentId?: stri
       if (mcqIds.length > 0) {
         // Find the candidate's answers from serverExamSession
         const examSessions = await prisma.serverExamSession.findMany({
-          where: { user_id: user.id },
+          where: { user_id: String(user.id) },
           orderBy: { start_time: 'desc' }
         });
         let candidateAnswers: Record<string, any> = {};

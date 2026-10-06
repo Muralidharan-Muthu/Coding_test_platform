@@ -75,24 +75,37 @@ export async function addProctoringEvents(
     },
   });
 
-  if (session && session.candidate_id) {
-    for (const evt of events) {
-      if (evt.type === 'FACE_DETECTED' || evt.type === 'WINDOW_FOCUS') continue;
-      const meta = evt.metadata || {};
-      const msg = (meta as any).message || `${evt.type.replace(/_/g, ' ')} detected`;
-      const eventDate = typeof evt.timestamp === 'number'
-        ? new Date(evt.timestamp)
-        : (evt.timestamp ? new Date(evt.timestamp) : new Date());
+  if (session && session.candidate_id && session.status !== 'completed') {
+    // Check if exam is already submitted/completed to prevent post-submission false violations
+    const completedExam = await prisma.serverExamSession.findFirst({
+      where: {
+        OR: [
+          { session_id: session.test_id },
+          { id: session.test_id }
+        ],
+        is_completed: true
+      }
+    }).catch(() => null);
 
-      await prisma.proctoringLog.create({
-        data: {
-          exam_id: session.test_id || session.id,
-          candidate_id: session.candidate_id,
-          violation_type: evt.type,
-          message: msg,
-          timestamp: isNaN(eventDate.getTime()) ? new Date() : eventDate,
-        }
-      }).catch(() => {});
+    if (!completedExam) {
+      for (const evt of events) {
+        if (evt.type === 'FACE_DETECTED' || evt.type === 'WINDOW_FOCUS') continue;
+        const meta = evt.metadata || {};
+        const msg = (meta as any).message || `${evt.type.replace(/_/g, ' ')} detected`;
+        const eventDate = typeof evt.timestamp === 'number'
+          ? new Date(evt.timestamp)
+          : (evt.timestamp ? new Date(evt.timestamp) : new Date());
+
+        await prisma.proctoringLog.create({
+          data: {
+            exam_id: session.test_id || session.id,
+            candidate_id: session.candidate_id,
+            violation_type: evt.type,
+            message: msg,
+            timestamp: isNaN(eventDate.getTime()) ? new Date() : eventDate,
+          }
+        }).catch(() => {});
+      }
     }
   }
 

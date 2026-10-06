@@ -149,20 +149,19 @@ export default function CandidatesAssessmentTable({
   const formatDatePart = (dateStr?: string) => {
     if (!dateStr) return { date: '—', time: '' }
     try {
+      const hasTime = dateStr.includes('T') || dateStr.includes(':')
       const d = new Date(dateStr)
       if (Number.isNaN(d.getTime())) return { date: dateStr, time: '' }
       const datePart = d.toLocaleDateString('en-IN', {
-        timeZone: 'Asia/Kolkata',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
       })
-      const timePart = d.toLocaleTimeString('en-IN', {
-        timeZone: 'Asia/Kolkata',
+      const timePart = hasTime ? d.toLocaleTimeString('en-IN', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: true,
-      })
+      }) : ''
       return { date: datePart, time: timePart }
     } catch {
       return { date: dateStr, time: '' }
@@ -397,7 +396,7 @@ export default function CandidatesAssessmentTable({
                       <td className="py-4 px-6 whitespace-nowrap">
                         <div className="space-y-1.5">
                           {(() => {
-                            const { date, time } = formatDatePart(row.test_date || row.created_at || row.submit_time)
+                            const { date, time } = formatDatePart(row.login_time || row.start_time || row.created_at || row.submit_time || row.test_date)
                             return (
                               <>
                                 <div className="text-xs text-slate-700 dark:text-[#eff1f6] font-medium flex items-center gap-1.5">
@@ -566,48 +565,143 @@ export default function CandidatesAssessmentTable({
                               </button>
                             </div>
 
-                            {/* Problem Testcases Grid */}
+                            {/* Problem Breakdown Grid */}
                             <div>
-                              <span className="text-[11px] font-bold text-slate-400 dark:text-[#8a8a8a] uppercase tracking-wider block mb-2">
-                                Testcases & Solved Problems
-                              </span>
-                              {hasProblems ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                                  {Object.entries(problemTestcases).map(([probKey, probData]: any) => {
-                                    const passed = Number(probData?.passed) || 0
-                                    const total = Number(probData?.total) || 5
-                                    const isFullPass = passed === total
-                                    return (
-                                      <div
-                                        key={probKey}
-                                        className="p-3 rounded-xl bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] flex items-center justify-between shadow-xs"
-                                      >
-                                        <div>
-                                          <span className="text-xs font-bold text-slate-800 dark:text-[#eff1f6] block">
-                                            {probKey.replace(/_/g, ' ').toUpperCase()}
-                                          </span>
-                                          <span className="text-[11px] text-slate-500 dark:text-[#8a8a8a]">
-                                            {passed}/{total} Testcases Passed
-                                          </span>
-                                        </div>
-                                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold font-mono ${
-                                          isFullPass
-                                            ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                                            : passed > 0
-                                            ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/20'
-                                            : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
-                                        }`}>
-                                          {Math.round((passed / total) * 100)}%
-                                        </span>
+                              {(() => {
+                                const isPureMcq = row.test_type === 'mcq' || (Number(row.mcq_questions) > 0 && Number(row.python_questions || 0) === 0 && Number(row.sql_questions || 0) === 0)
+                                const entries = Object.entries(problemTestcases)
+
+                                if (entries.length === 0) {
+                                  return (
+                                    <p className="text-xs text-slate-500 dark:text-[#8a8a8a]">
+                                      No question details recorded for this session.
+                                    </p>
+                                  )
+                                }
+
+                                if (isPureMcq) {
+                                  return (
+                                    <div>
+                                      <span className="text-[11px] font-bold text-slate-400 dark:text-[#8a8a8a] uppercase tracking-wider block mb-2">
+                                        MCQ Questions & Evaluation Summary
+                                      </span>
+                                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                        {entries.map(([probKey, probData]: any, qIdx: number) => {
+                                          const passed = Number(probData?.passed) || 0
+                                          const total = Number(probData?.total) || 1
+                                          const isCorrect = total > 0 && passed === total
+                                          return (
+                                            <div
+                                              key={probKey}
+                                              className="p-3 rounded-xl bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] flex items-center justify-between shadow-xs"
+                                            >
+                                              <div>
+                                                <span className="text-xs font-bold text-slate-800 dark:text-[#eff1f6] block">
+                                                  Question {qIdx + 1}
+                                                </span>
+                                                <span className="text-[11px] text-slate-500 dark:text-[#8a8a8a]">
+                                                  {isCorrect ? 'Correct Answer' : 'Incorrect / Unanswered'}
+                                                </span>
+                                              </div>
+                                              <span className={`px-2 py-0.5 rounded-full text-xs font-bold font-mono ${
+                                                isCorrect
+                                                  ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                  : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
+                                              }`}>
+                                                {isCorrect ? 'Correct' : '0 Pts'}
+                                              </span>
+                                            </div>
+                                          )
+                                        })}
                                       </div>
-                                    )
-                                  })}
-                                </div>
-                              ) : (
-                                <p className="text-xs text-slate-500 dark:text-[#8a8a8a]">
-                                  No problem-level testcase details recorded for this session.
-                                </p>
-                              )}
+                                    </div>
+                                  )
+                                }
+
+                                // Mixed or Coding-only track
+                                const mcqEntries = entries.filter(([k]) => k.startsWith('mcq_'))
+                                const codeEntries = entries.filter(([k]) => !k.startsWith('mcq_'))
+
+                                return (
+                                  <div className="space-y-3">
+                                    {codeEntries.length > 0 && (
+                                      <div>
+                                        <span className="text-[11px] font-bold text-slate-400 dark:text-[#8a8a8a] uppercase tracking-wider block mb-2">
+                                          Coding & Database Testcases
+                                        </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                          {codeEntries.map(([probKey, probData]: any) => {
+                                            const passed = Number(probData?.passed) || 0
+                                            const total = Number(probData?.total) || 5
+                                            const isFullPass = total > 0 && passed === total
+                                            return (
+                                              <div
+                                                key={probKey}
+                                                className="p-3 rounded-xl bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] flex items-center justify-between shadow-xs"
+                                              >
+                                                <div>
+                                                  <span className="text-xs font-bold text-slate-800 dark:text-[#eff1f6] block">
+                                                    {probKey.replace(/_/g, ' ').toUpperCase()}
+                                                  </span>
+                                                  <span className="text-[11px] text-slate-500 dark:text-[#8a8a8a]">
+                                                    {passed}/{total} Testcases Passed
+                                                  </span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold font-mono ${
+                                                  isFullPass
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                    : passed > 0
+                                                    ? 'bg-[#ffa116]/10 text-[#ffa116] border border-[#ffa116]/20'
+                                                    : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
+                                                }`}>
+                                                  {Math.round((passed / Math.max(1, total)) * 100)}%
+                                                </span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {mcqEntries.length > 0 && (
+                                      <div>
+                                        <span className="text-[11px] font-bold text-slate-400 dark:text-[#8a8a8a] uppercase tracking-wider block mb-2">
+                                          MCQ Section Summary
+                                        </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                                          {mcqEntries.map(([probKey, probData]: any, qIdx: number) => {
+                                            const passed = Number(probData?.passed) || 0
+                                            const total = Number(probData?.total) || 1
+                                            const isCorrect = total > 0 && passed === total
+                                            return (
+                                              <div
+                                                key={probKey}
+                                                className="p-3 rounded-xl bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] flex items-center justify-between shadow-xs"
+                                              >
+                                                <div>
+                                                  <span className="text-xs font-bold text-slate-800 dark:text-[#eff1f6] block">
+                                                    MCQ {qIdx + 1}
+                                                  </span>
+                                                  <span className="text-[11px] text-slate-500 dark:text-[#8a8a8a]">
+                                                    {isCorrect ? 'Correct Answer' : 'Incorrect'}
+                                                  </span>
+                                                </div>
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold font-mono ${
+                                                  isCorrect
+                                                    ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                                                    : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#8a8a8a] border border-slate-200 dark:border-[#3e3e3e]'
+                                                }`}>
+                                                  {isCorrect ? 'Correct' : '0 Pts'}
+                                                </span>
+                                              </div>
+                                            )
+                                          })}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                )
+                              })()}
                             </div>
 
                             {/* Proctoring Summary */}

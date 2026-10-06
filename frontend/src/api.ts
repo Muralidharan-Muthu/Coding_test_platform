@@ -122,6 +122,9 @@ export const getPracticeProblems = async (language) => {
 }
 
 export const startExam = async (sessionId) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('exam_submitted')
+  }
   const response = await api.post('/exam/start', { session_id: sessionId })
   return response.data
 }
@@ -147,6 +150,9 @@ export const saveExamAnswer = async (sessionId, problemId, code, language) => {
 }
 
 export const submitExam = async (sessionId, answers, autoSubmit = false) => {
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('exam_submitted', 'true')
+  }
   const response = await api.post('/exam/submit', {
     session_id: sessionId,
     answers: answers,

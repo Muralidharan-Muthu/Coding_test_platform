@@ -491,7 +491,7 @@ export default function AssessmentDashboard() {
 
       {/* ── Proctoring Violation Logs Modal ── */}
       {isLogModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs">
           <div className="bg-white dark:bg-[#282828] border border-slate-200 dark:border-[#3e3e3e] rounded-2xl shadow-xl w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             <div className="p-5 border-b border-slate-100 dark:border-[#3e3e3e] flex items-center justify-between">
               <div>

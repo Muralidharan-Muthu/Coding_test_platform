@@ -1,5 +1,7 @@
 import prisma from '../db/prisma';
 import { shuffleCandidateQuestions, getTestTypeSections } from './otpService';
+import { evaluatePythonSubmission, evaluateSqlSubmission, persistSubmissionRecord } from './runnerService';
+import { getProblemById } from './problemService';
 import crypto from 'crypto';
 
 /** Default exam duration fallback in seconds (60 mins) */
@@ -429,7 +431,42 @@ export async function submitFullExam(
 
       if (lang === 'python' && allowedSections.has('python')) {
         pyCount++;
-        const sub = submissions.find(s => s.problem_id === p.problem_id);
+        let sub = submissions.find(s => s.problem_id === p.problem_id);
+        if (!sub && existingAnswers[p.problem_id]?.code) {
+          const userCode = String(existingAnswers[p.problem_id].code || '').trim();
+          if (userCode && !userCode.startsWith('// Solution for') && !userCode.startsWith('# Write your solution')) {
+            try {
+              const pyProb = await getProblemById(p.problem_id);
+              if (pyProb) {
+                const evalRes = await evaluatePythonSubmission(pyProb, userCode);
+                const saved = await persistSubmissionRecord(
+                  sessionId,
+                  p.problem_id,
+                  userCode,
+                  evalRes.passed,
+                  evalRes.total,
+                  0,
+                  evalRes.avgTime
+                );
+                sub = {
+                  id: saved.submissionId || 0,
+                  user_id: user.id,
+                  problem_id: p.problem_id,
+                  code: userCode,
+                  passed_tests: evalRes.passed,
+                  total_tests: evalRes.total,
+                  score: saved.score,
+                  verdict: saved.verdict,
+                  execution_time_ms: evalRes.avgTime,
+                  time_taken: 0,
+                  created_at: nowIso,
+                } as any;
+              }
+            } catch (evalErr) {
+              console.error('Failed auto-evaluating Python answer in submitFullExam:', evalErr);
+            }
+          }
+        }
         const ratio = sub ? (sub.passed_tests / (sub.total_tests || 1)) : 0;
         const pts = Math.round(ratio * pMarks * 100) / 100;
         pyScoreSum += pts;
@@ -437,7 +474,42 @@ export async function submitFullExam(
         problemTestcases[p.problem_id] = sub ? `${sub.passed_tests}/${sub.total_tests}` : `0/0`;
       } else if (lang === 'sql' && allowedSections.has('sql')) {
         sqlCount++;
-        const sub = submissions.find(s => s.problem_id === p.problem_id);
+        let sub = submissions.find(s => s.problem_id === p.problem_id);
+        if (!sub && existingAnswers[p.problem_id]?.code) {
+          const userQuery = String(existingAnswers[p.problem_id].code || '').trim();
+          if (userQuery && !userQuery.startsWith('-- Write your SQL query here')) {
+            try {
+              const sqlProb = await getProblemById(p.problem_id);
+              if (sqlProb) {
+                const evalRes = await evaluateSqlSubmission(sqlProb, userQuery);
+                const saved = await persistSubmissionRecord(
+                  sessionId,
+                  p.problem_id,
+                  userQuery,
+                  evalRes.passed,
+                  evalRes.total,
+                  0,
+                  evalRes.avgTime
+                );
+                sub = {
+                  id: saved.submissionId || 0,
+                  user_id: user.id,
+                  problem_id: p.problem_id,
+                  code: userQuery,
+                  passed_tests: evalRes.passed,
+                  total_tests: evalRes.total,
+                  score: saved.score,
+                  verdict: saved.verdict,
+                  execution_time_ms: evalRes.avgTime,
+                  time_taken: 0,
+                  created_at: nowIso,
+                } as any;
+              }
+            } catch (evalErr) {
+              console.error('Failed auto-evaluating SQL answer in submitFullExam:', evalErr);
+            }
+          }
+        }
         const ratio = sub ? (sub.passed_tests / (sub.total_tests || 1)) : 0;
         const pts = Math.round(ratio * pMarks * 100) / 100;
         sqlScoreSum += pts;
