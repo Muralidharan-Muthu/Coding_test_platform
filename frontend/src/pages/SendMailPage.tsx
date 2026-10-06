@@ -5,7 +5,7 @@ import AdminSidebarLayout from '../components/admin/AdminSidebarLayout'
 import { useToast } from '../components/ui/ToastProvider'
 import Spinner from '../components/ui/Spinner'
 import { ADMIN_NAV_ITEMS as NAV_ITEMS } from '../constants/data'
-import { FiMail, FiEye, FiUsers } from 'react-icons/fi'
+import { FiMail, FiEye, FiUsers, FiSearch, FiX } from 'react-icons/fi'
 
 function SendMailPage() {
   const navigate = useNavigate()
@@ -14,6 +14,7 @@ function SendMailPage() {
   const [loading, setLoading] = useState(true)
   const [candidates, setCandidates] = useState([])
   const [sending, setSending] = useState({})
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     const loggedIn = localStorage.getItem('admin_logged_in')
@@ -55,6 +56,17 @@ function SendMailPage() {
       duplicateCount: Math.max(candidates.length - unique.length, 0),
     }
   }, [candidates])
+
+  const filteredCandidates = useMemo(() => {
+    if (!searchQuery.trim()) return dedupedCandidates.rows
+    const q = searchQuery.toLowerCase().trim()
+    return dedupedCandidates.rows.filter((c) => {
+      const name = String(c.username || '').toLowerCase()
+      const email = String(c.email || '').toLowerCase()
+      const otp = String(c.otp_code || '').toLowerCase()
+      return name.includes(q) || email.includes(q) || otp.includes(q)
+    })
+  }, [dedupedCandidates.rows, searchQuery])
 
   const formatDate = (isoString) => {
     if (!isoString) return '-'
@@ -118,11 +130,35 @@ function SendMailPage() {
         <div className="mc-table-card">
           <div className="mc-table-header">
             <div>
-              <h3 className="mc-card-title">Candidate Credentials & Mail ({dedupedCandidates.rows.length})</h3>
+              <h3 className="mc-card-title">
+                Candidate Credentials & Mail ({filteredCandidates.length}{searchQuery && filteredCandidates.length !== dedupedCandidates.rows.length ? ` of ${dedupedCandidates.rows.length}` : ''})
+              </h3>
               <p className="mc-card-subtitle" style={{ marginTop: '2px' }}>
                 {dedupedCandidates.duplicateCount > 0 ? `${dedupedCandidates.duplicateCount} duplicate rows hidden — ` : ''}
                 Send instant access passes with automatically generated OTP credentials.
               </p>
+            </div>
+
+            {/* Search Bar */}
+            <div className="ctt-search-wrapper" style={{ maxWidth: '320px', minWidth: '220px' }}>
+              <FiSearch className="ctt-search-icon" />
+              <input
+                type="text"
+                className="ctt-search-input"
+                placeholder="Search candidates by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="ctt-search-clear-btn"
+                  onClick={() => setSearchQuery('')}
+                  aria-label="Clear search"
+                >
+                  <FiX size={14} />
+                </button>
+              )}
             </div>
           </div>
 
@@ -133,6 +169,20 @@ function SendMailPage() {
               <div className="mc-empty-icon"><FiUsers /></div>
               <h4>No Candidates Found</h4>
               <p>Add candidates first in Manage Candidates to send credentials.</p>
+            </div>
+          ) : filteredCandidates.length === 0 ? (
+            <div className="mc-empty-state">
+              <div className="mc-empty-icon"><FiSearch /></div>
+              <h4>No Matching Candidates</h4>
+              <p>No candidates found matching "{searchQuery}". Try a different name or email.</p>
+              <button
+                type="button"
+                className="mc-btn-secondary"
+                style={{ marginTop: '12px', padding: '6px 14px', borderRadius: '6px', fontSize: '13px' }}
+                onClick={() => setSearchQuery('')}
+              >
+                Clear Search
+              </button>
             </div>
           ) : (
             <div className="table-responsive">
@@ -150,7 +200,7 @@ function SendMailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {dedupedCandidates.rows.map((candidate, index) => (
+                  {filteredCandidates.map((candidate, index) => (
                     <tr key={candidate.email}>
                       <td className="mc-col-num">#{index + 1}</td>
                       <td><span className="mc-username-text">{candidate.username}</span></td>
